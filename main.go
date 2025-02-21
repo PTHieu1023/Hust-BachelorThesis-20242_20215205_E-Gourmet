@@ -2,28 +2,44 @@ package main
 
 import (
 	"context"
-	"e-gourmet/core/repo"
+	"e-gourmet/core/internal/db"
 	"fmt"
-	"github.com/jackc/pgx/v5"
-	"os"
+	"github.com/jackc/pgx/v5/pgtype"
+	"log"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func main() {
-	urlExample := "postgres://egourmet:egourmet@localhost:5432/egourmet"
-	conn, err := pgx.Connect(context.Background(), urlExample)
+	ctx := context.Background()
+	dbURL := "postgres://egourmet:egourmet@localhost:5432/egourmet"
+
+	conn, err := pgxpool.New(ctx, dbURL)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
-		os.Exit(1)
+		log.Fatalf("Unable to connect to database: %v\n", err)
 	}
-	defer conn.Close(context.Background())
+	defer conn.Close()
 
-	q := repo.New(conn)
+	queries := db.New(conn)
 
-	author, err := q.GetRestaurants(context.Background())
+	param := db.CreateProfileParams{
+		ProfileType:   pgtype.Text{String: "USER", Valid: true},
+		TagName:       "demo1",
+		Name:          "Test User",
+		Email:         "test1@example.com",
+		PhoneNumber:   pgtype.Text{String: "123-456-78a", Valid: true},
+		AvatarUrl:     pgtype.Text{String: "https://avatars.githubusercontent.com/u/123-456-789", Valid: true},
+		Biography:     pgtype.Text{String: "Test User", Valid: true},
+		DetailAddress: pgtype.Text{String: "Test User", Valid: true},
+		LocalAddress:  pgtype.Text{String: "Test User", Valid: true},
+		Lat:           pgtype.Float8{Float64: 0, Valid: true},
+		Lng:           pgtype.Float8{Float64: 0, Valid: true},
+		Enable:        pgtype.Bool{Bool: true, Valid: true},
+	}
+	// Create a new profile
+	profile, err := queries.CreateProfile(ctx, param)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "GetAuthor failed: %v\n", err)
-		os.Exit(1)
+		log.Fatalf("Failed to create profile: %v\n", err)
 	}
-
-	fmt.Println(author)
+	fmt.Printf("Created Profile: %+v\n", profile)
 }

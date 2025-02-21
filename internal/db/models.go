@@ -2,15 +2,15 @@
 // versions:
 //   sqlc v1.28.0
 
-package repo
+package db
 
 import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Food struct {
-	ID           pgtype.UUID
-	RestaurantID pgtype.UUID
+	ID           string
+	RestaurantID string
 	Name         string
 	Description  pgtype.Text
 	Price        pgtype.Numeric
@@ -19,7 +19,7 @@ type Food struct {
 
 type FoodReview struct {
 	ReviewID int32
-	DishID   pgtype.UUID
+	DishID   string
 }
 
 type FoodTag struct {
@@ -27,13 +27,13 @@ type FoodTag struct {
 	Name             pgtype.Text
 	BriefDescription pgtype.Text
 	TagID            pgtype.Int4
-	FoodID           pgtype.UUID
+	FoodID           pgtype.Text
 }
 
 type Post struct {
 	ID                  int32
-	AuthorID            pgtype.UUID
-	CheckinRestaurantID pgtype.UUID
+	AuthorID            pgtype.Text
+	CheckinRestaurantID pgtype.Text
 	Content             pgtype.Text
 	CreatedAt           pgtype.Timestamp
 	UpdatedAt           pgtype.Timestamp
@@ -43,15 +43,15 @@ type PostComment struct {
 	ID             int32
 	RefToCommentID pgtype.Int4
 	PostID         pgtype.Int4
-	AuthorID       pgtype.UUID
+	AuthorID       pgtype.Text
 	Content        pgtype.Text
 	CreatedAt      pgtype.Timestamp
 	UpdatedAt      pgtype.Timestamp
 }
 
 type Profile struct {
-	ID            pgtype.UUID
-	ProfileType   string
+	ID            string
+	ProfileType   pgtype.Text
 	TagName       string
 	Name          string
 	Email         string
@@ -72,8 +72,7 @@ type ProfileType struct {
 }
 
 type Restaurant struct {
-	ID             pgtype.UUID
-	ProfileID      pgtype.UUID
+	ID             string
 	OperatingHours pgtype.Text
 	CreatedAt      pgtype.Timestamp
 	UpdatedAt      pgtype.Timestamp
@@ -81,20 +80,20 @@ type Restaurant struct {
 
 type RestaurantManager struct {
 	IsOwner      pgtype.Bool
-	UserID       pgtype.UUID
-	RestaurantID pgtype.UUID
+	UserID       string
+	RestaurantID string
 }
 
 type RestaurantTag struct {
-	RestaurantID pgtype.UUID
+	RestaurantID string
 	TagID        int32
 }
 
 type Review struct {
 	ID           int32
-	RestaurantID pgtype.UUID
+	RestaurantID pgtype.Text
 	Content      pgtype.Text
-	Author       pgtype.UUID
+	Author       pgtype.Text
 	Rate         pgtype.Int4
 	CreatedAt    pgtype.Timestamp
 	UpdatedAt    pgtype.Timestamp
@@ -110,14 +109,13 @@ type Tag struct {
 }
 
 type User struct {
-	ID        pgtype.UUID
-	ProfileID pgtype.UUID
+	ID        string
 	Dob       pgtype.Date
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
 }
 
 type UserTag struct {
-	UserID pgtype.UUID
+	UserID string
 	TagID  int32
 }
