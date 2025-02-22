@@ -1,0 +1,8 @@
+cors:
+  enable: true
+  allow-origins: "*"
+  allow-methods: "*"
+  allow-headers: "*"
+storage:
+  resource-path: ./storage/resource
+  url-prefix: /_static

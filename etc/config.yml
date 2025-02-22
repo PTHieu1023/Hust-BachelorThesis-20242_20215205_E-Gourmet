@@ -1,0 +1,51 @@
+server:
+  name: E-Gourmet
+  port: 8080
+  header: "e-gourmet"
+  prefork: false
+  network: "tcp4"
+  case-sensitive: true
+  immutable: false
+
+storage:
+  resource-path: ./storage/resource
+  url-prefix: /_static
+
+logger:
+  enable: true
+  level: DEBUG   # Log levels: DEBUG -> INFO -> WARN -> ERROR -> PANIC -> FATAL
+  file-name: ""
+  dir-path: "./storage/logs/"
+  max-size: 512
+  max-backup: 32
+  max-age: 32
+  local-time: true
+  compress: true
+
+cors:
+  enable: true
+  allow-origins: "*"
+  allow-methods: "*"
+  allow-headers: "*"
+
+database:
+  driver: "postgres"
+  host: "localhost"
+  port: 5432
+  user: "postgres"
+  password: "pg@dm!n"
+  dbname: "postgres"
+  sslmode: "disable"
+  idle-pool-size: 20
+  max-pool-size: 40
+  idle-pool-timeout: 5m
+  max-pool-timeout: 30m
+
+
+oauth2:
+  - provider: keycloak
+    oidc:
+      issuer-uri: http://localhost:8080/auth/realms/e-gourmet
+      client-id: internal
+      client-secret: internal
+      scope: openid, profile, email, offline_access

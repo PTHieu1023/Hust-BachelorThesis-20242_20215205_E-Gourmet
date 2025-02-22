@@ -1,0 +1,16 @@
+driver: "postgres"          # Database driver (e.g., postgres, mysql)
+host: "127.0.0.1"           # Database server address
+port: 5432                  # Database port (default for PostgreSQL)
+user: "egourmet"           # Database username
+password: "egourmet"   # Database password
+dbname: "egourmet"     # Database name
+sslmode: "disable"          # SSL mode (disable, require, verify-ca, verify-full)
+# Connection pool settings
+idle-pool-size: 5           # Minimum number of idle connections
+max-pool-size: 20           # Maximum number of connections in the pool
+min-pool-size: 2            # Minimum number of active connections
+# Connection timeout settings
+idle-pool-timeout: "10m"    # Max idle time for connections (e.g., 10m, 30s)
+max-pool-timeout: "30m"     # Max lifetime for a connection before recycling
+# Advanced settings
+health-check-period: "5m"   # Interval for health checks on idle connections
