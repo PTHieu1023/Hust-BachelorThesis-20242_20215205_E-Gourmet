@@ -1,7 +1,8 @@
-package server
+package fiber
 
 import (
 	"e-gourmet/core/internal/middlewares/errorhandler"
+	"e-gourmet/core/internal/server/logger"
 	"e-gourmet/core/pkg/configloader"
 	"github.com/gofiber/fiber/v2"
 	"os"
@@ -21,7 +22,7 @@ var _config *TFiberConfig
 func AppConfig() *TFiberConfig {
 	if _config == nil {
 		_config = configloader.LoadConfig[TFiberConfig](
-			"etc/fiber.yml",
+			"etc/config/fiber.yml",
 			os.Getenv("FIBER_CONFIG_PATH"),
 			"EG")
 	}
@@ -35,7 +36,7 @@ func newApp() *fiber.App {
 		Prefork:       AppConfig().Prefork,
 		CaseSensitive: AppConfig().CaseSensitive,
 		Immutable:     AppConfig().Immutable,
-		ErrorHandler:  errorhandler.New(Logger()),
+		ErrorHandler:  errorhandler.New(logger.Logger()),
 	})
 }
 
@@ -44,7 +45,7 @@ var _app *fiber.App
 func App() *fiber.App {
 	if _app == nil {
 		_app = newApp()
-		Logger().Info("App initialized")
+		logger.Logger().Info("App initialized")
 	}
 	return _app
 }

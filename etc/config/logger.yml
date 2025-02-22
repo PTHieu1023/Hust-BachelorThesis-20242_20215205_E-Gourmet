@@ -1,6 +1,6 @@
-enable: true
+enable: false
 level: DEBUG   # Log levels: DEBUG -> INFO -> WARN -> ERROR -> PANIC -> FATAL
-file-name: ""
+filename: "e-gourmet"
 dir-path: "./storage/logs/"
 max-size: 512
 max-backup: 32

@@ -1,4 +1,4 @@
-package server
+package logger
 
 import (
 	"e-gourmet/core/pkg/configloader"
@@ -23,42 +23,38 @@ type TLoggerConfig struct {
 
 var _loggerConfig *TLoggerConfig
 
-func LoggerConfig() *TLoggerConfig {
+func Config() *TLoggerConfig {
 	if _loggerConfig == nil {
 		_loggerConfig = configloader.LoadConfig[TLoggerConfig](
-			"etc/logger.yml",
+			"etc/config/logger.yml",
 			os.Getenv("LOGGER_CONFIG_FILE"),
-			"EG")
+			"EG_LOGGER")
 	}
 	return _loggerConfig
 }
 
-func logFilePath() string {
-	if AppConfig().Prefork {
-		return fmt.Sprintf("%s/%d/%s.log", LoggerConfig().DirPath, os.Getpid(), LoggerConfig().FileName)
+func newLogger() *zap.Logger {
+	if Config().Enable {
+		return logger.NewLogger(
+			Config().Level,
+			&lumberjack.Logger{
+				Filename:   fmt.Sprintf("%s/%s-%d.log", Config().DirPath, Config().FileName, os.Getpid()),
+				MaxSize:    Config().MaxSize,
+				MaxAge:     Config().MaxAge,
+				MaxBackups: Config().MaxBackup,
+				LocalTime:  Config().LocalTime,
+				Compress:   Config().Compress,
+			},
+		)
 	}
-	return fmt.Sprintf("%s/%s.log", LoggerConfig().DirPath, LoggerConfig().FileName)
-}
-
-func newLogger(conf *TLoggerConfig, isForked bool) *zap.Logger {
-	return logger.NewLogger(
-		LoggerConfig().Level,
-		&lumberjack.Logger{
-			Filename:   logFilePath(),
-			MaxSize:    conf.MaxSize,
-			MaxAge:     conf.MaxAge,
-			MaxBackups: conf.MaxBackup,
-			LocalTime:  conf.LocalTime,
-			Compress:   conf.Compress,
-		},
-	)
+	return logger.NewLogger(Config().Level, nil)
 }
 
 var _logger *zap.Logger
 
 func Logger() *zap.Logger {
 	if _logger == nil {
-		_logger = newLogger(LoggerConfig(), AppConfig().Prefork)
+		_logger = newLogger()
 		Logger().Info("Initiated logger")
 	}
 	return _logger

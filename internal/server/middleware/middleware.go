@@ -1,4 +1,4 @@
-package server
+package middleware
 
 import (
 	"e-gourmet/core/internal/middlewares/cors"
@@ -17,7 +17,7 @@ var _middlewareConfig *TMiddlewareConfig
 func MiddlewareConfig() *TMiddlewareConfig {
 	if _middlewareConfig == nil {
 		_middlewareConfig = configloader.LoadConfig[TMiddlewareConfig](
-			"etc/middleware.yml",
+			"etc/config/middleware.yml",
 			os.Getenv("MIDDLEWARE_CONFIG_PATH"),
 			"EG_MIDDLEWARE",
 		)

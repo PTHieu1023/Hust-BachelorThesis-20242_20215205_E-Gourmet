@@ -1,8 +1,9 @@
-package server
+package database
 
 import (
 	"context"
 	"e-gourmet/core/internal/db"
+	"e-gourmet/core/internal/server/logger"
 	"e-gourmet/core/pkg/configloader"
 	"fmt"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -38,14 +39,21 @@ var _dbConfig *TDBConfig
 func DBConfig() *TDBConfig {
 	if _dbConfig == nil {
 		_dbConfig = configloader.LoadConfig[TDBConfig](
-			"etc/db.yml",
+			"etc/config/db.yml",
 			os.Getenv("OS_CONFIG_PATH"),
 			"EG_DATABASE")
 	}
 	return _dbConfig
 }
 
-func newDBPool() (*pgxpool.Pool, error) {
+var _pool *pgxpool.Pool
+var _db *db.Queries
+
+func newDBPool() error {
+	if _pool != nil && _db != nil {
+		return nil
+	}
+
 	// Format DSN (Data Source Name)
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
 		DBConfig().User,
@@ -58,44 +66,44 @@ func newDBPool() (*pgxpool.Pool, error) {
 	// Parse pgxpool.Config from DSN
 	poolConfig, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Convert timeout strings to time.Duration
 	if DBConfig().IdlePoolTimeout != "" {
 		poolConfig.MaxConnIdleTime, err = time.ParseDuration(DBConfig().IdlePoolTimeout)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	}
 	if DBConfig().MaxPoolTimeout != "" {
 		poolConfig.MaxConnLifetime, err = time.ParseDuration(DBConfig().MaxPoolTimeout)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	}
 	if DBConfig().MaxConnLifetime != "" {
 		poolConfig.MaxConnLifetime, err = time.ParseDuration(DBConfig().MaxConnLifetime)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	}
 	if DBConfig().MaxConnLifetimeJitter != "" {
 		poolConfig.MaxConnLifetimeJitter, err = time.ParseDuration(DBConfig().MaxConnLifetimeJitter)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	}
 	if DBConfig().HealthCheckPeriod != "" {
 		poolConfig.HealthCheckPeriod, err = time.ParseDuration(DBConfig().HealthCheckPeriod)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	}
 	if DBConfig().ConnAttemptTimeout != "" {
 		poolConfig.ConnConfig.ConnectTimeout, err = time.ParseDuration(DBConfig().ConnAttemptTimeout)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	}
 
@@ -106,26 +114,16 @@ func newDBPool() (*pgxpool.Pool, error) {
 	// Initialize connection pool
 	connPool, err := pgxpool.NewWithConfig(context.Background(), poolConfig)
 	if err != nil {
-		panic(fmt.Errorf("unable to create database connection pool: %w", err))
+		return err
 	}
-
-	// Return an instance of sqlc-generated queries
-	return connPool, nil
+	_pool = connPool
+	_db = db.New(_pool)
+	return nil
 }
 
-var _pool *pgxpool.Pool
-var _db *db.Queries
-
 func DB() *db.Queries {
-	if _pool == nil {
-
-		dbp, err := newDBPool()
-		if err != nil {
-			Logger().Error("Unable to connect to database", zap.Error(err))
-		}
-		_pool = dbp
-		_db = db.New(_pool)
-		Logger().Info("Connected to database")
+	if err := newDBPool(); err != nil {
+		logger.Logger().Error("Failed to connect to database", zap.Error(err))
 	}
 	return _db
 }
@@ -134,7 +132,7 @@ func CloseDB() {
 	if _pool != nil {
 		_pool.Close()
 	}
-	Logger().Info("Closed database connection")
+	logger.Logger().Info("Closed database connection")
 }
 
 func PingDB() {
@@ -145,9 +143,9 @@ func PingDB() {
 	}
 	err := _pool.Ping(ctx)
 	if err != nil {
-		Logger().Error("Unable to ping database", zap.Error(err))
+		logger.Logger().Error("Unable to ping database", zap.Error(err))
 	} else {
-		Logger().Info(
+		logger.Logger().Info(
 			"Ping database successful")
 	}
 }

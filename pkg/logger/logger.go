@@ -25,12 +25,22 @@ func getLogLevel(level string) zapcore.Level {
 func NewLogger(logLevel string, logger *lumberjack.Logger) *zap.Logger {
 	level := getLogLevel(logLevel)
 	encoder := getEncoderLog()
-	hook := logger
+
+	// Define output writers
+	var writers []zapcore.WriteSyncer
+	writers = append(writers, zapcore.AddSync(os.Stdout)) // Always log to stdout
+
+	// Add file logging only if logger is provided
+	if logger != nil {
+		writers = append(writers, zapcore.AddSync(logger))
+	}
 
 	core := zapcore.NewCore(
 		encoder,
-		zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout), zapcore.AddSync(hook)),
-		level)
+		zapcore.NewMultiWriteSyncer(writers...),
+		level,
+	)
+
 	return zap.New(core, zap.AddCaller(), zap.AddStacktrace(zap.ErrorLevel), zap.Fields(zap.Int("pid", os.Getpid())))
 }
 
