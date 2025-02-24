@@ -2,13 +2,14 @@ package fiber
 
 import (
 	"e-gourmet/core/internal/middlewares/errorhandler"
+	"e-gourmet/core/internal/server/constant"
 	"e-gourmet/core/internal/server/logger"
 	"e-gourmet/core/pkg/configloader"
 	"github.com/gofiber/fiber/v2"
 	"os"
 )
 
-type TFiberConfig struct {
+type FiberConfig struct {
 	Name          string `mapstructure:"name"`
 	Port          int    `mapstructure:"port"`
 	Header        string `mapstructure:"header"`
@@ -17,26 +18,26 @@ type TFiberConfig struct {
 	Immutable     bool   `mapstructure:"immutable"`
 }
 
-var _config *TFiberConfig
+var _config *FiberConfig
 
-func AppConfig() *TFiberConfig {
+func Config() *FiberConfig {
 	if _config == nil {
-		_config = configloader.LoadConfig[TFiberConfig](
-			"etc/config/fiber.yml",
-			os.Getenv("FIBER_CONFIG_PATH"),
-			"EG")
+		_config = configloader.LoadConfig[FiberConfig](
+			constant.DefaultConfigFiberPath,
+			os.Getenv(constant.CustomConfigFiberPathEnv),
+			constant.EnvPrefixConfigFiber)
 	}
 	return _config
 }
 
 func newApp() *fiber.App {
 	return fiber.New(fiber.Config{
-		AppName:       AppConfig().Name,
-		ServerHeader:  AppConfig().Header,
-		Prefork:       AppConfig().Prefork,
-		CaseSensitive: AppConfig().CaseSensitive,
-		Immutable:     AppConfig().Immutable,
-		ErrorHandler:  errorhandler.New(logger.Logger()),
+		AppName:       Config().Name,
+		ServerHeader:  Config().Header,
+		Prefork:       Config().Prefork,
+		CaseSensitive: Config().CaseSensitive,
+		Immutable:     Config().Immutable,
+		ErrorHandler:  errorhandler.New(logger.Log()),
 	})
 }
 
@@ -45,7 +46,7 @@ var _app *fiber.App
 func App() *fiber.App {
 	if _app == nil {
 		_app = newApp()
-		logger.Logger().Info("App initialized")
+		logger.Log().Info("App initialized")
 	}
 	return _app
 }

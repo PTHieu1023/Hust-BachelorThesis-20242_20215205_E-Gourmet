@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"e-gourmet/core/internal/db"
+	"e-gourmet/core/internal/server/constant"
 	"e-gourmet/core/internal/server/logger"
 	"e-gourmet/core/pkg/configloader"
 	"fmt"
@@ -12,16 +13,14 @@ import (
 	"time"
 )
 
-// TDBConfig holds the database configuration, including all pool settings
-type TDBConfig struct {
-	Driver                string `mapstructure:"driver"`
+// DatabaseConfig holds the database configuration, including all pool settings
+type DatabaseConfig struct {
 	Host                  string `mapstructure:"host"`
 	Port                  int    `mapstructure:"port"`
 	User                  string `mapstructure:"user"`
 	Password              string `mapstructure:"password"`
 	DBName                string `mapstructure:"dbname"`
 	SSLMode               string `mapstructure:"sslmode"`
-	IdlePoolSize          int    `mapstructure:"idle-pool-size"`
 	MaxPoolSize           int    `mapstructure:"max-pool-size"`
 	MinPoolSize           int    `mapstructure:"min-pool-size"`
 	IdlePoolTimeout       string `mapstructure:"idle-pool-timeout"`
@@ -29,19 +28,18 @@ type TDBConfig struct {
 	HealthCheckPeriod     string `mapstructure:"health-check-period"`
 	MaxConnLifetime       string `mapstructure:"max-conn-lifetime"`
 	MaxConnLifetimeJitter string `mapstructure:"max-conn-lifetime-jitter"`
-	PreferSimpleProtocol  bool   `mapstructure:"prefer-simple-protocol"`
 	ConnAttemptTimeout    string `mapstructure:"conn-attempt-timeout"`
 }
 
-var _dbConfig *TDBConfig
+var _dbConfig *DatabaseConfig
 
-// DBConfig loads and returns the database configuration
-func DBConfig() *TDBConfig {
+// Config loads and returns the database configuration
+func Config() *DatabaseConfig {
 	if _dbConfig == nil {
-		_dbConfig = configloader.LoadConfig[TDBConfig](
-			"etc/config/db.yml",
-			os.Getenv("OS_CONFIG_PATH"),
-			"EG_DATABASE")
+		_dbConfig = configloader.LoadConfig[DatabaseConfig](
+			constant.DefaultConfigDbPath,
+			os.Getenv(constant.CustomConfigDbPathEnv),
+			constant.EnvPrefixConfigDB)
 	}
 	return _dbConfig
 }
@@ -56,12 +54,12 @@ func newDBPool() error {
 
 	// Format DSN (Data Source Name)
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
-		DBConfig().User,
-		DBConfig().Password,
-		DBConfig().Host,
-		DBConfig().Port,
-		DBConfig().DBName,
-		DBConfig().SSLMode)
+		Config().User,
+		Config().Password,
+		Config().Host,
+		Config().Port,
+		Config().DBName,
+		Config().SSLMode)
 
 	// Parse pgxpool.Config from DSN
 	poolConfig, err := pgxpool.ParseConfig(dsn)
@@ -70,46 +68,46 @@ func newDBPool() error {
 	}
 
 	// Convert timeout strings to time.Duration
-	if DBConfig().IdlePoolTimeout != "" {
-		poolConfig.MaxConnIdleTime, err = time.ParseDuration(DBConfig().IdlePoolTimeout)
+	if Config().IdlePoolTimeout != "" {
+		poolConfig.MaxConnIdleTime, err = time.ParseDuration(Config().IdlePoolTimeout)
 		if err != nil {
 			return err
 		}
 	}
-	if DBConfig().MaxPoolTimeout != "" {
-		poolConfig.MaxConnLifetime, err = time.ParseDuration(DBConfig().MaxPoolTimeout)
+	if Config().MaxPoolTimeout != "" {
+		poolConfig.MaxConnLifetime, err = time.ParseDuration(Config().MaxPoolTimeout)
 		if err != nil {
 			return err
 		}
 	}
-	if DBConfig().MaxConnLifetime != "" {
-		poolConfig.MaxConnLifetime, err = time.ParseDuration(DBConfig().MaxConnLifetime)
+	if Config().MaxConnLifetime != "" {
+		poolConfig.MaxConnLifetime, err = time.ParseDuration(Config().MaxConnLifetime)
 		if err != nil {
 			return err
 		}
 	}
-	if DBConfig().MaxConnLifetimeJitter != "" {
-		poolConfig.MaxConnLifetimeJitter, err = time.ParseDuration(DBConfig().MaxConnLifetimeJitter)
+	if Config().MaxConnLifetimeJitter != "" {
+		poolConfig.MaxConnLifetimeJitter, err = time.ParseDuration(Config().MaxConnLifetimeJitter)
 		if err != nil {
 			return err
 		}
 	}
-	if DBConfig().HealthCheckPeriod != "" {
-		poolConfig.HealthCheckPeriod, err = time.ParseDuration(DBConfig().HealthCheckPeriod)
+	if Config().HealthCheckPeriod != "" {
+		poolConfig.HealthCheckPeriod, err = time.ParseDuration(Config().HealthCheckPeriod)
 		if err != nil {
 			return err
 		}
 	}
-	if DBConfig().ConnAttemptTimeout != "" {
-		poolConfig.ConnConfig.ConnectTimeout, err = time.ParseDuration(DBConfig().ConnAttemptTimeout)
+	if Config().ConnAttemptTimeout != "" {
+		poolConfig.ConnConfig.ConnectTimeout, err = time.ParseDuration(Config().ConnAttemptTimeout)
 		if err != nil {
 			return err
 		}
 	}
 
 	// Set connection limits
-	poolConfig.MaxConns = int32(DBConfig().MaxPoolSize)
-	poolConfig.MinConns = int32(DBConfig().MinPoolSize)
+	poolConfig.MaxConns = int32(Config().MaxPoolSize)
+	poolConfig.MinConns = int32(Config().MinPoolSize)
 
 	// Initialize connection pool
 	connPool, err := pgxpool.NewWithConfig(context.Background(), poolConfig)
@@ -123,7 +121,7 @@ func newDBPool() error {
 
 func DB() *db.Queries {
 	if err := newDBPool(); err != nil {
-		logger.Logger().Error("Failed to connect to database", zap.Error(err))
+		logger.Log().Error("Failed to connect to database", zap.Error(err))
 	}
 	return _db
 }
@@ -132,7 +130,7 @@ func CloseDB() {
 	if _pool != nil {
 		_pool.Close()
 	}
-	logger.Logger().Info("Closed database connection")
+	logger.Log().Info("Closed database connection")
 }
 
 func PingDB() {
@@ -143,9 +141,8 @@ func PingDB() {
 	}
 	err := _pool.Ping(ctx)
 	if err != nil {
-		logger.Logger().Error("Unable to ping database", zap.Error(err))
+		logger.Log().Error("Unable to ping database", zap.Error(err))
 	} else {
-		logger.Logger().Info(
-			"Ping database successful")
+		logger.Log().Info("Ping database successful")
 	}
 }

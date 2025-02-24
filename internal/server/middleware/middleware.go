@@ -3,23 +3,24 @@ package middleware
 import (
 	"e-gourmet/core/internal/middlewares/cors"
 	"e-gourmet/core/internal/middlewares/storage"
+	"e-gourmet/core/internal/server/constant"
 	"e-gourmet/core/pkg/configloader"
 	"os"
 )
 
-type TMiddlewareConfig struct {
-	Cors    cors.TCorsConfig       `mapstructure:"cors"`
-	Storage storage.TStorageConfig `mapstructure:"storage"`
+type MiddlewareConfig struct {
+	Cors    cors.CorsConfig       `mapstructure:"cors"`
+	Storage storage.StorageConfig `mapstructure:"storage"`
 }
 
-var _middlewareConfig *TMiddlewareConfig
+var _middlewareConfig *MiddlewareConfig
 
-func MiddlewareConfig() *TMiddlewareConfig {
+func Config() *MiddlewareConfig {
 	if _middlewareConfig == nil {
-		_middlewareConfig = configloader.LoadConfig[TMiddlewareConfig](
-			"etc/config/middleware.yml",
-			os.Getenv("MIDDLEWARE_CONFIG_PATH"),
-			"EG_MIDDLEWARE",
+		_middlewareConfig = configloader.LoadConfig[MiddlewareConfig](
+			constant.DefaultConfigMiddlewarePath,
+			os.Getenv(constant.CustomConfigMiddlewarePathEnv),
+			constant.EnvPrefixConfigMiddleware,
 		)
 	}
 	return _middlewareConfig

@@ -6,7 +6,8 @@ import (
 )
 
 func GetProfileList(ctx *fiber.Ctx) error {
-	profiles, err := services.GetProfileList()
+	p := services.PService{}
+	profiles, err := p.GetListProfiles()
 	if err != nil {
 		return err
 	}

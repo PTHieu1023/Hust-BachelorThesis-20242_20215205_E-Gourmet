@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"e-gourmet/core/internal/server/constant"
 	"e-gourmet/core/pkg/configloader"
 	"e-gourmet/core/pkg/logger"
 	"fmt"
@@ -9,7 +10,7 @@ import (
 	"os"
 )
 
-type TLoggerConfig struct {
+type LoggerConfig struct {
 	Enable    bool   `mapstructure:"enable"`
 	Level     string `mapstructure:"level"`
 	FileName  string `mapstructure:"filename"`
@@ -21,41 +22,39 @@ type TLoggerConfig struct {
 	Compress  bool   `mapstructure:"compress"`
 }
 
-var _loggerConfig *TLoggerConfig
+var _loggerConfig *LoggerConfig
 
-func Config() *TLoggerConfig {
+func Config() *LoggerConfig {
 	if _loggerConfig == nil {
-		_loggerConfig = configloader.LoadConfig[TLoggerConfig](
-			"etc/config/logger.yml",
-			os.Getenv("LOGGER_CONFIG_FILE"),
-			"EG_LOGGER")
+		_loggerConfig = configloader.LoadConfig[LoggerConfig](
+			constant.DefaultConfigLoggerPath,
+			os.Getenv(constant.CustomConfigLoggerPathEnv),
+			constant.EnvPrefixConfigLogger)
 	}
 	return _loggerConfig
 }
 
 func newLogger() *zap.Logger {
+	var logg *lumberjack.Logger = nil
 	if Config().Enable {
-		return logger.NewLogger(
-			Config().Level,
-			&lumberjack.Logger{
-				Filename:   fmt.Sprintf("%s/%s-%d.log", Config().DirPath, Config().FileName, os.Getpid()),
-				MaxSize:    Config().MaxSize,
-				MaxAge:     Config().MaxAge,
-				MaxBackups: Config().MaxBackup,
-				LocalTime:  Config().LocalTime,
-				Compress:   Config().Compress,
-			},
-		)
+		logg = &lumberjack.Logger{
+			Filename:   fmt.Sprintf("%s/%s-%d.log", Config().DirPath, Config().FileName, os.Getpid()),
+			MaxSize:    Config().MaxSize,
+			MaxAge:     Config().MaxAge,
+			MaxBackups: Config().MaxBackup,
+			LocalTime:  Config().LocalTime,
+			Compress:   Config().Compress,
+		}
 	}
-	return logger.NewLogger(Config().Level, nil)
+	return logger.NewLogger(Config().Level, logg)
 }
 
 var _logger *zap.Logger
 
-func Logger() *zap.Logger {
+func Log() *zap.Logger {
 	if _logger == nil {
 		_logger = newLogger()
-		Logger().Info("Initiated logger")
+		Log().Info("Initiated logger")
 	}
 	return _logger
 }
