@@ -3,7 +3,7 @@
 //   sqlc v1.28.0
 // source: users.sql
 
-package repository
+package db
 
 import (
 	"context"
@@ -20,9 +20,6 @@ type CreateUserParams struct {
 	Dob pgtype.Date `json:"dob"`
 }
 
-// CreateUser
-//
-//	INSERT INTO users (id, dob) VALUES ($1, $2) RETURNING id, dob, created_at, updated_at
 func (q *Queries) CreateUser(ctx context.Context, db DBTX, arg *CreateUserParams) (User, error) {
 	row := db.QueryRow(ctx, createUser, arg.ID, arg.Dob)
 	var i User
@@ -39,9 +36,6 @@ const deleteUser = `-- name: DeleteUser :exec
 DELETE FROM users WHERE id = $1
 `
 
-// DeleteUser
-//
-//	DELETE FROM users WHERE id = $1
 func (q *Queries) DeleteUser(ctx context.Context, db DBTX, id string) error {
 	_, err := db.Exec(ctx, deleteUser, id)
 	return err
@@ -51,9 +45,6 @@ const getUserByID = `-- name: GetUserByID :one
 SELECT id, dob, created_at, updated_at FROM users WHERE id = $1
 `
 
-// GetUserByID
-//
-//	SELECT id, dob, created_at, updated_at FROM users WHERE id = $1
 func (q *Queries) GetUserByID(ctx context.Context, db DBTX, id string) (User, error) {
 	row := db.QueryRow(ctx, getUserByID, id)
 	var i User
@@ -75,9 +66,6 @@ type ListUsersParams struct {
 	Offset int32 `json:"offset"`
 }
 
-// ListUsers
-//
-//	SELECT id, dob, created_at, updated_at FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2
 func (q *Queries) ListUsers(ctx context.Context, db DBTX, arg *ListUsersParams) ([]User, error) {
 	rows, err := db.Query(ctx, listUsers, arg.Limit, arg.Offset)
 	if err != nil {
@@ -112,9 +100,6 @@ type UpdateUserParams struct {
 	Dob pgtype.Date `json:"dob"`
 }
 
-// UpdateUser
-//
-//	UPDATE users SET dob = $2, updated_at = now() WHERE id = $1
 func (q *Queries) UpdateUser(ctx context.Context, db DBTX, arg *UpdateUserParams) error {
 	_, err := db.Exec(ctx, updateUser, arg.ID, arg.Dob)
 	return err

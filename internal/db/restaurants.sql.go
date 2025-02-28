@@ -3,7 +3,7 @@
 //   sqlc v1.28.0
 // source: restaurants.sql
 
-package repository
+package db
 
 import (
 	"context"
@@ -19,10 +19,6 @@ type CreateRestaurantParams struct {
 	OperatingHours *string `json:"operatingHours"`
 }
 
-// CreateRestaurant
-//
-//	INSERT INTO restaurants (id, operating_hours)
-//	VALUES ($1, $2) RETURNING id, operating_hours, created_at, updated_at
 func (q *Queries) CreateRestaurant(ctx context.Context, db DBTX, arg *CreateRestaurantParams) (Restaurant, error) {
 	row := db.QueryRow(ctx, createRestaurant, arg.ID, arg.OperatingHours)
 	var i Restaurant
@@ -39,9 +35,6 @@ const deleteRestaurant = `-- name: DeleteRestaurant :exec
 DELETE FROM restaurants WHERE id = $1
 `
 
-// DeleteRestaurant
-//
-//	DELETE FROM restaurants WHERE id = $1
 func (q *Queries) DeleteRestaurant(ctx context.Context, db DBTX, id string) error {
 	_, err := db.Exec(ctx, deleteRestaurant, id)
 	return err
@@ -51,9 +44,6 @@ const getRestaurantByID = `-- name: GetRestaurantByID :one
 SELECT id, operating_hours, created_at, updated_at FROM restaurants WHERE id = $1
 `
 
-// GetRestaurantByID
-//
-//	SELECT id, operating_hours, created_at, updated_at FROM restaurants WHERE id = $1
 func (q *Queries) GetRestaurantByID(ctx context.Context, db DBTX, id string) (Restaurant, error) {
 	row := db.QueryRow(ctx, getRestaurantByID, id)
 	var i Restaurant
@@ -75,9 +65,6 @@ type ListRestaurantsParams struct {
 	Offset int32 `json:"offset"`
 }
 
-// ListRestaurants
-//
-//	SELECT id, operating_hours, created_at, updated_at FROM restaurants ORDER BY created_at DESC LIMIT $1 OFFSET $2
 func (q *Queries) ListRestaurants(ctx context.Context, db DBTX, arg *ListRestaurantsParams) ([]Restaurant, error) {
 	rows, err := db.Query(ctx, listRestaurants, arg.Limit, arg.Offset)
 	if err != nil {
@@ -112,9 +99,6 @@ type UpdateRestaurantParams struct {
 	OperatingHours *string `json:"operatingHours"`
 }
 
-// UpdateRestaurant
-//
-//	UPDATE restaurants SET operating_hours = $2, updated_at = now() WHERE id = $1
 func (q *Queries) UpdateRestaurant(ctx context.Context, db DBTX, arg *UpdateRestaurantParams) error {
 	_, err := db.Exec(ctx, updateRestaurant, arg.ID, arg.OperatingHours)
 	return err

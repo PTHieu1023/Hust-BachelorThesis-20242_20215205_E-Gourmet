@@ -2,41 +2,56 @@ package services
 
 import (
 	"context"
-	"e-gourmet/core/internal/repository"
+	"e-gourmet/core/internal/db"
 	"e-gourmet/core/internal/server/database"
 	"e-gourmet/core/pkg/pagination"
 	"time"
 )
 
-type IProfileService interface {
-	CreateProfile(params repository.CreateProfileParams) (repository.Profile, error)
-	UpdateProfile(params repository.UpdateProfileParams) (repository.Profile, error)
-	GetProfileById(id string) (repository.Profile, error)
-	GetListProfiles(filter pagination.PageFilter) (pagination.Pagination[repository.Profile], error)
-	DeleteProfileById(id string) error
+type ProfileServiceV1 struct {
+	queries *db.Queries
 }
 
-type PService struct {
-	querier repository.Querier
+func NewProfileServiceV1(queries *db.Queries) IProfileService {
+	return &ProfileServiceV1{queries: queries}
 }
 
-func NewProfileService(querier repository.Querier) PService {
-	return PService{
-		querier: querier,
+func (p *ProfileServiceV1) CreateProfile(params db.CreateProfileParams) (db.Profile, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (p *ProfileServiceV1) UpdateProfile(params db.UpdateProfileParams) (db.Profile, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (p *ProfileServiceV1) GetProfileById(id string) (db.Profile, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (p *ProfileServiceV1) DeleteProfileById(id string) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (p *ProfileServiceV1) GetListProfiles(filter *pagination.PageFilter) (pagination.Pagination[db.Profile], error) {
+	dbtx, err := database.DBConn()
+	if err != nil {
+		return pagination.Pagination[db.Profile]{}, err
 	}
-}
-
-func (p *PService) GetListProfiles() (pagination.Pagination[repository.Profile], error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	profiles, err := p.querier.ListProfiles(ctx, database.DBConn(), &repository.ListProfilesParams{
+
+	profiles, err := p.queries.ListProfiles(ctx, dbtx, &db.ListProfilesParams{
 		Limit:  10,
 		Offset: 0,
 	})
 	if err != nil {
-		return pagination.Pagination[repository.Profile]{}, err
+		return pagination.Pagination[db.Profile]{}, err
 	}
-	res := pagination.Pagination[repository.Profile]{
+	res := pagination.Pagination[db.Profile]{
 		Page:       1,
 		Size:       10,
 		Count:      1,

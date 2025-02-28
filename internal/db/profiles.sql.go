@@ -3,7 +3,7 @@
 //   sqlc v1.28.0
 // source: profiles.sql
 
-package repository
+package db
 
 import (
 	"context"
@@ -33,14 +33,6 @@ type CreateProfileParams struct {
 	Enable        *bool    `json:"enable"`
 }
 
-// CreateProfile
-//
-//	INSERT INTO profiles (
-//	    profile_type, tag_name, name, email, phone_number, avatar_url, biography,
-//	    detail_address, local_address, lat, lng, enable
-//	) VALUES (
-//	             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
-//	         ) RETURNING id, profile_type, tag_name, name, email, phone_number, avatar_url, biography, detail_address, local_address, lat, lng, created_at, updated_at, enable
 func (q *Queries) CreateProfile(ctx context.Context, db DBTX, arg *CreateProfileParams) (Profile, error) {
 	row := db.QueryRow(ctx, createProfile,
 		arg.ProfileType,
@@ -81,9 +73,6 @@ const deleteProfile = `-- name: DeleteProfile :exec
 DELETE FROM profiles WHERE id = $1
 `
 
-// DeleteProfile
-//
-//	DELETE FROM profiles WHERE id = $1
 func (q *Queries) DeleteProfile(ctx context.Context, db DBTX, id string) error {
 	_, err := db.Exec(ctx, deleteProfile, id)
 	return err
@@ -93,9 +82,6 @@ const getProfileByID = `-- name: GetProfileByID :one
 SELECT id, profile_type, tag_name, name, email, phone_number, avatar_url, biography, detail_address, local_address, lat, lng, created_at, updated_at, enable FROM profiles WHERE id = $1
 `
 
-// GetProfileByID
-//
-//	SELECT id, profile_type, tag_name, name, email, phone_number, avatar_url, biography, detail_address, local_address, lat, lng, created_at, updated_at, enable FROM profiles WHERE id = $1
 func (q *Queries) GetProfileByID(ctx context.Context, db DBTX, id string) (Profile, error) {
 	row := db.QueryRow(ctx, getProfileByID, id)
 	var i Profile
@@ -128,9 +114,6 @@ type ListProfilesParams struct {
 	Offset int32 `json:"offset"`
 }
 
-// ListProfiles
-//
-//	SELECT id, profile_type, tag_name, name, email, phone_number, avatar_url, biography, detail_address, local_address, lat, lng, created_at, updated_at, enable FROM profiles ORDER BY created_at DESC LIMIT $1 OFFSET $2
 func (q *Queries) ListProfiles(ctx context.Context, db DBTX, arg *ListProfilesParams) ([]Profile, error) {
 	rows, err := db.Query(ctx, listProfiles, arg.Limit, arg.Offset)
 	if err != nil {
@@ -188,12 +171,6 @@ type UpdateProfileParams struct {
 	Enable        *bool    `json:"enable"`
 }
 
-// UpdateProfile
-//
-//	UPDATE profiles
-//	SET name = $2, email = $3, phone_number = $4, avatar_url = $5, biography = $6,
-//	    detail_address = $7, local_address = $8, lat = $9, lng = $10, updated_at = now(), enable = $11
-//	WHERE id = $1
 func (q *Queries) UpdateProfile(ctx context.Context, db DBTX, arg *UpdateProfileParams) error {
 	_, err := db.Exec(ctx, updateProfile,
 		arg.ID,

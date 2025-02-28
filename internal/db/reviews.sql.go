@@ -3,7 +3,7 @@
 //   sqlc v1.28.0
 // source: reviews.sql
 
-package repository
+package db
 
 import (
 	"context"
@@ -21,10 +21,6 @@ type CreateReviewParams struct {
 	Rate         *int32  `json:"rate"`
 }
 
-// CreateReview
-//
-//	INSERT INTO reviews (restaurant_id, content, author, rate)
-//	VALUES ($1, $2, $3, $4) RETURNING id, restaurant_id, content, author, rate, created_at, updated_at
 func (q *Queries) CreateReview(ctx context.Context, db DBTX, arg *CreateReviewParams) (Review, error) {
 	row := db.QueryRow(ctx, createReview,
 		arg.RestaurantID,
@@ -49,9 +45,6 @@ const deleteReview = `-- name: DeleteReview :exec
 DELETE FROM reviews WHERE id = $1
 `
 
-// DeleteReview
-//
-//	DELETE FROM reviews WHERE id = $1
 func (q *Queries) DeleteReview(ctx context.Context, db DBTX, id int32) error {
 	_, err := db.Exec(ctx, deleteReview, id)
 	return err
@@ -61,9 +54,6 @@ const getReviewByID = `-- name: GetReviewByID :one
 SELECT id, restaurant_id, content, author, rate, created_at, updated_at FROM reviews WHERE id = $1
 `
 
-// GetReviewByID
-//
-//	SELECT id, restaurant_id, content, author, rate, created_at, updated_at FROM reviews WHERE id = $1
 func (q *Queries) GetReviewByID(ctx context.Context, db DBTX, id int32) (Review, error) {
 	row := db.QueryRow(ctx, getReviewByID, id)
 	var i Review
@@ -89,9 +79,6 @@ type ListReviewsByRestaurantParams struct {
 	Offset       int32   `json:"offset"`
 }
 
-// ListReviewsByRestaurant
-//
-//	SELECT id, restaurant_id, content, author, rate, created_at, updated_at FROM reviews WHERE restaurant_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3
 func (q *Queries) ListReviewsByRestaurant(ctx context.Context, db DBTX, arg *ListReviewsByRestaurantParams) ([]Review, error) {
 	rows, err := db.Query(ctx, listReviewsByRestaurant, arg.RestaurantID, arg.Limit, arg.Offset)
 	if err != nil {
@@ -130,9 +117,6 @@ type UpdateReviewParams struct {
 	Rate    *int32  `json:"rate"`
 }
 
-// UpdateReview
-//
-//	UPDATE reviews SET content = $2, rate = $3, updated_at = now() WHERE id = $1
 func (q *Queries) UpdateReview(ctx context.Context, db DBTX, arg *UpdateReviewParams) error {
 	_, err := db.Exec(ctx, updateReview, arg.ID, arg.Content, arg.Rate)
 	return err

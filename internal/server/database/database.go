@@ -45,8 +45,10 @@ func Config() *DatabaseConfig {
 
 var _pool *pgxpool.Pool
 
-func newDBPool() (*pgxpool.Pool, error) {
-
+func DBConn() (*pgxpool.Pool, error) {
+	if _pool != nil {
+		return _pool, nil
+	}
 	// Format DSN (Data Source Name)
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
 		Config().User,
@@ -109,18 +111,8 @@ func newDBPool() (*pgxpool.Pool, error) {
 	if err != nil {
 		return nil, err
 	}
-	return connPool, nil
-}
-
-func DBConn() *pgxpool.Pool {
-	if _pool == nil {
-		pool, err := newDBPool()
-		if err != nil {
-			logger.Log().Error("Failed to connect to database", zap.Error(err))
-		}
-		_pool = pool
-	}
-	return _pool
+	_pool = connPool
+	return _pool, nil
 }
 
 func CloseDB() {
@@ -133,8 +125,9 @@ func CloseDB() {
 func PingDB() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	err := DBConn().Ping(ctx)
-	if err != nil {
+	dbtx, _ := DBConn()
+
+	if err := dbtx.Ping(ctx); err != nil {
 		logger.Log().Error("Unable to ping database", zap.Error(err))
 	} else {
 		logger.Log().Info("Ping database successful")

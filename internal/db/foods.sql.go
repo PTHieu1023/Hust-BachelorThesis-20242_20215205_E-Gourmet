@@ -3,7 +3,7 @@
 //   sqlc v1.28.0
 // source: foods.sql
 
-package repository
+package db
 
 import (
 	"context"
@@ -21,10 +21,6 @@ type CreateFoodParams struct {
 	Price        int32   `json:"price"`
 }
 
-// CreateFood
-//
-//	INSERT INTO foods (restaurant_id, name, description, price)
-//	VALUES ($1, $2, $3, $4) RETURNING id, restaurant_id, name, description, price, updated_at
 func (q *Queries) CreateFood(ctx context.Context, db DBTX, arg *CreateFoodParams) (Food, error) {
 	row := db.QueryRow(ctx, createFood,
 		arg.RestaurantID,
@@ -48,9 +44,6 @@ const deleteFood = `-- name: DeleteFood :exec
 DELETE FROM foods WHERE id = $1
 `
 
-// DeleteFood
-//
-//	DELETE FROM foods WHERE id = $1
 func (q *Queries) DeleteFood(ctx context.Context, db DBTX, id string) error {
 	_, err := db.Exec(ctx, deleteFood, id)
 	return err
@@ -60,9 +53,6 @@ const getFoodByID = `-- name: GetFoodByID :one
 SELECT id, restaurant_id, name, description, price, updated_at FROM foods WHERE id = $1
 `
 
-// GetFoodByID
-//
-//	SELECT id, restaurant_id, name, description, price, updated_at FROM foods WHERE id = $1
 func (q *Queries) GetFoodByID(ctx context.Context, db DBTX, id string) (Food, error) {
 	row := db.QueryRow(ctx, getFoodByID, id)
 	var i Food
@@ -87,9 +77,6 @@ type ListFoodsByRestaurantParams struct {
 	Offset       int32  `json:"offset"`
 }
 
-// ListFoodsByRestaurant
-//
-//	SELECT id, restaurant_id, name, description, price, updated_at FROM foods WHERE restaurant_id = $1 ORDER BY updated_at DESC LIMIT $2 OFFSET $3
 func (q *Queries) ListFoodsByRestaurant(ctx context.Context, db DBTX, arg *ListFoodsByRestaurantParams) ([]Food, error) {
 	rows, err := db.Query(ctx, listFoodsByRestaurant, arg.RestaurantID, arg.Limit, arg.Offset)
 	if err != nil {
@@ -128,9 +115,6 @@ type UpdateFoodParams struct {
 	Price       int32   `json:"price"`
 }
 
-// UpdateFood
-//
-//	UPDATE foods SET name = $2, description = $3, price = $4, updated_at = now() WHERE id = $1
 func (q *Queries) UpdateFood(ctx context.Context, db DBTX, arg *UpdateFoodParams) error {
 	_, err := db.Exec(ctx, updateFood,
 		arg.ID,
