@@ -3,7 +3,7 @@
 //   sqlc v1.28.0
 // source: users.sql
 
-package db
+package repository
 
 import (
 	"context"
@@ -16,12 +16,15 @@ INSERT INTO users (id, dob) VALUES ($1, $2) RETURNING id, dob, created_at, updat
 `
 
 type CreateUserParams struct {
-	ID  string
-	Dob pgtype.Date
+	ID  string      `json:"id"`
+	Dob pgtype.Date `json:"dob"`
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRow(ctx, createUser, arg.ID, arg.Dob)
+// CreateUser
+//
+//	INSERT INTO users (id, dob) VALUES ($1, $2) RETURNING id, dob, created_at, updated_at
+func (q *Queries) CreateUser(ctx context.Context, db DBTX, arg *CreateUserParams) (User, error) {
+	row := db.QueryRow(ctx, createUser, arg.ID, arg.Dob)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -36,8 +39,11 @@ const deleteUser = `-- name: DeleteUser :exec
 DELETE FROM users WHERE id = $1
 `
 
-func (q *Queries) DeleteUser(ctx context.Context, id string) error {
-	_, err := q.db.Exec(ctx, deleteUser, id)
+// DeleteUser
+//
+//	DELETE FROM users WHERE id = $1
+func (q *Queries) DeleteUser(ctx context.Context, db DBTX, id string) error {
+	_, err := db.Exec(ctx, deleteUser, id)
 	return err
 }
 
@@ -45,8 +51,11 @@ const getUserByID = `-- name: GetUserByID :one
 SELECT id, dob, created_at, updated_at FROM users WHERE id = $1
 `
 
-func (q *Queries) GetUserByID(ctx context.Context, id string) (User, error) {
-	row := q.db.QueryRow(ctx, getUserByID, id)
+// GetUserByID
+//
+//	SELECT id, dob, created_at, updated_at FROM users WHERE id = $1
+func (q *Queries) GetUserByID(ctx context.Context, db DBTX, id string) (User, error) {
+	row := db.QueryRow(ctx, getUserByID, id)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -62,12 +71,15 @@ SELECT id, dob, created_at, updated_at FROM users ORDER BY created_at DESC LIMIT
 `
 
 type ListUsersParams struct {
-	Limit  int32
-	Offset int32
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
 }
 
-func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error) {
-	rows, err := q.db.Query(ctx, listUsers, arg.Limit, arg.Offset)
+// ListUsers
+//
+//	SELECT id, dob, created_at, updated_at FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2
+func (q *Queries) ListUsers(ctx context.Context, db DBTX, arg *ListUsersParams) ([]User, error) {
+	rows, err := db.Query(ctx, listUsers, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -96,11 +108,14 @@ UPDATE users SET dob = $2, updated_at = now() WHERE id = $1
 `
 
 type UpdateUserParams struct {
-	ID  string
-	Dob pgtype.Date
+	ID  string      `json:"id"`
+	Dob pgtype.Date `json:"dob"`
 }
 
-func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
-	_, err := q.db.Exec(ctx, updateUser, arg.ID, arg.Dob)
+// UpdateUser
+//
+//	UPDATE users SET dob = $2, updated_at = now() WHERE id = $1
+func (q *Queries) UpdateUser(ctx context.Context, db DBTX, arg *UpdateUserParams) error {
+	_, err := db.Exec(ctx, updateUser, arg.ID, arg.Dob)
 	return err
 }

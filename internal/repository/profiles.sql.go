@@ -3,12 +3,10 @@
 //   sqlc v1.28.0
 // source: profiles.sql
 
-package db
+package repository
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createProfile = `-- name: CreateProfile :one
@@ -21,22 +19,30 @@ INSERT INTO profiles (
 `
 
 type CreateProfileParams struct {
-	ProfileType   pgtype.Text
-	TagName       string
-	Name          string
-	Email         string
-	PhoneNumber   pgtype.Text
-	AvatarUrl     pgtype.Text
-	Biography     pgtype.Text
-	DetailAddress pgtype.Text
-	LocalAddress  pgtype.Text
-	Lat           pgtype.Float8
-	Lng           pgtype.Float8
-	Enable        pgtype.Bool
+	ProfileType   *string  `json:"profileType"`
+	TagName       string   `json:"tagName"`
+	Name          string   `json:"name"`
+	Email         string   `json:"email"`
+	PhoneNumber   *string  `json:"phoneNumber"`
+	AvatarUrl     *string  `json:"avatarUrl"`
+	Biography     *string  `json:"biography"`
+	DetailAddress *string  `json:"detailAddress"`
+	LocalAddress  *string  `json:"localAddress"`
+	Lat           *float64 `json:"lat"`
+	Lng           *float64 `json:"lng"`
+	Enable        *bool    `json:"enable"`
 }
 
-func (q *Queries) CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error) {
-	row := q.db.QueryRow(ctx, createProfile,
+// CreateProfile
+//
+//	INSERT INTO profiles (
+//	    profile_type, tag_name, name, email, phone_number, avatar_url, biography,
+//	    detail_address, local_address, lat, lng, enable
+//	) VALUES (
+//	             $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
+//	         ) RETURNING id, profile_type, tag_name, name, email, phone_number, avatar_url, biography, detail_address, local_address, lat, lng, created_at, updated_at, enable
+func (q *Queries) CreateProfile(ctx context.Context, db DBTX, arg *CreateProfileParams) (Profile, error) {
+	row := db.QueryRow(ctx, createProfile,
 		arg.ProfileType,
 		arg.TagName,
 		arg.Name,
@@ -75,8 +81,11 @@ const deleteProfile = `-- name: DeleteProfile :exec
 DELETE FROM profiles WHERE id = $1
 `
 
-func (q *Queries) DeleteProfile(ctx context.Context, id string) error {
-	_, err := q.db.Exec(ctx, deleteProfile, id)
+// DeleteProfile
+//
+//	DELETE FROM profiles WHERE id = $1
+func (q *Queries) DeleteProfile(ctx context.Context, db DBTX, id string) error {
+	_, err := db.Exec(ctx, deleteProfile, id)
 	return err
 }
 
@@ -84,8 +93,11 @@ const getProfileByID = `-- name: GetProfileByID :one
 SELECT id, profile_type, tag_name, name, email, phone_number, avatar_url, biography, detail_address, local_address, lat, lng, created_at, updated_at, enable FROM profiles WHERE id = $1
 `
 
-func (q *Queries) GetProfileByID(ctx context.Context, id string) (Profile, error) {
-	row := q.db.QueryRow(ctx, getProfileByID, id)
+// GetProfileByID
+//
+//	SELECT id, profile_type, tag_name, name, email, phone_number, avatar_url, biography, detail_address, local_address, lat, lng, created_at, updated_at, enable FROM profiles WHERE id = $1
+func (q *Queries) GetProfileByID(ctx context.Context, db DBTX, id string) (Profile, error) {
+	row := db.QueryRow(ctx, getProfileByID, id)
 	var i Profile
 	err := row.Scan(
 		&i.ID,
@@ -112,12 +124,15 @@ SELECT id, profile_type, tag_name, name, email, phone_number, avatar_url, biogra
 `
 
 type ListProfilesParams struct {
-	Limit  int32
-	Offset int32
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
 }
 
-func (q *Queries) ListProfiles(ctx context.Context, arg ListProfilesParams) ([]Profile, error) {
-	rows, err := q.db.Query(ctx, listProfiles, arg.Limit, arg.Offset)
+// ListProfiles
+//
+//	SELECT id, profile_type, tag_name, name, email, phone_number, avatar_url, biography, detail_address, local_address, lat, lng, created_at, updated_at, enable FROM profiles ORDER BY created_at DESC LIMIT $1 OFFSET $2
+func (q *Queries) ListProfiles(ctx context.Context, db DBTX, arg *ListProfilesParams) ([]Profile, error) {
+	rows, err := db.Query(ctx, listProfiles, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -160,21 +175,27 @@ WHERE id = $1
 `
 
 type UpdateProfileParams struct {
-	ID            string
-	Name          string
-	Email         string
-	PhoneNumber   pgtype.Text
-	AvatarUrl     pgtype.Text
-	Biography     pgtype.Text
-	DetailAddress pgtype.Text
-	LocalAddress  pgtype.Text
-	Lat           pgtype.Float8
-	Lng           pgtype.Float8
-	Enable        pgtype.Bool
+	ID            string   `json:"id"`
+	Name          string   `json:"name"`
+	Email         string   `json:"email"`
+	PhoneNumber   *string  `json:"phoneNumber"`
+	AvatarUrl     *string  `json:"avatarUrl"`
+	Biography     *string  `json:"biography"`
+	DetailAddress *string  `json:"detailAddress"`
+	LocalAddress  *string  `json:"localAddress"`
+	Lat           *float64 `json:"lat"`
+	Lng           *float64 `json:"lng"`
+	Enable        *bool    `json:"enable"`
 }
 
-func (q *Queries) UpdateProfile(ctx context.Context, arg UpdateProfileParams) error {
-	_, err := q.db.Exec(ctx, updateProfile,
+// UpdateProfile
+//
+//	UPDATE profiles
+//	SET name = $2, email = $3, phone_number = $4, avatar_url = $5, biography = $6,
+//	    detail_address = $7, local_address = $8, lat = $9, lng = $10, updated_at = now(), enable = $11
+//	WHERE id = $1
+func (q *Queries) UpdateProfile(ctx context.Context, db DBTX, arg *UpdateProfileParams) error {
+	_, err := db.Exec(ctx, updateProfile,
 		arg.ID,
 		arg.Name,
 		arg.Email,

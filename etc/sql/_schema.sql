@@ -1,25 +1,10 @@
--- DROP TABLE profile_type CASCADE;
--- DROP TABLE profiles CASCADE;
--- DROP TABLE users CASCADE;
--- DROP TABLE restaurants CASCADE;
--- DROP TABLE tag CASCADE;
--- DROP TABLE user_tag CASCADE;
--- DROP TABLE restaurant_tag CASCADE;
--- DROP TABLE restaurant_manager CASCADE;
--- DROP TABLE foods CASCADE;
--- DROP TABLE food_tag CASCADE;
--- DROP TABLE reviews CASCADE;
--- DROP TABLE food_reviews CASCADE;
--- DROP TABLE posts CASCADE;
--- DROP TABLE post_comments CASCADE;
-
 CREATE TABLE "profile_type" (
-                                "code" character(64) PRIMARY KEY
+                            "code" varchar(64) PRIMARY KEY
 );
 
 CREATE TABLE "profiles" (
-                            "id" character(64) PRIMARY KEY DEFAULT gen_random_uuid(),
-                            "profile_type" character(64),
+                            "id" varchar(64) PRIMARY KEY DEFAULT gen_random_uuid(),
+                            "profile_type" varchar(64),
                             "tag_name" varchar(64) UNIQUE NOT NULL,
                             "name" varchar(256) NOT NULL,
                             "email" varchar(256) UNIQUE NOT NULL,
@@ -36,14 +21,14 @@ CREATE TABLE "profiles" (
 );
 
 CREATE TABLE "users" (
-                         "id" character(64) PRIMARY KEY,
+                         "id" varchar(64) PRIMARY KEY,
                          "dob" date,
                          "created_at" timestamp DEFAULT (now()),
                          "updated_at" timestamp DEFAULT (now())
 );
 
 CREATE TABLE "restaurants" (
-                               "id" character(64) PRIMARY KEY,
+                               "id" varchar(64) PRIMARY KEY,
                                "operating_hours" varchar(256),
                                "created_at" timestamp DEFAULT (now()),
                                "updated_at" timestamp DEFAULT (now())
@@ -59,30 +44,30 @@ CREATE TABLE "tag" (
 );
 
 CREATE TABLE "user_tag" (
-                            "user_id" character(64) NOT NULL,
+                            "user_id" varchar(64) NOT NULL,
                             "tag_id" int NOT NULL,
                             PRIMARY KEY ("user_id", "tag_id")
 );
 
 CREATE TABLE "restaurant_tag" (
-                                  "restaurant_id" character(64) NOT NULL,
+                                  "restaurant_id" varchar(64) NOT NULL,
                                   "tag_id" int NOT NULL,
                                   PRIMARY KEY ("restaurant_id", "tag_id")
 );
 
 CREATE TABLE "restaurant_manager" (
                                       "is_owner" bool,
-                                      "user_id" character(64),
-                                      "restaurant_id" character(64),
+                                      "user_id" varchar(64),
+                                      "restaurant_id" varchar(64),
                                       PRIMARY KEY ("restaurant_id", "user_id")
 );
 
 CREATE TABLE "foods" (
-                         "id" character(64) PRIMARY KEY DEFAULT gen_random_uuid(),
-                         "restaurant_id" character(64) NOT NULL,
+                         "id" varchar(64) PRIMARY KEY DEFAULT gen_random_uuid(),
+                         "restaurant_id" varchar(64) NOT NULL,
                          "name" varchar(512) NOT NULL,
                          "description" text,
-                         "price" decimal NOT NULL DEFAULT 0,
+                         "price" integer NOT NULL DEFAULT 0 CHECK ( price >= 0 ),
                          "updated_at" timestamp DEFAULT (now())
 );
 
@@ -91,14 +76,14 @@ CREATE TABLE "food_tag" (
                             "name" varchar(512),
                             "brief_description" varchar(1024),
                             "tag_id" int,
-                            "food_id" character(64)
+                            "food_id" varchar(64)
 );
 
 CREATE TABLE "reviews" (
                            "id" serial PRIMARY KEY,
-                           "restaurant_id" character(64),
+                           "restaurant_id" varchar(64),
                            "content" text,
-                           "author" character(64),
+                           "author" varchar(64),
                            "rate" integer DEFAULT 5,
                            "created_at" timestamp DEFAULT (now()),
                            "updated_at" timestamp DEFAULT (now())
@@ -106,14 +91,14 @@ CREATE TABLE "reviews" (
 
 CREATE TABLE "food_reviews" (
                                 "review_id" integer,
-                                "dish_id" character(64),
+                                "dish_id" varchar(64),
                                 PRIMARY KEY ("review_id", "dish_id")
 );
 
 CREATE TABLE "posts" (
                          "id" serial PRIMARY KEY,
-                         "author_id" character(64),
-                         "checkin_restaurant_id" character(64),
+                         "author_id" varchar(64),
+                         "checkin_restaurant_id" varchar(64),
                          "content" text,
                          "created_at" timestamp DEFAULT (now()),
                          "updated_at" timestamp DEFAULT (now())
@@ -123,7 +108,7 @@ CREATE TABLE "post_comments" (
                                  "id" serial PRIMARY KEY,
                                  "ref_to_comment_id" integer,
                                  "post_id" integer,
-                                 "author_id" character(64),
+                                 "author_id" varchar(64),
                                  "content" text,
                                  "created_at" timestamp DEFAULT (now()),
                                  "updated_at" timestamp DEFAULT (now())

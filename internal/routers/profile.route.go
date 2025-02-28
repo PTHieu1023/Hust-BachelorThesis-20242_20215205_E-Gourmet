@@ -1,7 +1,7 @@
 package routers
 
 import (
-	"e-gourmet/core/internal/handlers"
+	"e-gourmet/core/internal/controllers"
 	"e-gourmet/core/internal/server/fiber"
 )
 
@@ -11,5 +11,5 @@ func AssignProfileService() {
 
 func assignHttpEndpoint() {
 	fiber.App().Group("/api/profile").
-		Get("/", handlers.GetProfileList)
+		Get("/", controllers.GetProfileList)
 }

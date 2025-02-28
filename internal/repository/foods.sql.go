@@ -3,12 +3,10 @@
 //   sqlc v1.28.0
 // source: foods.sql
 
-package db
+package repository
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createFood = `-- name: CreateFood :one
@@ -17,14 +15,18 @@ VALUES ($1, $2, $3, $4) RETURNING id, restaurant_id, name, description, price, u
 `
 
 type CreateFoodParams struct {
-	RestaurantID string
-	Name         string
-	Description  pgtype.Text
-	Price        pgtype.Numeric
+	RestaurantID string  `json:"restaurantId"`
+	Name         string  `json:"name"`
+	Description  *string `json:"description"`
+	Price        int32   `json:"price"`
 }
 
-func (q *Queries) CreateFood(ctx context.Context, arg CreateFoodParams) (Food, error) {
-	row := q.db.QueryRow(ctx, createFood,
+// CreateFood
+//
+//	INSERT INTO foods (restaurant_id, name, description, price)
+//	VALUES ($1, $2, $3, $4) RETURNING id, restaurant_id, name, description, price, updated_at
+func (q *Queries) CreateFood(ctx context.Context, db DBTX, arg *CreateFoodParams) (Food, error) {
+	row := db.QueryRow(ctx, createFood,
 		arg.RestaurantID,
 		arg.Name,
 		arg.Description,
@@ -46,8 +48,11 @@ const deleteFood = `-- name: DeleteFood :exec
 DELETE FROM foods WHERE id = $1
 `
 
-func (q *Queries) DeleteFood(ctx context.Context, id string) error {
-	_, err := q.db.Exec(ctx, deleteFood, id)
+// DeleteFood
+//
+//	DELETE FROM foods WHERE id = $1
+func (q *Queries) DeleteFood(ctx context.Context, db DBTX, id string) error {
+	_, err := db.Exec(ctx, deleteFood, id)
 	return err
 }
 
@@ -55,8 +60,11 @@ const getFoodByID = `-- name: GetFoodByID :one
 SELECT id, restaurant_id, name, description, price, updated_at FROM foods WHERE id = $1
 `
 
-func (q *Queries) GetFoodByID(ctx context.Context, id string) (Food, error) {
-	row := q.db.QueryRow(ctx, getFoodByID, id)
+// GetFoodByID
+//
+//	SELECT id, restaurant_id, name, description, price, updated_at FROM foods WHERE id = $1
+func (q *Queries) GetFoodByID(ctx context.Context, db DBTX, id string) (Food, error) {
+	row := db.QueryRow(ctx, getFoodByID, id)
 	var i Food
 	err := row.Scan(
 		&i.ID,
@@ -74,13 +82,16 @@ SELECT id, restaurant_id, name, description, price, updated_at FROM foods WHERE 
 `
 
 type ListFoodsByRestaurantParams struct {
-	RestaurantID string
-	Limit        int32
-	Offset       int32
+	RestaurantID string `json:"restaurantId"`
+	Limit        int32  `json:"limit"`
+	Offset       int32  `json:"offset"`
 }
 
-func (q *Queries) ListFoodsByRestaurant(ctx context.Context, arg ListFoodsByRestaurantParams) ([]Food, error) {
-	rows, err := q.db.Query(ctx, listFoodsByRestaurant, arg.RestaurantID, arg.Limit, arg.Offset)
+// ListFoodsByRestaurant
+//
+//	SELECT id, restaurant_id, name, description, price, updated_at FROM foods WHERE restaurant_id = $1 ORDER BY updated_at DESC LIMIT $2 OFFSET $3
+func (q *Queries) ListFoodsByRestaurant(ctx context.Context, db DBTX, arg *ListFoodsByRestaurantParams) ([]Food, error) {
+	rows, err := db.Query(ctx, listFoodsByRestaurant, arg.RestaurantID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -111,14 +122,17 @@ UPDATE foods SET name = $2, description = $3, price = $4, updated_at = now() WHE
 `
 
 type UpdateFoodParams struct {
-	ID          string
-	Name        string
-	Description pgtype.Text
-	Price       pgtype.Numeric
+	ID          string  `json:"id"`
+	Name        string  `json:"name"`
+	Description *string `json:"description"`
+	Price       int32   `json:"price"`
 }
 
-func (q *Queries) UpdateFood(ctx context.Context, arg UpdateFoodParams) error {
-	_, err := q.db.Exec(ctx, updateFood,
+// UpdateFood
+//
+//	UPDATE foods SET name = $2, description = $3, price = $4, updated_at = now() WHERE id = $1
+func (q *Queries) UpdateFood(ctx context.Context, db DBTX, arg *UpdateFoodParams) error {
+	_, err := db.Exec(ctx, updateFood,
 		arg.ID,
 		arg.Name,
 		arg.Description,
