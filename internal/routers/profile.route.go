@@ -1,14 +1,25 @@
 package routers
 
 import (
-	"e-gourmet/core/internal/server/fiber"
+	"e-gourmet/core/internal/controllers"
+	"github.com/gofiber/fiber/v2"
 )
 
-func AssignProfileService() {
-	assignHttpEndpoint()
+type ProfileRouter struct {
+	profileCtrlV1 controllers.IProfileController
 }
 
-func assignHttpEndpoint() {
-	fiber.App().Group("/api/profile").
-		Get("/", Controllers().ProfileControllerV1.GetProfiles)
+func NewProfileRouter(profileCtrlV1 controllers.IProfileController) *ProfileRouter {
+	return &ProfileRouter{
+		profileCtrlV1: profileCtrlV1,
+	}
+}
+
+func (pr ProfileRouter) AssignAPI(app *fiber.App) {
+	pr.AssignRest(app)
+}
+
+func (pr ProfileRouter) AssignRest(app *fiber.App) {
+	app.Group("/api/v1/profile").
+		Get("/", pr.profileCtrlV1.GetProfiles)
 }

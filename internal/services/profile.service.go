@@ -3,17 +3,17 @@ package services
 import (
 	"context"
 	"e-gourmet/core/internal/db"
-	"e-gourmet/core/internal/server/database"
 	"e-gourmet/core/pkg/pagination"
-	"time"
 )
 
 type ProfileServiceV1 struct {
-	queries *db.Queries
+	db.DBContext
 }
 
-func NewProfileServiceV1(queries *db.Queries) IProfileService {
-	return &ProfileServiceV1{queries: queries}
+func NewProfileServiceV1(db db.DBContext) IProfileService {
+	return &ProfileServiceV1{
+		DBContext: db,
+	}
 }
 
 func (p *ProfileServiceV1) CreateProfile(params db.CreateProfileParams) (db.Profile, error) {
@@ -37,17 +37,16 @@ func (p *ProfileServiceV1) DeleteProfileById(id string) error {
 }
 
 func (p *ProfileServiceV1) GetListProfiles(filter *pagination.PageFilter) (pagination.Pagination[db.Profile], error) {
-	dbtx, err := database.DBConn()
+	ctx := context.Background()
+	dbtx, err := p.DBContext.GetConnection()
 	if err != nil {
 		return pagination.Pagination[db.Profile]{}, err
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	profiles, err := p.queries.ListProfiles(ctx, dbtx, &db.ListProfilesParams{
+	profiles, err := p.Query().ListProfiles(ctx, dbtx, &db.ListProfilesParams{
 		Limit:  10,
 		Offset: 0,
 	})
+
 	if err != nil {
 		return pagination.Pagination[db.Profile]{}, err
 	}

@@ -1,4 +1,4 @@
-package errorhandler
+package middleware
 
 import (
 	"errors"
@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func New(logger *zap.Logger) fiber.ErrorHandler {
+func ErrorHandler(logger *zap.Logger) fiber.ErrorHandler {
 	return func(c *fiber.Ctx, err error) error {
 		code := fiber.StatusInternalServerError
 		var e *fiber.Error
@@ -26,11 +26,14 @@ func New(logger *zap.Logger) fiber.ErrorHandler {
 			zap.String("error", err.Error()),
 		}
 		logger.Error("Error Request", fields...)
-
-		return c.JSON(fiber.Map{
+		json := fiber.Map{
+			"time":    time.Now(),
 			"status":  code,
 			"message": http.StatusText(code),
-			"error":   err.Error(),
-		})
+		}
+		if code != fiber.StatusInternalServerError {
+			json["error"] = err.Error()
+		}
+		return c.JSON(json)
 	}
 }

@@ -1,4 +1,4 @@
-package logger
+package middleware
 
 import (
 	"github.com/gofiber/fiber/v2"
@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func New(logger *zap.Logger) fiber.Handler {
+func RequestLogger(logger *zap.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		c.Locals("startTime", time.Now())
 

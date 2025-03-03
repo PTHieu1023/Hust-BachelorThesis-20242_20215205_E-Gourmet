@@ -13,7 +13,7 @@ type TestConfig struct {
 	Server struct {
 		Port int    `mapstructure:"port"`
 		Host string `mapstructure:"host"`
-	} `mapstructure:"server"`
+	} `mapstructure:"config"`
 	Database struct {
 		User string `mapstructure:"user"`
 		Pass string `mapstructure:"pass"`
@@ -34,7 +34,7 @@ func createTempConfig(content string) (string, error) {
 func TestLoadConfig(t *testing.T) {
 	// Create a default config file
 	defaultConfigContent := `
-server:
+config:
   port: 8080
   host: "localhost"
 database:
@@ -47,7 +47,7 @@ database:
 
 	// Create a custom config file that overrides some values
 	customConfigContent := `
-server:
+config:
   port: 9090
 database:
   user: "custom_user"
