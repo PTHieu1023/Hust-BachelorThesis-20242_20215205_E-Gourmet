@@ -1,6 +1,6 @@
 import { refreshToken } from "@/services/auth.service";
 import { jwtDecode } from "jwt-decode";
-import {Account, getServerSession, NextAuthOptions, TokenSet} from "next-auth";
+import {Account, getServerSession, NextAuthOptions, Session, TokenSet} from "next-auth";
 import Keycloak from "next-auth/providers/keycloak";
 
 export interface KCTokenSet extends TokenSet {
@@ -73,4 +73,10 @@ export const authOptions: NextAuthOptions = {
     }
 }
 
-export const getAuthSession = async () => await getServerSession(authOptions);
+interface KCSession extends Session{
+    error?: string | number
+    access_token?: string | undefined
+    id_token?: string | undefined
+}
+
+export const getAuthSession:() => Promise<KCSession | null | undefined> = async () => await getServerSession(authOptions);
