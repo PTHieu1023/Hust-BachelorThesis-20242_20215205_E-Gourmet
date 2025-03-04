@@ -3,6 +3,7 @@ import { Roboto } from "next/font/google";
 import "@/styles/globals.css";
 import {ThemeProvider} from "next-themes";
 import {ReactNode} from "react";
+import RootProviders from "@/app/providers";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -25,14 +26,9 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${roboto.className} antialiased`}
-      ><ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-      >
+      ><RootProviders>
           {children}
-      </ThemeProvider>
+      </RootProviders>
       </body>
     </html>
   );
