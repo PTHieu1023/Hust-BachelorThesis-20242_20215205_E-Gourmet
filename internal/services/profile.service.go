@@ -2,15 +2,16 @@ package services
 
 import (
 	"context"
+	"e-gourmet/core/internal/config/database"
 	"e-gourmet/core/internal/db"
 	"e-gourmet/core/pkg/pagination"
 )
 
 type ProfileServiceV1 struct {
-	db.DBContext
+	database.DBContext
 }
 
-func NewProfileServiceV1(db db.DBContext) IProfileService {
+func NewProfileServiceV1(db database.DBContext) IProfileService {
 	return &ProfileServiceV1{
 		DBContext: db,
 	}

@@ -15,3 +15,4 @@ pool-max-conn-lifetime: "30m"     # Max lifetime for a connection before recycli
 # Advanced settings
 pool-health-check-period: "5m"   # Interval for health checks on idle connections
 pool-max-conn-lifetime-jitter: "5m"
+duration-threshold: "100ms"

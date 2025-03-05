@@ -1,11 +1,10 @@
 package config
 
 import (
+	"e-gourmet/core/internal/config/database"
 	"e-gourmet/core/internal/controllers"
-	"e-gourmet/core/internal/db"
 	"e-gourmet/core/internal/routers"
 	"e-gourmet/core/internal/services"
-
 	"go.uber.org/zap"
 
 	"fmt"
@@ -25,9 +24,9 @@ type ControllerSet struct {
 
 type Server struct {
 	Logger      *zap.Logger
-	DBContext   db.DBContext
+	DBContext   database.DBContext
 	FiberApp    *FiberApp
-	Middlewares *MiddlewareSet
+	Middlewares *Middlewares
 	Services    *ServiceSet
 	Controllers *ControllerSet
 	Routers     []routers.IRouter
@@ -38,7 +37,7 @@ func InitServer() *Server {
 	server.Logger = NewLogger()
 	server.Middlewares = NewMiddlewareSet(server.Logger)
 	server.FiberApp = NewFiberApp(server.Middlewares.ErrorHandler)
-	server.DBContext = db.NewDBStore(server.Logger)
+	server.DBContext = database.NewDBStore(server.Logger)
 
 	server.Services = &ServiceSet{
 		ProfileV1: services.NewProfileServiceV1(server.DBContext),

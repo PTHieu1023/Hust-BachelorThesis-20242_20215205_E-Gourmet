@@ -1,7 +1,10 @@
-package db
+package database
 
 import (
+	"e-gourmet/core/internal/db"
 	"e-gourmet/core/pkg/configloader"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
@@ -19,8 +22,8 @@ const (
 )
 
 type DBContext interface {
-	GetConnection() (*pgxpool.Pool, error)
-	Query() Querier
+	GetConnection() (*DBClient, error)
+	Query() db.Querier
 	LoadConfig() DBContext
 	Connect() error
 	Close() DBContext
@@ -41,33 +44,79 @@ type DBConfig struct {
 	PoolMaxConnIdleTime       string `mapstructure:"pool-max-conn-idle-time"`
 	PoolHealthCheckPeriod     string `mapstructure:"pool-health-check-period"`
 	PoolMaxConnLifetimeJitter string `mapstructure:"pool-max-conn-lifetime-jitter"`
+	DurationThreshold         string `mapstructure:"duration-threshold"`
+}
+
+type DBClient struct {
+	pool              *pgxpool.Pool
+	logger            *zap.Logger
+	durationThreshold time.Duration
+}
+
+func NewDBClient(pool *pgxpool.Pool, logger *zap.Logger, durationThreshold time.Duration) *DBClient {
+	return &DBClient{
+		pool:              pool,
+		logger:            logger,
+		durationThreshold: durationThreshold,
+	}
+}
+
+func (db *DBClient) logExecuteTime(start time.Time, operation string, query string) {
+	duration := time.Since(start)
+	db.logger.Info(fmt.Sprintf("%s: %s took %s", operation, query, duration))
+	if duration > db.durationThreshold {
+		db.logger.Warn("SQL operation exceeded time limit threshold", zap.String("query", query), zap.String("duration", duration.String()))
+	}
+}
+
+func (db *DBClient) Exec(ctx context.Context, s string, i ...interface{}) (pgconn.CommandTag, error) {
+	start := time.Now()
+	res, err := db.pool.Exec(ctx, s, i...)
+
+	go db.logExecuteTime(start, "Exec", s)
+
+	return res, err
+}
+
+func (db *DBClient) Query(ctx context.Context, s string, i ...interface{}) (pgx.Rows, error) {
+	start := time.Now()
+	res, err := db.pool.Query(ctx, s, i...)
+	go db.logExecuteTime(start, "Query", s)
+	return res, err
+}
+
+func (db *DBClient) QueryRow(ctx context.Context, s string, i ...interface{}) pgx.Row {
+	start := time.Now()
+	res := db.pool.QueryRow(ctx, s, i...)
+	go db.logExecuteTime(start, "QueryRow", s)
+	return res
 }
 
 type DBStore struct {
 	logger *zap.Logger
 	config *DBConfig
-	pool   *pgxpool.Pool
-	query  Querier
+	client *DBClient
+	query  db.Querier
 }
 
 func NewDBStore(logger *zap.Logger) DBContext {
-	db := &DBStore{logger: logger}
-	return db.LoadConfig()
+	dbStore := &DBStore{logger: logger}
+	return dbStore.LoadConfig()
 }
 
-func (dc *DBStore) GetConnection() (*pgxpool.Pool, error) {
-	if dc.pool != nil {
-		return dc.pool, nil
+func (dc *DBStore) GetConnection() (*DBClient, error) {
+	if dc.client != nil {
+		return dc.client, nil
 	}
 	if err := dc.Connect(); err != nil {
 		return nil, err
 	}
-	return dc.pool, nil
+	return dc.client, nil
 }
 
-func (dc *DBStore) Query() Querier {
+func (dc *DBStore) Query() db.Querier {
 	if dc.query == nil {
-		dc.query = New()
+		dc.query = db.New()
 	}
 	return dc.query
 }
@@ -101,8 +150,15 @@ func (dc *DBStore) Connect() error {
 		dc.logger.Error("error parsing database config", zap.Error(err))
 		return err
 	}
+	durationThreshold, err := time.ParseDuration(dc.config.DurationThreshold)
+	if err != nil {
+		dc.logger.Error("error parsing database duration threshold", zap.Error(err))
+		dc.logger.Info("use default database duration threshold: 100ms")
+		durationThreshold = 100 * time.Millisecond
+	}
 	dc.logger.Info("Connecting to database")
-	dc.pool, err = pgxpool.NewWithConfig(context.Background(), poolConfig)
+	pool, err := pgxpool.NewWithConfig(context.Background(), poolConfig)
+	dc.client = NewDBClient(pool, dc.logger, durationThreshold)
 	if err != nil {
 		dc.logger.Error("error connecting to database", zap.Error(err))
 		return err
@@ -111,9 +167,9 @@ func (dc *DBStore) Connect() error {
 }
 
 func (dc *DBStore) Close() DBContext {
-	if dc.pool != nil {
-		dc.pool.Close()
-		dc.pool = nil
+	if dc.client != nil {
+		dc.client.pool.Close()
+		dc.client = nil
 	}
 	dc.logger.Info("Closed database connection")
 	return dc
@@ -127,7 +183,7 @@ func (dc *DBStore) Ping() {
 		dc.logger.Error("error connecting to database", zap.Error(err))
 		return
 	}
-	if err := dbtx.Ping(ctx); err != nil {
+	if err := dbtx.pool.Ping(ctx); err != nil {
 		dc.logger.Error("Unable to ping database", zap.Error(err))
 	} else {
 		dc.logger.Info("Ping database successful")

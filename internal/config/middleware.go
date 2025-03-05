@@ -35,7 +35,8 @@ type MiddlewareConfig struct {
 	*StorageConfig `mapstructure:"storage"`
 }
 
-type MiddlewareSet struct {
+type Middlewares struct {
+	Configs      *MiddlewareConfig
 	Logger       fiber.Handler
 	Recover      fiber.Handler
 	Cors         fiber.Handler
@@ -43,7 +44,7 @@ type MiddlewareSet struct {
 	ErrorHandler fiber.ErrorHandler
 }
 
-func NewMiddlewareSet(logger *zap.Logger) *MiddlewareSet {
+func NewMiddlewareSet(logger *zap.Logger) *Middlewares {
 	config := configloader.LoadConfig[MiddlewareConfig](
 		DefaultConfigMiddlewarePath,
 		os.Getenv(CustomConfigMiddlewarePathEnv),
@@ -62,7 +63,8 @@ func NewMiddlewareSet(logger *zap.Logger) *MiddlewareSet {
 	})
 	errorHandlerMdw := middleware.ErrorHandler(logger)
 
-	return &MiddlewareSet{
+	return &Middlewares{
+		Configs:      config,
 		Logger:       loggerMdw,
 		Recover:      recoverMdw,
 		Cors:         corsMdw,
