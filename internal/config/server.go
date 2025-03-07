@@ -1,8 +1,8 @@
 package config
 
 import (
-	"e-gourmet/core/internal/config/database"
 	"e-gourmet/core/internal/controllers"
+	"e-gourmet/core/internal/db"
 	"e-gourmet/core/internal/routers"
 	"e-gourmet/core/internal/services"
 	"go.uber.org/zap"
@@ -23,10 +23,11 @@ type ControllerSet struct {
 }
 
 type Server struct {
-	Logger      *zap.Logger
-	DBContext   database.DBContext
+	Logger *zap.Logger
+	DBContext
 	FiberApp    *FiberApp
 	Middlewares *Middlewares
+	db.Querier
 	Services    *ServiceSet
 	Controllers *ControllerSet
 	Routers     []routers.IRouter
@@ -37,10 +38,11 @@ func InitServer() *Server {
 	server.Logger = NewLogger()
 	server.Middlewares = NewMiddlewareSet(server.Logger)
 	server.FiberApp = NewFiberApp(server.Middlewares.ErrorHandler)
-	server.DBContext = database.NewDBStore(server.Logger)
+	server.Querier = db.New()
+	server.DBContext = NewDBClient(server.Logger)
 
 	server.Services = &ServiceSet{
-		ProfileV1: services.NewProfileServiceV1(server.DBContext),
+		ProfileV1: services.NewProfileServiceV1(server.DBContext, server.Querier),
 	}
 
 	server.Controllers = &ControllerSet{
@@ -111,7 +113,6 @@ func Boostrap() {
 	}
 
 	// Assign router and handler into app
-	s.DBContext.Ping()
 	logger.Info("Completed setting up Config!")
 	go s.start()
 	go s.shutdown(isRunning)

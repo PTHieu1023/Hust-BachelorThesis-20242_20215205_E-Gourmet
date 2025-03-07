@@ -2,18 +2,22 @@ package services
 
 import (
 	"context"
-	"e-gourmet/core/internal/config/database"
 	"e-gourmet/core/internal/db"
+
+	//"e-gourmet/core/internal/config"
+	//"e-gourmet/core/internal/db"
 	"e-gourmet/core/pkg/pagination"
 )
 
 type ProfileServiceV1 struct {
-	database.DBContext
+	dbtx    db.DBTX
+	querier db.Querier
 }
 
-func NewProfileServiceV1(db database.DBContext) IProfileService {
+func NewProfileServiceV1(dbtx db.DBTX, querier db.Querier) IProfileService {
 	return &ProfileServiceV1{
-		DBContext: db,
+		dbtx:    dbtx,
+		querier: querier,
 	}
 }
 
@@ -39,11 +43,7 @@ func (p *ProfileServiceV1) DeleteProfileById(id string) error {
 
 func (p *ProfileServiceV1) GetListProfiles(filter *pagination.PageFilter) (pagination.Pagination[db.Profile], error) {
 	ctx := context.Background()
-	dbtx, err := p.DBContext.GetConnection()
-	if err != nil {
-		return pagination.Pagination[db.Profile]{}, err
-	}
-	profiles, err := p.Query().ListProfiles(ctx, dbtx, &db.ListProfilesParams{
+	profiles, err := p.querier.ListProfiles(ctx, p.dbtx, &db.ListProfilesParams{
 		Limit:  10,
 		Offset: 0,
 	})
