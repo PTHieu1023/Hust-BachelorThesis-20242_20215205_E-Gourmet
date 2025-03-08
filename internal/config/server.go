@@ -26,7 +26,7 @@ type ControllerSet struct {
 type Server struct {
 	logger      *zap.Logger
 	db          DBContext
-	redis       *rediscluster.RedisClusterClient
+	redis       rediscluster.RedisCluster
 	app         *FiberApp
 	middlewares *Middlewares
 	querier     db.Querier

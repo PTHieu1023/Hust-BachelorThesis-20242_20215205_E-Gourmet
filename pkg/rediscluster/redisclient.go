@@ -9,50 +9,76 @@ import (
 	"time"
 )
 
-type RedisClusterClient struct {
-	logger        *zap.Logger
-	client        *redis.ClusterClient
-	timeThreshold time.Duration
+type RedisCluster interface {
+	CommonCmd
+	HashCmd
+	SetCmd
+	ListCmd
+	SortedSetCmd
+	PubSubCmd
+	Close()
 }
 
-func NewRedisCluster(config *RedisClusterConfig, logger *zap.Logger) *RedisClusterClient {
-	if config == nil {
-		config = DefaultConfig()
+type RedisClusterClient struct {
+	logger *zap.Logger
+	client *redis.ClusterClient
+	config *RedisClusterConfig
+}
+
+func NewRedisCluster(config *RedisClusterConfig, logger *zap.Logger) RedisCluster {
+	clusterClient := &RedisClusterClient{
+		logger: logger,
+		config: config,
+	}
+	clusterClient.Ping()
+	return clusterClient
+}
+
+func (r *RedisClusterClient) Connect() {
+	if r.config == nil {
+		r.config = DefaultConfig()
 	}
 	options := &redis.ClusterOptions{
-		Addrs:          strings.Split(config.Addrs, ","),
-		MaxRedirects:   config.MaxRedirects,
-		ReadOnly:       config.ReadOnly,
-		RouteByLatency: config.RouteByLatency,
-		RouteRandomly:  config.RouteRandomly,
+		Addrs:           strings.Split(r.config.Addrs, ","),
+		MaxRedirects:    r.config.MaxRedirects,
+		ReadOnly:        r.config.ReadOnly,
+		RouteByLatency:  r.config.RouteByLatency,
+		RouteRandomly:   r.config.RouteRandomly,
+		Username:        r.config.Username,
+		Password:        r.config.Password,
+		MaxRetries:      r.config.MaxRetries,
+		MinRetryBackoff: r.config.MinRetryBackoff,
+		MaxRetryBackoff: r.config.MaxRetryBackoff,
+		DialTimeout:     r.config.DialTimeout,
+		ReadTimeout:     r.config.ReadTimeout,
+		WriteTimeout:    r.config.WriteTimeout,
+		PoolSize:        r.config.PoolSize,
+		PoolTimeout:     r.config.PoolTimeout,
+		MinIdleConns:    r.config.MinIdleConns,
+		MaxIdleConns:    r.config.MaxIdleConns,
+		MaxActiveConns:  r.config.MaxActiveConns,
+		ConnMaxIdleTime: r.config.ConnMaxIdleTime,
+		ConnMaxLifetime: r.config.ConnMaxLifetime,
 		OnConnect: func(ctx context.Context, cn *redis.Conn) error {
-			logger.Info(fmt.Sprintf("connect to redis cluster: %s", cn.String()))
+			r.logger.Info("redis connect success", zap.String("addrs", cn.String()))
 			return nil
 		},
-		Username:        config.Username,
-		Password:        config.Password,
-		MaxRetries:      config.MaxRetries,
-		MinRetryBackoff: config.MinRetryBackoff,
-		MaxRetryBackoff: config.MaxRetryBackoff,
-		DialTimeout:     config.DialTimeout,
-		ReadTimeout:     config.ReadTimeout,
-		WriteTimeout:    config.WriteTimeout,
-		PoolSize:        config.PoolSize,
-		PoolTimeout:     config.PoolTimeout,
-		MinIdleConns:    config.MinIdleConns,
-		MaxIdleConns:    config.MaxIdleConns,
-		MaxActiveConns:  config.MaxActiveConns,
-		ConnMaxIdleTime: config.ConnMaxIdleTime,
-		ConnMaxLifetime: config.ConnMaxLifetime,
 	}
-	client := redis.NewClusterClient(options)
-	if config.TimeThreshold == 0 {
-		config.TimeThreshold = time.Millisecond * 100
+	r.client = redis.NewClusterClient(options)
+	if r.config.TimeThreshold == 0 {
+		r.config.TimeThreshold = time.Millisecond * 100
 	}
-	return &RedisClusterClient{
-		logger:        logger,
-		client:        client,
-		timeThreshold: config.TimeThreshold,
+}
+
+func (r *RedisClusterClient) Ping() {
+	if r.client == nil {
+		r.Connect()
+	}
+	r.logger.Info("ping to redis cluster", zap.String("addrs", r.config.Addrs), zap.String("username", r.config.Username))
+	if r.client.Ping(context.Background()).Err() != nil {
+		r.logger.Error("Can't ping redis server", zap.Error(r.client.Ping(context.Background()).Err()))
+	} else {
+		r.logger.Info("redis ping success", zap.String("addrs", r.config.Addrs), zap.String("username", r.config.Username))
 	}
 }
 
@@ -71,7 +97,7 @@ func (r *RedisClusterClient) Close() {
 func (r *RedisClusterClient) logExecute(operation string, start time.Time) {
 	duration := time.Since(start)
 	r.logger.Info(fmt.Sprintf("execute redis cluster operation: %s took %s", operation, duration))
-	if duration > r.timeThreshold {
+	if duration > r.config.TimeThreshold {
 		r.logger.Warn("REDIS CLUSTER EXCEEDED TIME THRESHOLD", zap.String("operation", operation), zap.String("duration", duration.String()))
 	}
 }

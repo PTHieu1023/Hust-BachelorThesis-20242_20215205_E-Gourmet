@@ -13,7 +13,7 @@ const (
 	EnvPrefixConfigRedis     = "EG_REDIS"
 )
 
-func NewRedisStore(logger *zap.Logger) *rediscluster.RedisClusterClient {
+func NewRedisStore(logger *zap.Logger) rediscluster.RedisCluster {
 	configPath := os.Getenv(CustomConfigRedisPathEnv)
 	if configPath == "" {
 		configPath = DefaultConfigRedisPath
