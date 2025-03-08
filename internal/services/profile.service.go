@@ -42,8 +42,8 @@ func (p *ProfileServiceV1) DeleteProfileById(id string) error {
 func (p *ProfileServiceV1) GetListProfiles(filter *pagination.PageFilter) (pagination.Pagination[db.Profile], error) {
 	ctx := context.Background()
 	profiles, err := p.querier.ListProfiles(ctx, p.dbtx, &db.ListProfilesParams{
-		Limit:  10,
-		Offset: 0,
+		Limit:  int32(filter.Size),
+		Offset: int32((filter.Page - 1) * filter.Size),
 	})
 
 	if err != nil {

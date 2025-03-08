@@ -27,11 +27,11 @@ func (pc *ProfileControllerV1) GetProfile(ctx *fiber.Ctx) error {
 }
 
 func (pc *ProfileControllerV1) GetProfiles(ctx *fiber.Ctx) error {
-	profiles, err := pc.profileService.GetListProfiles(&pagination.PageFilter{
-		Page:    0,
-		Size:    0,
-		OrderBy: nil,
-	})
+	pageFilter, err := pagination.GetPageFilter(ctx)
+	if err != nil {
+		return err
+	}
+	profiles, err := pc.profileService.GetListProfiles(pageFilter)
 	if err != nil {
 		return err
 	}
