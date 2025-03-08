@@ -5,6 +5,7 @@ import (
 	"e-gourmet/core/internal/db"
 	"e-gourmet/core/internal/routers"
 	"e-gourmet/core/internal/services"
+	"e-gourmet/core/pkg/rediscluster"
 	"go.uber.org/zap"
 
 	"fmt"
@@ -23,33 +24,35 @@ type ControllerSet struct {
 }
 
 type Server struct {
-	Logger *zap.Logger
-	DBContext
-	FiberApp    *FiberApp
-	Middlewares *Middlewares
-	db.Querier
-	Services    *ServiceSet
-	Controllers *ControllerSet
-	Routers     []routers.IRouter
+	logger      *zap.Logger
+	db          DBContext
+	redis       *rediscluster.RedisClusterClient
+	app         *FiberApp
+	middlewares *Middlewares
+	querier     db.Querier
+	services    *ServiceSet
+	controllers *ControllerSet
+	routers     []routers.IRouter
 }
 
 func InitServer() *Server {
 	server := &Server{}
-	server.Logger = NewLogger()
-	server.Middlewares = NewMiddlewareSet(server.Logger)
-	server.FiberApp = NewFiberApp(server.Middlewares.ErrorHandler)
-	server.Querier = db.New()
-	server.DBContext = NewDBClient(server.Logger)
+	server.logger = NewLogger()
+	server.middlewares = NewMiddlewareSet(server.logger)
+	server.app = NewFiberApp(server.middlewares.ErrorHandler)
+	server.querier = db.New()
+	server.db = NewDBClient(server.logger)
+	server.redis = NewRedisStore(server.logger)
 
-	server.Services = &ServiceSet{
-		ProfileV1: services.NewProfileServiceV1(server.DBContext, server.Querier),
+	server.services = &ServiceSet{
+		ProfileV1: services.NewProfileServiceV1(server.db, server.querier),
 	}
 
-	server.Controllers = &ControllerSet{
-		ProfileV1: controllers.NewProfileControllerV1(server.Services.ProfileV1),
+	server.controllers = &ControllerSet{
+		ProfileV1: controllers.NewProfileControllerV1(server.services.ProfileV1),
 	}
 
-	server.Routers = append(server.Routers, routers.NewProfileRouter(server.Controllers.ProfileV1))
+	server.routers = append(server.routers, routers.NewProfileRouter(server.controllers.ProfileV1))
 	return server
 }
 
@@ -60,39 +63,38 @@ type IServer interface {
 }
 
 func (s *Server) start() {
-	fiber := s.FiberApp
+	fiber := s.app
 	port := fmt.Sprintf(":%d", fiber.Config.Port)
 	if err := fiber.App.Listen(port); err != nil {
-		s.Logger.Error("Failed to start Config", zap.Error(err))
+		s.logger.Error("Failed to start Config", zap.Error(err))
 	}
 }
 
 func (s *Server) clean() {
-	s.DBContext.Close()
+	s.db.Close()
+	s.redis.Close()
 }
 
 func (s *Server) shutdown(isRunning chan bool) {
-	s.Logger.Info("Shutting down...")
-	if s.FiberApp == nil {
-		s.Logger.Fatal("FiberApp not found")
+	if s.app == nil {
+		s.logger.Fatal("app not found")
 	}
 
 	signalChannel := make(chan os.Signal, 1)
 	signal.Notify(signalChannel, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	<-signalChannel // Block until a termination signal is received
 
-	s.Logger.Info("Gracefully shutting down the Config...")
+	s.logger.Info("Gracefully shutting down the server...")
 
-	if err := s.FiberApp.ShutdownWithTimeout(5 * time.Second); err != nil {
-		s.Logger.Error("Error during Config shutdown", zap.Error(err))
+	if err := s.app.ShutdownWithTimeout(5 * time.Second); err != nil {
+		s.logger.Error("Error during server shutdown", zap.Error(err))
 	}
 
-	s.Logger.Info("Running cleanup tasks...")
+	s.logger.Info("Running cleanup tasks...")
 	s.clean()
 
-	s.Logger.Info("Server shutdown complete.")
+	s.logger.Info("Server shutdown complete.")
 
-	// Notify the main goroutine
 	isRunning <- false
 }
 
@@ -100,19 +102,18 @@ func Boostrap() {
 	isRunning := make(chan bool, 1)
 	s := InitServer()
 
-	logger := s.Logger
-	fiber := s.FiberApp
-	middlewares := s.Middlewares
+	logger := s.logger
+	fiber := s.app
+	middlewares := s.middlewares
 	fiber.Use(middlewares.Logger)
 	fiber.Use(middlewares.Recover)
 	fiber.Use(middlewares.Cors)
 	fiber.Use(middlewares.Compress)
 
-	for _, router := range s.Routers {
+	for _, router := range s.routers {
 		router.AssignAPI(fiber.App)
 	}
 
-	// Assign router and handler into app
 	logger.Info("Completed setting up Config!")
 	go s.start()
 	go s.shutdown(isRunning)

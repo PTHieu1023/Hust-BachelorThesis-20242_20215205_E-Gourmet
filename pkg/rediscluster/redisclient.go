@@ -9,45 +9,16 @@ import (
 	"time"
 )
 
-type RedisClusterConfig struct {
-	// Connection configs
-	Addrs         string        `mapstructure:"addrs"`
-	Username      string        `mapstructure:"username"`
-	Password      string        `mapstructure:"password"`
-	TLSEnabled    bool          `mapstructure:"tls_enabled"`
-	TimeThreshold time.Duration `mapstructure:"time_threshold"`
-
-	// Retry config
-	DialTimeout     time.Duration `mapstructure:"dial_timeout"`
-	ReadTimeout     time.Duration `mapstructure:"read_timeout"`
-	WriteTimeout    time.Duration
-	MaxRetries      int           `mapstructure:"max_retries"`
-	MinRetryBackoff time.Duration `mapstructure:"min_retry_backoff"`
-	MaxRetryBackoff time.Duration `mapstructure:"max_retry_backoff"`
-
-	// Pool config
-	PoolSize        int           `mapstructure:"pool_size"`
-	PoolTimeout     time.Duration `mapstructure:"pool_timeout"`
-	MinIdleConns    int           `mapstructure:"min_idle_conns"`
-	MaxIdleConns    int           `mapstructure:"max_idle_conns"`
-	MaxActiveConns  int           `mapstructure:"max_active_conns"`
-	ConnMaxIdleTime time.Duration `mapstructure:"conn_max_idle_time"`
-	ConnMaxLifetime time.Duration `mapstructure:"conn_max_lifetime"`
-
-	// Cluster config
-	MaxRedirects   int  `mapstructure:"max_redirects"`
-	ReadOnly       bool `mapstructure:"read_only"`
-	RouteByLatency bool `mapstructure:"route_by_latency"`
-	RouteRandomly  bool `mapstructure:"route_randomly"`
-}
-
 type RedisClusterClient struct {
 	logger        *zap.Logger
 	client        *redis.ClusterClient
 	timeThreshold time.Duration
 }
 
-func NewRedisCluster(config *RedisClusterConfig, logger *zap.Logger) IRedisCluster {
+func NewRedisCluster(config *RedisClusterConfig, logger *zap.Logger) *RedisClusterClient {
+	if config == nil {
+		config = DefaultConfig()
+	}
 	options := &redis.ClusterOptions{
 		Addrs:          strings.Split(config.Addrs, ","),
 		MaxRedirects:   config.MaxRedirects,
@@ -83,6 +54,18 @@ func NewRedisCluster(config *RedisClusterConfig, logger *zap.Logger) IRedisClust
 		client:        client,
 		timeThreshold: config.TimeThreshold,
 	}
+}
+
+func (r *RedisClusterClient) Close() {
+	if r.client == nil {
+		r.logger.Warn("Redis cluster client not initialized")
+		return
+	}
+	if err := r.client.Close(); err != nil {
+		r.logger.Error(fmt.Sprintf("Close redis cluster client error: %s", err.Error()))
+		return
+	}
+	r.logger.Info("Redis cluster client closed")
 }
 
 func (r *RedisClusterClient) logExecute(operation string, start time.Time) {

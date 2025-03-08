@@ -44,10 +44,29 @@ type Middlewares struct {
 	ErrorHandler fiber.ErrorHandler
 }
 
+func defaultMiddlewareConfig() *MiddlewareConfig {
+	return &MiddlewareConfig{
+		CorsConfig: &CorsConfig{
+			Enable:       true,
+			AllowOrigins: "*",
+			AllowMethods: "*",
+			AllowHeaders: "*",
+		},
+		StorageConfig: &StorageConfig{
+			ResourcePath: "storage/resources",
+			URLPrefix:    "public",
+		},
+	}
+}
+
 func NewMiddlewareSet(logger *zap.Logger) *Middlewares {
+	configPath := os.Getenv(CustomConfigMiddlewarePathEnv)
+	if configPath == "" {
+		configPath = DefaultConfigMiddlewarePath
+	}
 	config := configloader.LoadConfig[MiddlewareConfig](
-		DefaultConfigMiddlewarePath,
-		os.Getenv(CustomConfigMiddlewarePathEnv),
+		defaultMiddlewareConfig(),
+		configPath,
 		EnvPrefixConfigMiddleware,
 	)
 

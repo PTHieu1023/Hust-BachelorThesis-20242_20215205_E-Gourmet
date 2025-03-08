@@ -13,12 +13,12 @@ type PageFilter struct {
 }
 
 type Pagination[T any] struct {
-	Page       int `json:"page"`
-	Size       int `json:"size"`
-	Count      int `json:"total"`
-	TotalPage  int `json:"totalPage"`
-	TotalCount int `json:"totalCount"`
-	Content    []T `json:"content"`
+	Page       int  `json:"page"`
+	Size       int  `json:"size"`
+	Count      int  `json:"total"`
+	TotalPage  int  `json:"totalPage"`
+	TotalCount int  `json:"totalCount"`
+	Content    []*T `json:"content"`
 }
 
 func GetPageFilter(c *fiber.Ctx) (*PageFilter, error) {

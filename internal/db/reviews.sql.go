@@ -21,7 +21,7 @@ type CreateReviewParams struct {
 	Rate         *int32  `json:"rate"`
 }
 
-func (q *Queries) CreateReview(ctx context.Context, db DBTX, arg *CreateReviewParams) (Review, error) {
+func (q *Queries) CreateReview(ctx context.Context, db DBTX, arg *CreateReviewParams) (*Review, error) {
 	row := db.QueryRow(ctx, createReview,
 		arg.RestaurantID,
 		arg.Content,
@@ -38,7 +38,7 @@ func (q *Queries) CreateReview(ctx context.Context, db DBTX, arg *CreateReviewPa
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const deleteReview = `-- name: DeleteReview :exec
@@ -54,7 +54,7 @@ const getReviewByID = `-- name: GetReviewByID :one
 SELECT id, restaurant_id, content, author, rate, created_at, updated_at FROM reviews WHERE id = $1
 `
 
-func (q *Queries) GetReviewByID(ctx context.Context, db DBTX, id int32) (Review, error) {
+func (q *Queries) GetReviewByID(ctx context.Context, db DBTX, id int32) (*Review, error) {
 	row := db.QueryRow(ctx, getReviewByID, id)
 	var i Review
 	err := row.Scan(
@@ -66,7 +66,7 @@ func (q *Queries) GetReviewByID(ctx context.Context, db DBTX, id int32) (Review,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const listReviewsByRestaurant = `-- name: ListReviewsByRestaurant :many
@@ -79,13 +79,13 @@ type ListReviewsByRestaurantParams struct {
 	Offset       int32   `json:"offset"`
 }
 
-func (q *Queries) ListReviewsByRestaurant(ctx context.Context, db DBTX, arg *ListReviewsByRestaurantParams) ([]Review, error) {
+func (q *Queries) ListReviewsByRestaurant(ctx context.Context, db DBTX, arg *ListReviewsByRestaurantParams) ([]*Review, error) {
 	rows, err := db.Query(ctx, listReviewsByRestaurant, arg.RestaurantID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Review{}
+	items := []*Review{}
 	for rows.Next() {
 		var i Review
 		if err := rows.Scan(
@@ -99,7 +99,7 @@ func (q *Queries) ListReviewsByRestaurant(ctx context.Context, db DBTX, arg *Lis
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

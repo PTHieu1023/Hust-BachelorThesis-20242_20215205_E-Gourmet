@@ -2,88 +2,77 @@ package main
 
 import (
 	"context"
+	"e-gourmet/core/internal/config"
+	"e-gourmet/core/pkg/rediscluster"
 	"fmt"
 	"log"
-
-	"github.com/redis/go-redis/v9"
+	"time"
 )
-
-// Create a Redis Cluster client
-func createClusterClient() *redis.ClusterClient {
-	return redis.NewClusterClient(&redis.ClusterOptions{
-		Addrs: []string{
-			"localhost:7001",
-			"localhost:7002",
-			"localhost:7003",
-			"localhost:7004",
-			"localhost:7005",
-			"localhost:7006",
-		},
-		ClientName:                 "",
-		NewClient:                  nil,
-		MaxRedirects:               0,
-		ReadOnly:                   false,
-		RouteByLatency:             false,
-		RouteRandomly:              false,
-		ClusterSlots:               nil,
-		Dialer:                     nil,
-		OnConnect:                  nil,
-		Protocol:                   0,
-		Username:                   "",
-		Password:                   "",
-		CredentialsProvider:        nil,
-		CredentialsProviderContext: nil,
-		MaxRetries:                 0,
-		MinRetryBackoff:            0,
-		MaxRetryBackoff:            0,
-		DialTimeout:                0,
-		ReadTimeout:                0,
-		WriteTimeout:               0,
-		ContextTimeoutEnabled:      false,
-		PoolFIFO:                   false,
-		PoolSize:                   0,
-		PoolTimeout:                0,
-		MinIdleConns:               0,
-		MaxIdleConns:               0,
-		MaxActiveConns:             0,
-		ConnMaxIdleTime:            0,
-		ConnMaxLifetime:            0,
-		TLSConfig:                  nil,
-		DisableIndentity:           false,
-		IdentitySuffix:             "",
-		UnstableResp3:              false,
-	})
-}
 
 func main() {
 	ctx := context.Background()
-	client := createClusterClient()
-	defer func(client *redis.ClusterClient) {
-		err := client.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}(client)
+	logger := config.NewLogger()
+	rc := rediscluster.NewRedisCluster(nil, logger)
 
-	// Check the connection
-	_, err := client.Ping(ctx).Result()
+	// Test Set and Get
+	key := "test_key"
+	value := "Hello, Redis!"
+	err := rc.Set(ctx, key, value, time.Minute)
 	if err != nil {
-		log.Fatalf("Could not connect to Redis Cluster: %v", err)
+		log.Fatalf("Set error: %v", err)
 	}
+	fmt.Println("Set Success")
 
-	fmt.Println("Connected to Redis Cluster!")
-
-	// Set a key
-	err = client.Set(ctx, "foo", "bar", 0).Err()
+	res, err := rc.Get(ctx, key)
 	if err != nil {
-		log.Fatalf("Could not set key: %v", err)
+		log.Fatalf("Get error: %v", err)
 	}
+	fmt.Println("Get Success: ", res)
 
-	// Get the key
-	val, err := client.Get(ctx, "foo").Result()
+	// Test Existence
+	exists, err := rc.Exist(ctx, key)
 	if err != nil {
-		log.Fatalf("Could not get key: %v", err)
+		log.Fatalf("Exist error: %v", err)
 	}
+	fmt.Println("Exist Success: ", exists)
 
-	fmt.Println("Value of 'foo':", val)
+	// Test Append
+	appendValue := " - Appended!"
+	err = rc.Append(ctx, key, appendValue)
+	if err != nil {
+		log.Fatalf("Append error: %v", err)
+	}
+	fmt.Println("Append Success")
+
+	// Get Updated Value
+	res, _ = rc.Get(ctx, key)
+	fmt.Println("Updated Get: ", res)
+
+	// Test TTL
+	ttl, err := rc.TTL(ctx, key)
+	if err != nil {
+		log.Fatalf("TTL error: %v", err)
+	}
+	fmt.Println("TTL Success: ", ttl)
+
+	// Test Expire
+	err = rc.Expire(ctx, key, 2*time.Minute)
+	if err != nil {
+		log.Fatalf("Expire error: %v", err)
+	}
+	fmt.Println("Expire Success")
+
+	// Test Persist
+	err = rc.Persist(ctx, key)
+	if err != nil {
+		log.Fatalf("Persist error: %v", err)
+	}
+	fmt.Println("Persist Success")
+
+	// Test Delete
+	err = rc.Del(ctx, key)
+	if err != nil {
+		log.Fatalf("Del error: %v", err)
+	}
+	fmt.Println("Delete Success")
 }

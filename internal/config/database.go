@@ -53,8 +53,31 @@ const (
 	EnvPrefixConfigDB     = "EG_DB"
 )
 
+func defaultDBConfig() *DBConfig {
+	return &DBConfig{
+		Host:                      "localhost",
+		Port:                      5432,
+		User:                      "postgres",
+		Password:                  "postgres",
+		DBName:                    "postgres",
+		SSLMode:                   "disable",
+		ConnectTimeout:            60,
+		PoolMaxConns:              20,
+		PoolMinConns:              5,
+		PoolMaxConnLifetime:       30 * time.Minute,
+		PoolMaxConnIdleTime:       5 * time.Minute,
+		PoolHealthCheckPeriod:     5 * time.Minute,
+		PoolMaxConnLifetimeJitter: 5 * time.Minute,
+		DurationThreshold:         100 * time.Millisecond,
+	}
+}
+
 func NewDBClient(logger *zap.Logger) *DBClient {
-	config := configloader.LoadConfig[DBConfig](DefaultConfigDbPath, os.Getenv(CustomConfigDbPathEnv), EnvPrefixConfigDB)
+	configPath := os.Getenv(CustomConfigDbPathEnv)
+	if configPath == "" {
+		configPath = DefaultConfigDbPath
+	}
+	config := configloader.LoadConfig[DBConfig](defaultDBConfig(), configPath, EnvPrefixConfigDB)
 	dbClient := &DBClient{
 		logger: logger,
 		config: config,

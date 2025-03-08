@@ -9,26 +9,26 @@ import (
 )
 
 type Querier interface {
-	CreateFood(ctx context.Context, db DBTX, arg *CreateFoodParams) (Food, error)
-	CreateProfile(ctx context.Context, db DBTX, arg *CreateProfileParams) (Profile, error)
-	CreateRestaurant(ctx context.Context, db DBTX, arg *CreateRestaurantParams) (Restaurant, error)
-	CreateReview(ctx context.Context, db DBTX, arg *CreateReviewParams) (Review, error)
-	CreateUser(ctx context.Context, db DBTX, arg *CreateUserParams) (User, error)
+	CreateFood(ctx context.Context, db DBTX, arg *CreateFoodParams) (*Food, error)
+	CreateProfile(ctx context.Context, db DBTX, arg *CreateProfileParams) (*Profile, error)
+	CreateRestaurant(ctx context.Context, db DBTX, arg *CreateRestaurantParams) (*Restaurant, error)
+	CreateReview(ctx context.Context, db DBTX, arg *CreateReviewParams) (*Review, error)
+	CreateUser(ctx context.Context, db DBTX, arg *CreateUserParams) (*User, error)
 	DeleteFood(ctx context.Context, db DBTX, id string) error
 	DeleteProfile(ctx context.Context, db DBTX, id string) error
 	DeleteRestaurant(ctx context.Context, db DBTX, id string) error
 	DeleteReview(ctx context.Context, db DBTX, id int32) error
 	DeleteUser(ctx context.Context, db DBTX, id string) error
-	GetFoodByID(ctx context.Context, db DBTX, id string) (Food, error)
-	GetProfileByID(ctx context.Context, db DBTX, id string) (Profile, error)
-	GetRestaurantByID(ctx context.Context, db DBTX, id string) (Restaurant, error)
-	GetReviewByID(ctx context.Context, db DBTX, id int32) (Review, error)
-	GetUserByID(ctx context.Context, db DBTX, id string) (User, error)
-	ListFoodsByRestaurant(ctx context.Context, db DBTX, arg *ListFoodsByRestaurantParams) ([]Food, error)
-	ListProfiles(ctx context.Context, db DBTX, arg *ListProfilesParams) ([]Profile, error)
-	ListRestaurants(ctx context.Context, db DBTX, arg *ListRestaurantsParams) ([]Restaurant, error)
-	ListReviewsByRestaurant(ctx context.Context, db DBTX, arg *ListReviewsByRestaurantParams) ([]Review, error)
-	ListUsers(ctx context.Context, db DBTX, arg *ListUsersParams) ([]User, error)
+	GetFoodByID(ctx context.Context, db DBTX, id string) (*Food, error)
+	GetProfileByID(ctx context.Context, db DBTX, id string) (*Profile, error)
+	GetRestaurantByID(ctx context.Context, db DBTX, id string) (*Restaurant, error)
+	GetReviewByID(ctx context.Context, db DBTX, id int32) (*Review, error)
+	GetUserByID(ctx context.Context, db DBTX, id string) (*User, error)
+	ListFoodsByRestaurant(ctx context.Context, db DBTX, arg *ListFoodsByRestaurantParams) ([]*Food, error)
+	ListProfiles(ctx context.Context, db DBTX, arg *ListProfilesParams) ([]*Profile, error)
+	ListRestaurants(ctx context.Context, db DBTX, arg *ListRestaurantsParams) ([]*Restaurant, error)
+	ListReviewsByRestaurant(ctx context.Context, db DBTX, arg *ListReviewsByRestaurantParams) ([]*Review, error)
+	ListUsers(ctx context.Context, db DBTX, arg *ListUsersParams) ([]*User, error)
 	UpdateFood(ctx context.Context, db DBTX, arg *UpdateFoodParams) error
 	UpdateProfile(ctx context.Context, db DBTX, arg *UpdateProfileParams) error
 	UpdateRestaurant(ctx context.Context, db DBTX, arg *UpdateRestaurantParams) error

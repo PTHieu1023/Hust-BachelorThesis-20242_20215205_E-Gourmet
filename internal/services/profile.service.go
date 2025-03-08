@@ -2,10 +2,8 @@ package services
 
 import (
 	"context"
-	"e-gourmet/core/internal/db"
 
-	//"e-gourmet/core/internal/config"
-	//"e-gourmet/core/internal/db"
+	"e-gourmet/core/internal/db"
 	"e-gourmet/core/pkg/pagination"
 )
 

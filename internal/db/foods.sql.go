@@ -21,7 +21,7 @@ type CreateFoodParams struct {
 	Price        int32   `json:"price"`
 }
 
-func (q *Queries) CreateFood(ctx context.Context, db DBTX, arg *CreateFoodParams) (Food, error) {
+func (q *Queries) CreateFood(ctx context.Context, db DBTX, arg *CreateFoodParams) (*Food, error) {
 	row := db.QueryRow(ctx, createFood,
 		arg.RestaurantID,
 		arg.Name,
@@ -37,7 +37,7 @@ func (q *Queries) CreateFood(ctx context.Context, db DBTX, arg *CreateFoodParams
 		&i.Price,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const deleteFood = `-- name: DeleteFood :exec
@@ -53,7 +53,7 @@ const getFoodByID = `-- name: GetFoodByID :one
 SELECT id, restaurant_id, name, description, price, updated_at FROM foods WHERE id = $1
 `
 
-func (q *Queries) GetFoodByID(ctx context.Context, db DBTX, id string) (Food, error) {
+func (q *Queries) GetFoodByID(ctx context.Context, db DBTX, id string) (*Food, error) {
 	row := db.QueryRow(ctx, getFoodByID, id)
 	var i Food
 	err := row.Scan(
@@ -64,7 +64,7 @@ func (q *Queries) GetFoodByID(ctx context.Context, db DBTX, id string) (Food, er
 		&i.Price,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const listFoodsByRestaurant = `-- name: ListFoodsByRestaurant :many
@@ -77,13 +77,13 @@ type ListFoodsByRestaurantParams struct {
 	Offset       int32  `json:"offset"`
 }
 
-func (q *Queries) ListFoodsByRestaurant(ctx context.Context, db DBTX, arg *ListFoodsByRestaurantParams) ([]Food, error) {
+func (q *Queries) ListFoodsByRestaurant(ctx context.Context, db DBTX, arg *ListFoodsByRestaurantParams) ([]*Food, error) {
 	rows, err := db.Query(ctx, listFoodsByRestaurant, arg.RestaurantID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Food{}
+	items := []*Food{}
 	for rows.Next() {
 		var i Food
 		if err := rows.Scan(
@@ -96,7 +96,7 @@ func (q *Queries) ListFoodsByRestaurant(ctx context.Context, db DBTX, arg *ListF
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

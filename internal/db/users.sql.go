@@ -20,7 +20,7 @@ type CreateUserParams struct {
 	Dob pgtype.Date `json:"dob"`
 }
 
-func (q *Queries) CreateUser(ctx context.Context, db DBTX, arg *CreateUserParams) (User, error) {
+func (q *Queries) CreateUser(ctx context.Context, db DBTX, arg *CreateUserParams) (*User, error) {
 	row := db.QueryRow(ctx, createUser, arg.ID, arg.Dob)
 	var i User
 	err := row.Scan(
@@ -29,7 +29,7 @@ func (q *Queries) CreateUser(ctx context.Context, db DBTX, arg *CreateUserParams
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const deleteUser = `-- name: DeleteUser :exec
@@ -45,7 +45,7 @@ const getUserByID = `-- name: GetUserByID :one
 SELECT id, dob, created_at, updated_at FROM users WHERE id = $1
 `
 
-func (q *Queries) GetUserByID(ctx context.Context, db DBTX, id string) (User, error) {
+func (q *Queries) GetUserByID(ctx context.Context, db DBTX, id string) (*User, error) {
 	row := db.QueryRow(ctx, getUserByID, id)
 	var i User
 	err := row.Scan(
@@ -54,7 +54,7 @@ func (q *Queries) GetUserByID(ctx context.Context, db DBTX, id string) (User, er
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
-	return i, err
+	return &i, err
 }
 
 const listUsers = `-- name: ListUsers :many
@@ -66,13 +66,13 @@ type ListUsersParams struct {
 	Offset int32 `json:"offset"`
 }
 
-func (q *Queries) ListUsers(ctx context.Context, db DBTX, arg *ListUsersParams) ([]User, error) {
+func (q *Queries) ListUsers(ctx context.Context, db DBTX, arg *ListUsersParams) ([]*User, error) {
 	rows, err := db.Query(ctx, listUsers, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []User{}
+	items := []*User{}
 	for rows.Next() {
 		var i User
 		if err := rows.Scan(
@@ -83,7 +83,7 @@ func (q *Queries) ListUsers(ctx context.Context, db DBTX, arg *ListUsersParams) 
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, &i)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

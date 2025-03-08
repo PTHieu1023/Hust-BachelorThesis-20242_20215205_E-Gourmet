@@ -27,15 +27,29 @@ type LoggerConfig struct {
 	Compress  bool   `mapstructure:"compress"`
 }
 
-func loadConfig() *LoggerConfig {
-	return configloader.LoadConfig[LoggerConfig](
-		DefaultConfigLoggerPath,
-		os.Getenv(CustomConfigLoggerPathEnv),
-		EnvPrefixConfigLogger)
+func defaultLoggerConfig() *LoggerConfig {
+	return &LoggerConfig{
+		Enable:    false,
+		Level:     "DEBUG",
+		FileName:  "",
+		DirPath:   "logs",
+		MaxSize:   0,
+		MaxBackup: 0,
+		MaxAge:    0,
+		LocalTime: false,
+		Compress:  false,
+	}
 }
 
 func NewLogger() *zap.Logger {
-	config := loadConfig()
+	configPath := os.Getenv(CustomConfigLoggerPathEnv)
+	if configPath == "" {
+		configPath = DefaultConfigLoggerPath
+	}
+	config := configloader.LoadConfig[LoggerConfig](
+		defaultLoggerConfig(),
+		configPath,
+		EnvPrefixConfigLogger)
 
 	var logg *lumberjack.Logger = nil
 	if config.Enable {

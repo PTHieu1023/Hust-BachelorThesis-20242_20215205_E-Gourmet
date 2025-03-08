@@ -26,6 +26,17 @@ type FiberApp struct {
 	*fiber.App
 }
 
+func defaultAppConfig() *AppConfig {
+	return &AppConfig{
+		Name:          "Fiber",
+		Port:          8080,
+		Header:        "go-fiber",
+		Prefork:       false,
+		CaseSensitive: false,
+		Immutable:     false,
+	}
+}
+
 func NewFiberApp(errorhandler fiber.ErrorHandler) *FiberApp {
 	app := &FiberApp{}
 	app.loadConfig()
@@ -41,9 +52,13 @@ func NewFiberApp(errorhandler fiber.ErrorHandler) *FiberApp {
 }
 
 func (a *FiberApp) loadConfig() *FiberApp {
+	configPath := os.Getenv(CustomConfigFiberPathEnv)
+	if configPath == "" {
+		configPath = DefaultConfigFiberPath
+	}
 	a.Config = configloader.LoadConfig[AppConfig](
-		DefaultConfigFiberPath,
-		os.Getenv(CustomConfigFiberPathEnv),
+		defaultAppConfig(),
+		configPath,
 		EnvPrefixConfigFiber)
 	return a
 }
