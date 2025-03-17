@@ -5,8 +5,8 @@ sql:
     schema: "etc/sql/_schema.sql"
     gen:
       go:
-        package: "db"
-        out: "internal/db"
+        package: "database"
+        out: "internal/database"
         sql_package: "pgx/v5"
         emit_empty_slices: true
         emit_json_tags: true

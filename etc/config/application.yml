@@ -1,0 +1,72 @@
+server:
+  name: E-Gourmet
+  port: 8080
+  header: "e-gourmet"
+  prefork: false
+  network: "tcp4"
+  case-sensitive: true
+  immutable: false
+database:
+  host: "127.0.0.1"
+  port: 5432
+  user: "egourmet"
+  password: "egourmet"
+  dbname: "egourmet"
+  sslmode: "disable"
+  connect-timeout: 60
+  pool-max-conns: 20
+  pool-min-conns: 2
+  pool-max-conn-idle-time: "10m"
+  pool-max-conn-lifetime: "30m"
+  pool-health-check-period: "5m"
+  pool-max-conn-lifetime-jitter: "5m"
+  duration-threshold: "100ms"
+keycloak:
+  url: https://sso.hiusnef.online/auth
+  realm: e-gourmet
+  client_id: e-gourmet
+  client_secret: VWHs3kibKM7jXMDjVTyOTvZ38aeHgqaT
+  scope:
+  admin_user: eg_admin
+  admin_pass: 10022003
+  time_threshold: 100ms
+logger:
+  enable: false
+  level: DEBUG   # Log levels: DEBUG -> INFO -> WARN -> ERROR -> PANIC -> FATAL
+  filename: "e-gourmet"
+  dir-path: "./storage/logs/"
+  max-size: 32
+  max-backup: 7
+  max-age: 7
+  local-time: true
+  compress: true
+middleware:
+  cors:
+    enable: true
+    allow-origins: "*"
+    allow-methods: "*"
+    allow-headers: "*"
+  storage:
+    resource-path: ./storage/resource
+    url-prefix: /_static
+redis:
+  addrs: "127.0.0.1:7001,127.0.0.1:7002,127.0.0.1:7003,127.0.0.1:7004,127.0.0.1:7005,127.0.0.1:7006"
+  tls_enabled: false
+  time_threshold: 50ms
+  dial_timeout: "5s"
+  read_timeout: "3s"
+  write_timeout: "3s"
+  max_retries: 3
+  min_retry_backoff: "100ms"
+  max_retry_backoff: "2s"
+  pool_size: 12
+  pool_timeout: "4s"
+  min_idle_conns: 2
+  max_idle_conns: 5
+  max_active_conns: 10
+  conn_max_idle_time: "15m"
+  conn_max_lifetime: "1h"
+  max_redirects: 8
+  read_only: true
+  route_by_latency: false
+  route_randomly: false

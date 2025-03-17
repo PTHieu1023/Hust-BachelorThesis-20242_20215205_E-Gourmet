@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-type RedisClusterConfig struct {
+type Config struct {
 	// Connection configs
 	Addrs         string        `mapstructure:"addrs"`
 	Username      string        `mapstructure:"username"`
@@ -12,7 +12,7 @@ type RedisClusterConfig struct {
 	TLSEnabled    bool          `mapstructure:"tls_enabled"`
 	TimeThreshold time.Duration `mapstructure:"time_threshold"`
 
-	// Retry config
+	// Retry server
 	DialTimeout     time.Duration `mapstructure:"dial_timeout"`
 	ReadTimeout     time.Duration `mapstructure:"read_timeout"`
 	WriteTimeout    time.Duration
@@ -20,7 +20,7 @@ type RedisClusterConfig struct {
 	MinRetryBackoff time.Duration `mapstructure:"min_retry_backoff"`
 	MaxRetryBackoff time.Duration `mapstructure:"max_retry_backoff"`
 
-	// Pool config
+	// Pool server
 	PoolSize        int           `mapstructure:"pool_size"`
 	PoolTimeout     time.Duration `mapstructure:"pool_timeout"`
 	MinIdleConns    int           `mapstructure:"min_idle_conns"`
@@ -29,15 +29,15 @@ type RedisClusterConfig struct {
 	ConnMaxIdleTime time.Duration `mapstructure:"conn_max_idle_time"`
 	ConnMaxLifetime time.Duration `mapstructure:"conn_max_lifetime"`
 
-	// Cluster config
+	// Cluster server
 	MaxRedirects   int  `mapstructure:"max_redirects"`
 	ReadOnly       bool `mapstructure:"read_only"`
 	RouteByLatency bool `mapstructure:"route_by_latency"`
 	RouteRandomly  bool `mapstructure:"route_randomly"`
 }
 
-func DefaultConfig() *RedisClusterConfig {
-	return &RedisClusterConfig{
+func DefaultConfig() *Config {
+	return &Config{
 		Addrs:           "127.0.0.1:6379",
 		Username:        "hiusnef",
 		Password:        "",

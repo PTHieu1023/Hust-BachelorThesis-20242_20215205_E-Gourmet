@@ -5,10 +5,10 @@ import (
 	"strings"
 )
 
-func LoadConfig[T any](defaultConfig *T, customConfigFile string, envPrefix string) *T {
+func LoadConfig[T any](defaultConfig *T, configPath string, envPrefix string) *T {
 	v := viper.New()
-	if customConfigFile != "" {
-		v.SetConfigFile(customConfigFile)
+	if configPath != "" {
+		v.SetConfigFile(configPath)
 		if err := v.ReadInConfig(); err != nil {
 			panic(err)
 		}

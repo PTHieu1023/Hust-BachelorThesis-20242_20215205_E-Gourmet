@@ -1,9 +1,9 @@
 package main
 
 import (
-	"e-gourmet/core/internal/config"
+	"e-gourmet/core/internal/server"
 )
 
 func main() {
-	config.Boostrap()
+	server.Boostrap()
 }

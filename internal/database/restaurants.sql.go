@@ -3,7 +3,7 @@
 //   sqlc v1.28.0
 // source: restaurants.sql
 
-package db
+package database
 
 import (
 	"context"

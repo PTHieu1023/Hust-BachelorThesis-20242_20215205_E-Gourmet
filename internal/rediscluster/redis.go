@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-type RedisCluster interface {
+type IRedis interface {
 	CommonCmd
 	HashCmd
 	SetCmd
@@ -22,15 +22,15 @@ type RedisCluster interface {
 type RedisClusterClient struct {
 	logger *zap.Logger
 	client *redis.ClusterClient
-	config *RedisClusterConfig
+	config *Config
 }
 
-func NewRedisCluster(config *RedisClusterConfig, logger *zap.Logger) RedisCluster {
+func New(config *Config, logger *zap.Logger) IRedis {
 	clusterClient := &RedisClusterClient{
 		logger: logger,
 		config: config,
 	}
-	clusterClient.Ping()
+	go clusterClient.Ping()
 	return clusterClient
 }
 
@@ -59,10 +59,6 @@ func (r *RedisClusterClient) Connect() {
 		MaxActiveConns:  r.config.MaxActiveConns,
 		ConnMaxIdleTime: r.config.ConnMaxIdleTime,
 		ConnMaxLifetime: r.config.ConnMaxLifetime,
-		OnConnect: func(ctx context.Context, cn *redis.Conn) error {
-			r.logger.Info("redis connect success", zap.String("addrs", cn.String()))
-			return nil
-		},
 	}
 	r.client = redis.NewClusterClient(options)
 	if r.config.TimeThreshold == 0 {
