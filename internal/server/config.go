@@ -3,11 +3,12 @@ package server
 import (
 	"e-gourmet/core/internal/app"
 	"e-gourmet/core/internal/database"
-	"e-gourmet/core/internal/keycloak"
-	"e-gourmet/core/internal/logger"
 	"e-gourmet/core/internal/middleware"
-	"e-gourmet/core/internal/rediscluster"
 	"e-gourmet/core/pkg/configloader"
+	"e-gourmet/core/pkg/kafka"
+	"e-gourmet/core/pkg/keycloak"
+	"e-gourmet/core/pkg/logger"
+	"e-gourmet/core/pkg/rediscluster"
 	"fmt"
 	"os"
 )
@@ -23,6 +24,7 @@ type Config struct {
 	Keycloak   *keycloak.Config     `mapstructure:"keycloak"`
 	Logger     *logger.Config       `mapstructure:"logger"`
 	Redis      *rediscluster.Config `mapstructure:"redis"`
+	Kafka      *kafka.Config        `mapstructure:"kafka"`
 	Middleware *middleware.Config   `mapstructure:"middleware"`
 }
 
@@ -33,6 +35,7 @@ func DefaultConfig() *Config {
 		Keycloak:   keycloak.DefaultConfig(),
 		Logger:     logger.DefaultConfig(),
 		Redis:      rediscluster.DefaultConfig(),
+		Kafka:      kafka.DefaultConfig(),
 		Middleware: middleware.DefaultConfig(),
 	}
 }

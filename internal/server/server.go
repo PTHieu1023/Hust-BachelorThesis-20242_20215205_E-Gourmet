@@ -5,14 +5,16 @@ import (
 	"e-gourmet/core/internal/app"
 	"e-gourmet/core/internal/controllers"
 	"e-gourmet/core/internal/database"
-	"e-gourmet/core/internal/keycloak"
-	"e-gourmet/core/internal/logger"
 	"e-gourmet/core/internal/middleware"
-	"e-gourmet/core/internal/rediscluster"
 	"e-gourmet/core/internal/routers"
 	"e-gourmet/core/internal/services"
+	"e-gourmet/core/pkg/kafka"
+	"e-gourmet/core/pkg/keycloak"
+	"e-gourmet/core/pkg/logger"
+	"e-gourmet/core/pkg/rediscluster"
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
+	"strings"
 
 	"fmt"
 	"os"
@@ -61,15 +63,15 @@ func InitServer() *Server {
 	server.controllers = &ControllerSet{
 		ProfileV1: controllers.NewProfileControllerV1(server.services.ProfileV1),
 	}
-
+	producer := kafka.NewProducer(strings.Split(config.Kafka.Brokers, ","), server.logger)
+	for i := 0; i < 10; i++ {
+		err := producer.Produce(context.Background(), fmt.Sprintf("test%d", i%3+3), i)
+		if err != nil {
+			server.logger.Error(fmt.Sprintf("producer error: %v", err))
+		}
+	}
 	server.routers = append(server.routers, routers.NewProfileRouter(server.controllers.ProfileV1))
 	return server
-}
-
-type IServer interface {
-	start()
-	clean()
-	shutdown(isRunning chan bool)
 }
 
 func (s *Server) start() {

@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"e-gourmet/core/internal/keycloak"
+	"e-gourmet/core/pkg/keycloak"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"

@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"fmt"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -22,7 +23,7 @@ func getLogLevel(level string) zapcore.Level {
 	}
 }
 
-func NewLogger(logLevel string, logger *lumberjack.Logger) *zap.Logger {
+func InitLogger(logLevel string, logger *lumberjack.Logger) *zap.Logger {
 	level := getLogLevel(logLevel)
 	encoder := getEncoderLog()
 
@@ -51,4 +52,19 @@ func getEncoderLog() zapcore.Encoder {
 	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
 	encoderConfig.EncodeCaller = zapcore.ShortCallerEncoder
 	return zapcore.NewJSONEncoder(encoderConfig)
+}
+
+func New(config *Config) *zap.Logger {
+	var logg *lumberjack.Logger = nil
+	if config.Enable {
+		logg = &lumberjack.Logger{
+			Filename:   fmt.Sprintf("%s/%s.log", config.DirPath, config.FileName),
+			MaxSize:    config.MaxSize,
+			MaxAge:     config.MaxAge,
+			MaxBackups: config.MaxBackup,
+			LocalTime:  config.LocalTime,
+			Compress:   config.Compress,
+		}
+	}
+	return InitLogger(config.Level, logg)
 }

@@ -70,3 +70,9 @@ redis:
   read_only: true
   route_by_latency: false
   route_randomly: false
+kafka:
+  broker: localhost:9092
+  producer:
+    async: false
+    required-acks: 1 # 0: Fire-and-Forget; 1: Leader ACKs; -1: Full ACKs
+    allow-auto-topic-creation: true

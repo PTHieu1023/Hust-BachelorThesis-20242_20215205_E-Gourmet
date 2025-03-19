@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"e-gourmet/core/internal/keycloak"
+	"e-gourmet/core/pkg/keycloak"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
