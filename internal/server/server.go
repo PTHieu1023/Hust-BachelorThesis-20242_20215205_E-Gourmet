@@ -8,6 +8,7 @@ import (
 	"e-gourmet/core/internal/middleware"
 	"e-gourmet/core/internal/routers"
 	"e-gourmet/core/internal/services"
+	"e-gourmet/core/internal/websocket"
 	"e-gourmet/core/pkg/kafka"
 	"e-gourmet/core/pkg/keycloak"
 	"e-gourmet/core/pkg/logger"
@@ -40,6 +41,7 @@ type Server struct {
 	app         *fiber.App
 	middlewares *middleware.Middlewares
 	querier     database.Querier
+	socket      *websocket.Server
 	services    *ServiceSet
 	controllers *ControllerSet
 	routers     []routers.IRouter
@@ -50,6 +52,7 @@ func InitServer() *Server {
 	server := &Server{}
 	server.port = config.App.Port
 	server.logger = logger.New(config.Logger)
+	server.socket = websocket.New(server.logger)
 	server.querier = database.New()
 	server.db = database.NewDBClient(config.Database, server.logger)
 	server.redis = rediscluster.New(config.Redis, server.logger)
@@ -120,6 +123,8 @@ func Boostrap() {
 	s.app.Use(middlewares.Cors)
 	s.app.Use(middlewares.Compress)
 	s.app.Use(middlewares.Auth)
+	s.app.Use("/ws", websocket.EnableWebsocket())
+	s.app.Get("/ws", s.socket.ServeHTTP())
 
 	for _, router := range s.routers {
 		router.AssignAPI(s.app)

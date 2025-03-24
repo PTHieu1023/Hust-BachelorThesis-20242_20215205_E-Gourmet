@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"e-gourmet/core/pkg/keycloak"
-	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"go.uber.org/zap"
 	"strings"
@@ -11,10 +10,14 @@ import (
 func AuthMiddleware(client keycloak.IKeycloak, logger *zap.Logger) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
-		if authHeader == "" || !strings.HasPrefix(authHeader, "Bearer ") {
-			return fiber.NewError(fiber.StatusUnauthorized, "Missing or invalid Authorization header")
+		if authHeader == "" {
+			authHeader = "Bearer " + c.Query("token")
 		}
 		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
+
+		if tokenStr == "" {
+			return fiber.NewError(fiber.StatusUnauthorized, "Missing or invalid Authorization header")
+		}
 
 		introspect, err := client.RetrospectToken(c.Context(), tokenStr)
 		if err != nil || introspect == nil || !*introspect.Active {
@@ -34,13 +37,6 @@ func AuthMiddleware(client keycloak.IKeycloak, logger *zap.Logger) fiber.Handler
 
 		c.Locals("userID", userID)
 		c.Locals("username", username)
-		admtk, err := client.GetAdminToken(c.Context())
-		_, hihi, err := client.DecodeAccessToken(c.Context(), admtk)
-		if err != nil {
-			logger.Error(err.Error())
-		} else {
-			fmt.Println(hihi)
-		}
 
 		return c.Next()
 	}

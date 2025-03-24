@@ -22,10 +22,10 @@ database:
   pool-max-conn-lifetime-jitter: "5m"
   duration-threshold: "100ms"
 keycloak:
-  url: https://sso.hiusnef.online/auth
+  url: http://localhost:9080
   realm: e-gourmet
   client_id: e-gourmet
-  client_secret: VWHs3kibKM7jXMDjVTyOTvZ38aeHgqaT
+  client_secret: KeFDKPsu0PpkURQ9wfI7IlbEqILaJCtc
   scope:
   admin_user: eg_admin
   admin_pass: 10022003
