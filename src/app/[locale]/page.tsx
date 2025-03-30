@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Star } from "lucide-react";
+import {useTranslations} from "next-intl";
 
 // Dữ liệu mẫu
 const sampleFoods: Food[] = [
@@ -76,14 +77,15 @@ export default function Home() {
         // TODO: Implement review submission
         console.log("Review submitted:", { foodId, rating, comment });
     };
-
+    const t = useTranslations("common")
     return (
         <div className="space-y-8">
+            {t('welcome')}
             {/* Hero Section */}
             <section className="relative h-[400px] rounded-lg overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent z-10" />
                 <img
-                    src="/images/hero.jpg"
+                    src="/bg.png"
                     alt="Food background"
                     className="w-full h-full object-cover"
                 />
