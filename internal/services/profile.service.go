@@ -7,39 +7,7 @@ import (
 	"e-gourmet/core/pkg/pagination"
 )
 
-type ProfileServiceV1 struct {
-	dbtx    database.DBTX
-	querier database.Querier
-}
-
-func NewProfileServiceV1(dbtx database.DBTX, querier database.Querier) IProfileService {
-	return &ProfileServiceV1{
-		dbtx:    dbtx,
-		querier: querier,
-	}
-}
-
-func (p *ProfileServiceV1) CreateProfile(params database.CreateProfileParams) (database.Profile, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (p *ProfileServiceV1) UpdateProfile(params database.UpdateProfileParams) (database.Profile, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (p *ProfileServiceV1) GetProfileById(id string) (database.Profile, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (p *ProfileServiceV1) DeleteProfileById(id string) error {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (p *ProfileServiceV1) GetListProfiles(filter *pagination.PageFilter) (pagination.Pagination[database.Profile], error) {
+func (p *Service) GetListProfiles(filter *pagination.PageFilter) (pagination.Pagination[database.Profile], error) {
 	ctx := context.Background()
 	profiles, err := p.querier.ListProfiles(ctx, p.dbtx, &database.ListProfilesParams{
 		Limit:  int32(filter.Size),

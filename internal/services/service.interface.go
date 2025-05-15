@@ -5,10 +5,18 @@ import (
 	"e-gourmet/core/pkg/pagination"
 )
 
-type IProfileService interface {
-	CreateProfile(params database.CreateProfileParams) (database.Profile, error)
-	UpdateProfile(params database.UpdateProfileParams) (database.Profile, error)
-	GetProfileById(id string) (database.Profile, error)
+type IService interface {
 	GetListProfiles(filter *pagination.PageFilter) (pagination.Pagination[database.Profile], error)
-	DeleteProfileById(id string) error
+}
+
+type Service struct {
+	dbtx    database.DBTX
+	querier database.Querier
+}
+
+func New(dbtx database.DBTX) IService {
+	return &Service{
+		dbtx:    dbtx,
+		querier: database.New(),
+	}
 }

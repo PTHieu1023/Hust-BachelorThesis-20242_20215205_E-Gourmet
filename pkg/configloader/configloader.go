@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func LoadConfig[T any](defaultConfig *T, configPath string, envPrefix string) *T {
+func LoadConfig[T any](configPath string, envPrefix string) *T {
 	v := viper.New()
 	if configPath != "" {
 		v.SetConfigFile(configPath)
@@ -13,12 +13,12 @@ func LoadConfig[T any](defaultConfig *T, configPath string, envPrefix string) *T
 			panic(err)
 		}
 	}
-
+	var config T
 	v.AutomaticEnv()
 	v.SetEnvPrefix(envPrefix)
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-	if err := v.Unmarshal(&defaultConfig); err != nil {
+	if err := v.Unmarshal(&config); err != nil {
 		panic(err)
 	}
-	return defaultConfig
+	return &config
 }

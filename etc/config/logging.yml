@@ -1,0 +1,9 @@
+enable: false
+level: DEBUG   # Log levels: DEBUG -> INFO -> WARN -> ERROR -> PANIC -> FATAL
+filename: "e-gourmet"
+dir-path: "./storage/logs/"
+max-size: 32
+max-backup: 7
+max-age: 7
+local-time: true
+compress: true
