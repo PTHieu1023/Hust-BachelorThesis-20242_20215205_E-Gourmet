@@ -4,3 +4,4 @@ confluent-kafka~=2.8.0
 uvicorn~=0.32.1
 pandas~=2.2.3
 scikit-learn~=1.6.1
+scipy~=1.15.3

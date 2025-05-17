@@ -11,7 +11,10 @@ ENV PYTHONUNBUFFERED=1 \
 WORKDIR /app
 
 # Install required system dependencies
-RUN apk add --no-cache gcc musl-dev libffi-dev
+RUN apk add --no-cache \
+    gcc \
+    libffi-dev \
+    musl-dev
 
 # Copy only requirements first to leverage Docker cache
 COPY requirements.txt .

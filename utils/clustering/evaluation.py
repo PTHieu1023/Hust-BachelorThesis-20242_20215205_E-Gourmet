@@ -1,9 +1,14 @@
 import numpy as np
+from numpy import ndarray
 from scipy.spatial.distance import cdist
 
 
-def euclidean_distance(point, centroid):
-    return np.sqrt(np.sum((point - centroid) ** 2))
+def euclidean_distance(x, y):
+    return np.sqrt(np.sum((x - y) ** 2))
+
+def subtract_matrix(m1: np.ndarray, m2: np.ndarray)->np.ndarray:
+    return abs(m1-m2)
+
 
 
 class SsFuzzyCMeans:
@@ -23,20 +28,29 @@ class SsFuzzyCMeans:
         self.data = data
         self.supervise_matrix = supervise_matrix
         self.labeled_indices = np.nonzero(np.sum(supervise_matrix, axis=1) > 0)[0]
-        self.centroids = np.random.rand(self.no_clusters, self.no_features)
-        self.membership = np.random.dirichlet(np.ones(self.no_clusters), size=self.no_samples)
+        generator = np.random.default_rng(seed=42)
+        self.centroids = generator.uniform(low=np.min(data, axis=0), high=np.max(data, axis=0), size=(self.no_clusters, self.no_features))
+        self.membership = generator.dirichlet(np.ones(self.no_clusters), size=self.no_samples)
         self.m = m
         self.eps = epsilon
         self.alpha = alpha
 
     def update_centroids(self):
-        centroids = np.zeros((self.no_clusters, self.no_features))
+        diff_u = subtract_matrix(self.membership, self.supervise_matrix)
         for k in range(self.no_clusters):
-            denom = np.sum(self.membership[:, k] ** self.m)
-            if denom < 1e-10:
-                denom = 1e-10
-            centroids[k] = np.sum((self.membership[:, k] ** self.m)[:, np.newaxis] * self.data, axis=0) / denom
-        return centroids
+            self.centroids[k, :] = (np.sum((diff_u[:, k] ** self.m)[:, np.newaxis] * self.data, axis=0) /
+                               np.sum(diff_u[:, k] ** self.m))
+
+    def update_membership_matrix(self):
+        u_matrix = np.zeros((self.no_samples, self.no_clusters))
+        for i in range(self.no_clusters):
+            u_matrix[:, i] = np.linalg.norm(self.data - self.centroids[i, :], axis=1)
+        u_matrix = 1 / (u_matrix ** (2 / (self.m - 1)) * np.sum((1 / u_matrix) ** (2 / (self.m - 1)), axis=1)[:, np.newaxis])
+        sum_supervised = [np.sum(r) for r in self.supervise_matrix]
+        for i in range(u_matrix.shape[0]):
+            u_matrix[i, :] *= (1 - sum_supervised[i])
+        u_matrix += self.supervise_matrix
+        return u_matrix
 
     def update_membership(self):
         distances = cdist(self.data, self.centroids, metric='euclidean')
@@ -50,7 +64,7 @@ class SsFuzzyCMeans:
             u_new[i] = (1 - self.alpha) * u_new[i] + self.alpha * self.supervise_matrix[i]
         return u_new
 
-    def do_ssfcm(self, max_iter: int = 1000):
+    def do_clustering(self, max_iter: int = 1000):
         for _ in range(max_iter):
             pre_membership = self.membership.copy()
             self.centroids = self.update_centroids()
