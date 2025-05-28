@@ -13,6 +13,13 @@ export interface Food {
     updatedAt: Date;
 }
 
+export interface Cuisine {
+    id: number;
+    name: string;
+    urlName: string;
+    imageUrl: string;
+}
+
 export interface FoodRecommendation {
     foodId: string;
     score: number;

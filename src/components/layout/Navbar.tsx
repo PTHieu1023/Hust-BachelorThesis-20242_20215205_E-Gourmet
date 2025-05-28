@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/themeController';
 import useAuth from '@/hooks/useAuth';
+import Image from "next/image";
 
 export default function Navbar() {
     const pathname = usePathname();
@@ -18,32 +19,24 @@ export default function Navbar() {
                 <div className="flex h-16 items-center justify-between">
                     <div className="flex items-center space-x-8">
                         <Link href="/" className="text-xl font-bold">
-                            E-Gourmet
+                            <Image src={"/logo.svg"} alt={"E-Gourmet"} width={36} height={36}/>
                         </Link>
                         <div className="hidden md:flex space-x-4">
                             <Link
                                 href="/foods"
-                                className={`text-sm font-medium transition-colors hover:text-primary ${
-                                    isActive('/foods') ? 'text-primary' : 'text-muted-foreground'
+                                className={`text-sm font-medium transition-colors hover:text-muted-foreground ${
+                                    isActive('/foods') ? 'text-muted-foreground' : "text-primary"
                                 }`}
                             >
                                 Foods
                             </Link>
                             <Link
                                 href="/restaurants"
-                                className={`text-sm font-medium transition-colors hover:text-primary ${
-                                    isActive('/restaurants') ? 'text-primary' : 'text-muted-foreground'
+                                className={`text-sm font-medium transition-colors hover:text-muted-foreground ${
+                                    isActive('/foods') ? 'text-muted-foreground' : "text-primary"
                                 }`}
                             >
                                 Restaurants
-                            </Link>
-                            <Link
-                                href="/recommendations"
-                                className={`text-sm font-medium transition-colors hover:text-primary ${
-                                    isActive('/recommendations') ? 'text-primary' : 'text-muted-foreground'
-                                }`}
-                            >
-                                Recommendations
                             </Link>
                         </div>
                     </div>

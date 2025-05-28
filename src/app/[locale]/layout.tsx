@@ -1,5 +1,4 @@
 import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
 import {hasLocale, NextIntlClientProvider} from 'next-intl';
 import {ReactNode} from "react";
 import {notFound} from 'next/navigation';
@@ -17,7 +16,7 @@ const inter = Inter({subsets: ["latin"]});
 
 export const metadata: Metadata = {
     title: "E-Gourmet - Food Reviews & Recommendations",
-    description: "Discover and review amazing food with personalized recommendations",
+    description: "Discover and review amazing foods with personalized recommendations",
 };
 
 export default async function LocaleLayout({children, params}:
@@ -40,7 +39,6 @@ export default async function LocaleLayout({children, params}:
                     <main className="flex-grow container mx-auto px-4 py-8">
                         {children}
                     </main>
-                    <Footer/>
                 </div>
             </NextIntlClientProvider>
             </RootProviders>
