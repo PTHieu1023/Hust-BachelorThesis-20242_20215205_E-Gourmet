@@ -5,7 +5,9 @@ from fastapi import FastAPI, Depends
 
 from model.database import create_db_and_tables, get_session
 from sqlalchemy import text
-from model.model import Dish, Cuisine, Review, User, UserInteraction, UserRecommendation
+import numpy as np
+
+from utils.clustering.ssfcm import ssfcm
 
 
 @asynccontextmanager
@@ -72,9 +74,36 @@ def get_user_dish_summary(session: Session, user_id: int):
 
     return [dict(row._mapping) for row in result]
 
+@app.get("/api/recommend/{user_id}")
+async def predict(user_id, session: Session = Depends(get_session)):
 
-@app.get("/api/recommend")
-async def predict(session: Session = Depends(get_session)):
-    result = get_user_dish_summary(session=session, user_id=21)
+    result = get_user_dish_summary(session=session, user_id=user_id)
 
-    return {"result": result}
+    # Convert to NumPy array for clustering
+    data = np.array([
+        [
+            row.get("price", 0),
+            row.get("cuisine_weight", 0),
+            float(row.get("avg_rating", 0)),
+            row.get("total_review", 0)
+        ]
+        for row in result
+    ])
+
+    # Define initial membership matrix u_bar
+    u_bar = np.array([
+        [0.6 if row.get("alpha", 0) > 0 else 0, 0]
+        for row in result
+    ])
+
+    # Call soft subspace fuzzy c-means
+    u, v = ssfcm(data, c=2, m=2, max_iter=100, eps=1e-5, u_bar=u_bar)
+
+    # Assign cluster score (membership degree) to each result item
+    for i, row in enumerate(result):
+        row["score"] = u[i][0]  # Score for first cluster (you can choose which one)
+
+    # Filter results with score > 0.5
+    filtered_result = [row for row in result if row.get("score", 0) > 0.5]
+
+    return filtered_result
