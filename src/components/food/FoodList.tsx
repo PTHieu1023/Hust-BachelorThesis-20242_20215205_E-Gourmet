@@ -69,12 +69,12 @@ export default function FoodList() {
             {/* Food Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {foodList?.map((food) => (
-                    <Link key={food.id} href={`/foods/${food.id}`} className="no-underline">`
-                        <Card key={food.id} className="overflow-hidden">
+                    <Link key={food?.id} href={`/foods/${food?.id}`} className="no-underline">`
+                        <Card key={food?.id} className="overflow-hidden">
                             <div className="relative h-48">
                                 <img
                                     src={"/bg.png"}
-                                    alt={food.name}
+                                    alt={food?.name}
                                     className="w-full h-full object-cover"
                                 />
                             </div>
@@ -82,9 +82,9 @@ export default function FoodList() {
                                 {/*@ts-ignore*/}
                                 <span>{food?.restaurant.name}</span>
                                 <CardTitle className="flex items-center justify-between">
-                                    <span>{food.name}</span>
+                                    <span>{food?.name}</span>
                                     <span className="text-lg font-semibold">
-                                        ${food.price.toFixed(2)}
+                                        ${food?.price.toFixed(2)}
                                     </span>
                                 </CardTitle>
                             </CardHeader>
