@@ -1,7 +1,8 @@
 fastapi~=0.115.8
 numpy~=2.2.3
-confluent-kafka~=2.8.0
-uvicorn~=0.32.1
 pandas~=2.2.3
 scikit-learn~=1.6.1
 scipy~=1.15.3
+sqlmodel~=0.0.21
+python-dotenv~=1.1.0
+SQLAlchemy~=2.0.41
