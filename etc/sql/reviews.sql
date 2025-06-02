@@ -1,6 +1,7 @@
 -- name: CreateReview :one
-INSERT INTO reviews (restaurant_id, content, author, rate)
-VALUES ($1, $2, $3, $4) RETURNING *;
+INSERT INTO reviews (rating, comment, user_id, dish_id)
+VALUES ($1, $2, $3, $4)
+RETURNING *;
 
 -- name: GetReviewByID :one
 SELECT * FROM reviews WHERE id = $1;

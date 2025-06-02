@@ -1,8 +1,4 @@
-{
-    "CityId": 218,
-    "ExcludeIds": null,
-    "Query": null,
-    "Items": [
+[
         {
             "Id": 84054,
             "Name": "Bánh Cuốn & Gà Tần - Đội Cấn",
@@ -67704,8 +67700,4 @@
             "DistanceText": null,
             "MobileBookingUrl": ""
         }
-    ],
-    "Count": 500,
-    "Total": 17260,
-    "LastId": null
-}
+    ]

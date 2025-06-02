@@ -1,153 +1,238 @@
-CREATE TABLE cuisines (
-                          id SERIAL PRIMARY KEY,
-                          name varchar(128),
-                          slug varchar(128) UNIQUE NOT NULL,
-                          description text,
-                          w_value float
-);
+-- public.restaurants definition
 
-CREATE TABLE flavors (
-                         id SERIAL PRIMARY KEY,
-                         name varchar(64),
-                         description text,
-                         w_value float
-);
+-- Drop table
 
-CREATE TABLE restrictions (
-                              id SERIAL PRIMARY KEY,
-                              name varchar(128),
-                              description text,
-                              w_value float
-);
-
-CREATE TABLE ingredients (
-                             id SERIAL PRIMARY KEY,
-                             name varchar(128),
-                             description text,
-                             flavor jsonb
-);
-
-CREATE TABLE keycloak (
-                          id varchar(64) PRIMARY KEY,
-                          username varchar(64) UNIQUE NOT NULL,
-                          email varchar(255) UNIQUE NOT NULL,
-                          image_url varchar(255),
-                          name varchar(255),
-                          type int DEFAULT 0,
-                          lat float,
-                          lng float,
-                          activate bool DEFAULT true
-);
-
-CREATE TABLE users (
-                       id VARCHAR(64) PRIMARY KEY,
-                       age integer,
-                       prefer_cuisine jsonb,
-                       prefer_flavor jsonb,
-                       allergic jsonb,
-                       restriction_id integer,
-                       dining_out_frequecy int,
-                       dining_partner text[],
-                       created_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP),
-                       updated_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP)
-);
+-- DROP TABLE restaurants;
 
 CREATE TABLE restaurants (
-                             id VARCHAR(64) PRIMARY KEY,
-                             phone varchar(12),
-                             contact jsonb,
-                             description varchar(4000),
-                             detail_address VARCHAR(255) NOT NULL,
-                             operating_hours varchar(64),
-                             documents jsonb,
-                             is_approved boolean DEFAULT false,
-                             created_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP),
-                             updated_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP)
+                             id serial4 NOT NULL,
+                             "name" varchar(255) NOT NULL,
+                             description text NULL,
+                             avatar_url varchar(255) NULL,
+                             username varchar(63) NOT NULL,
+                             email varchar(127) NULL,
+                             phone varchar(63) NULL,
+                             address varchar(255) NULL,
+                             lat float8 NULL,
+                             lng float8 NULL,
+                             "document" jsonb NULL,
+                             created_at timestamptz DEFAULT now() ,
+                             updated_at timestamptz DEFAULT now(),
+                             is_approved bool DEFAULT false NULL,
+                             CONSTRAINT restaurants_email_key UNIQUE (email),
+                             CONSTRAINT restaurants_phone_key UNIQUE (phone),
+                             CONSTRAINT restaurants_pkey PRIMARY KEY (id),
+                             CONSTRAINT restaurants_username_key UNIQUE (username)
 );
 
-CREATE TABLE follows (
-                         user_id varchar(64),
-                         restaurant_id varchar(64),
-                         created_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP),
-                         PRIMARY KEY (user_id, restaurant_id)
+
+-- public.users definition
+
+-- Drop table
+
+-- DROP TABLE users;
+
+CREATE TABLE users (
+                       id bpchar(63) NOT NULL,
+                       username varchar(64) NOT NULL,
+                       email varchar(127) NOT NULL,
+                       display_name varchar(255) NOT NULL,
+                       avatar_url varchar(255) NULL,
+                       lat float8 NULL,
+                       lng float8 NULL,
+                       budget int8 NULL,
+                       created_at timestamptz DEFAULT now(),
+                       updated_at timestamptz DEFAULT now(),
+                       CONSTRAINT users_email_key UNIQUE (email),
+                       CONSTRAINT users_pkey PRIMARY KEY (id),
+                       CONSTRAINT users_username_key UNIQUE (username)
 );
+
+
+-- public.cuisines definition
+
+-- Drop table
+
+-- DROP TABLE cuisines;
+
+CREATE TABLE cuisines (
+                          id smallserial NOT NULL,
+                          "name" varchar(255) NOT NULL,
+                          parent_id int2 NULL,
+                          branch_order int4 NOT NULL,
+                          weight float8 DEFAULT 0 NOT NULL,
+                          image_url varchar(255) NULL,
+                          created_at timestamptz DEFAULT now(),
+                          updated_at timestamptz DEFAULT now(),
+                          CONSTRAINT cuisines_pkey PRIMARY KEY (id),
+                          CONSTRAINT cuisines_weight_unique UNIQUE (weight),
+                          CONSTRAINT cuisine_parent_id_fk FOREIGN KEY (parent_id) REFERENCES cuisines(id) ON DELETE CASCADE
+);
+
+
+-- public.dishes definition
+
+-- Drop table
+
+-- DROP TABLE dishes;
 
 CREATE TABLE dishes (
-                        id SERIAL PRIMARY KEY,
-                        restaurant_id varchar(64),
-                        cuisine_id integer,
-                        name VARCHAR(100) NOT NULL,
-                        description TEXT,
-                        ingradient jsonb,
-                        restriction jsonb,
-                        price DECIMAL(10,2) NOT NULL,
-                        created_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP),
-                        updated_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP)
+                        id serial4 NOT NULL,
+                        "name" varchar(255) NOT NULL,
+                        description text NULL,
+                        price int8 DEFAULT 0 NOT NULL,
+                        cuisine_id int2 DEFAULT 0 NOT NULL,
+                        restaurant_id int4 NOT NULL,
+                        created_at timestamptz DEFAULT now(),
+                        updated_at timestamptz DEFAULT now(),
+                        CONSTRAINT dish_check_min_price CHECK ((price >= 0)),
+                        CONSTRAINT dishes_pkey PRIMARY KEY (id),
+                        CONSTRAINT dish_cuisine_id_fk FOREIGN KEY (cuisine_id) REFERENCES cuisines(id) ON DELETE CASCADE,
+                        CONSTRAINT dish_restaurant_id_fk FOREIGN KEY (restaurant_id) REFERENCES restaurants(id) ON DELETE CASCADE
 );
 
-CREATE TABLE reviews (
-                         id SERIAL PRIMARY KEY,
-                         author_id VARCHAR(64),
-                         dish_id integer,
-                         rating INTEGER,
-                         content TEXT,
-                         medias jsonb,
-                         reply text,
-                         created_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP),
-                         updated_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP)
-);
+
+-- public.posts definition
+
+-- Drop table
+
+-- DROP TABLE posts;
 
 CREATE TABLE posts (
-                       id SERIAL PRIMARY KEY,
-                       author_id varchar(64),
-                       content TEXT NOT NULL,
-                       media JSONB,
-                       metadata JSONB,
-                       created_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP),
-                       updated_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP)
+                       id bigserial NOT NULL,
+                       caption text NULL,
+                       created_at timestamptz DEFAULT now(),
+                       updated_at timestamptz DEFAULT now(),
+                       edit_snapshot jsonb NULL,
+                       media jsonb NULL,
+                       restaurant_id int4 NULL,
+                       CONSTRAINT posts_pkey PRIMARY KEY (id),
+                       CONSTRAINT posts_restaurant_id_fk FOREIGN KEY (restaurant_id) REFERENCES restaurants(id) ON DELETE CASCADE
 );
 
-CREATE TABLE post_comments (
-                               id SERIAL PRIMARY KEY,
-                               post_id INTEGER,
-                               author_id varchar(64),
-                               comment TEXT NOT NULL,
-                               reply_to int,
-                               created_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP)
+
+-- public.posts_comment definition
+
+-- Drop table
+
+-- DROP TABLE posts_comment;
+
+CREATE TABLE posts_comment (
+                               id bigserial NOT NULL,
+                               post_id int8 NOT NULL,
+                               user_id bpchar(63) NOT NULL,
+                               reply_to_id int8 NULL,
+                               "content" text NULL,
+                               media jsonb NULL,
+                               CONSTRAINT posts_comment_pkey PRIMARY KEY (id),
+                               CONSTRAINT post_comment_user_id_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
+                               CONSTRAINT posts_comment_post_id_fk FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+                               CONSTRAINT posts_comment_reply_to_id_fk FOREIGN KEY (reply_to_id) REFERENCES posts_comment(id) ON DELETE CASCADE
 );
+
+
+-- public.restaurant_manager definition
+
+-- Drop table
+
+-- DROP TABLE restaurant_manager;
+
+CREATE TABLE restaurant_manager (
+                                    user_id bpchar(63) NOT NULL,
+                                    restaurant_id int4 NOT NULL,
+                                    is_owner bool DEFAULT false NULL,
+                                    created_at timestamptz DEFAULT now(),
+                                    updated_at timestamptz DEFAULT now(),
+                                    CONSTRAINT restaurant_manager_pkey PRIMARY KEY (user_id, restaurant_id),
+                                    CONSTRAINT restaurant_manager_restaurant_id FOREIGN KEY (restaurant_id) REFERENCES restaurants(id) ON DELETE CASCADE,
+                                    CONSTRAINT restaurant_manager_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+
+-- public.reviews definition
+
+-- Drop table
+
+-- DROP TABLE reviews;
+
+CREATE TABLE reviews (
+                         id bigserial NOT NULL,
+                         rating int2 NOT NULL,
+                         "comment" text NOT NULL,
+                         created_at timestamptz DEFAULT now(),
+                         user_id bpchar(63) NOT NULL,
+                         dish_id int4 NOT NULL,
+                         CONSTRAINT reviews_check_valid_rating CHECK (((rating > 0) AND (rating <= 10))),
+                         CONSTRAINT reviews_pkey PRIMARY KEY (id),
+                         CONSTRAINT reviews_dish_id FOREIGN KEY (dish_id) REFERENCES dishes(id) ON DELETE CASCADE,
+                         CONSTRAINT reviews_user_id_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+
+-- public.user_cuisine definition
+
+-- Drop table
+
+-- DROP TABLE user_cuisine;
+
+CREATE TABLE user_cuisine (
+                              user_id bpchar(63) NOT NULL,
+                              cuisine_id int2 NOT NULL,
+                              created_at timestamptz DEFAULT now(),
+                              updated_at timestamptz DEFAULT now(),
+                              CONSTRAINT user_cuisine_pkey PRIMARY KEY (user_id, cuisine_id),
+                              CONSTRAINT user_cuisine_cuisine_id FOREIGN KEY (cuisine_id) REFERENCES cuisines(id) ON DELETE CASCADE,
+                              CONSTRAINT user_cuisine_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+
+-- public.user_interactions definition
+
+-- Drop table
+
+-- DROP TABLE user_interactions;
+
+CREATE TABLE user_interactions (
+                                   id serial4 NOT NULL,
+                                   user_id bpchar(63) NULL,
+                                   dish_id int4 NOT NULL,
+                                   interaction_score int2 DEFAULT 1 NULL,
+                                   created_at timestamptz DEFAULT now(),
+                                   CONSTRAINT user_interactions_pkey PRIMARY KEY (id),
+                                   CONSTRAINT user_interactions_dish_id_fk FOREIGN KEY (dish_id) REFERENCES dishes(id) ON DELETE CASCADE,
+                                   CONSTRAINT user_interactions_user_id_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+
+-- public.user_recommendation definition
+
+-- Drop table
+
+-- DROP TABLE user_recommendation;
+
+CREATE TABLE user_recommendation (
+                                     id bigserial NOT NULL,
+                                     user_id bpchar(63) NULL,
+                                     dish_id int4 NOT NULL,
+                                     score float8 NOT NULL,
+                                     created_at timestamptz DEFAULT now(),
+                                     CONSTRAINT user_recommendation_pkey PRIMARY KEY (id),
+                                     CONSTRAINT user_recommendation_dish_id_fk FOREIGN KEY (dish_id) REFERENCES dishes(id) ON DELETE CASCADE,
+                                     CONSTRAINT user_recommendation_user_id_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+
+-- public.post_like definition
+
+-- Drop table
+
+-- DROP TABLE post_like;
 
 CREATE TABLE post_like (
-                           post_id INTEGER,
-                           user_id varchar(64),
-                           created_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP)
+                           post_id int8 NOT NULL,
+                           user_id bpchar(63) NOT NULL,
+                           created_at timestamptz DEFAULT now(),
+                           CONSTRAINT post_like_pkey PRIMARY KEY (post_id, user_id),
+                           CONSTRAINT post_like_post_id_fk FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+                           CONSTRAINT post_like_user_id_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
-
-ALTER TABLE users ADD FOREIGN KEY (id) REFERENCES keycloak (id) ON DELETE CASCADE;
-
-ALTER TABLE users ADD FOREIGN KEY (restriction_id) REFERENCES restrictions (id) ON DELETE SET NULL;
-
-ALTER TABLE restaurants ADD FOREIGN KEY (id) REFERENCES keycloak (id) ON DELETE CASCADE;
-
-ALTER TABLE follows ADD FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE;
-
-ALTER TABLE follows ADD FOREIGN KEY (restaurant_id) REFERENCES restaurants (id) ON DELETE CASCADE;
-
-ALTER TABLE dishes ADD FOREIGN KEY (cuisine_id) REFERENCES cuisines (id) ON DELETE SET NULL;
-
-ALTER TABLE dishes ADD FOREIGN KEY (restaurant_id) REFERENCES restaurants (id) ON DELETE CASCADE;
-
-ALTER TABLE reviews ADD FOREIGN KEY (author_id) REFERENCES users (id) ON DELETE SET NULL;
-
-ALTER TABLE reviews ADD FOREIGN KEY (dish_id) REFERENCES dishes (id) ON DELETE CASCADE;
-
-ALTER TABLE posts ADD FOREIGN KEY (author_id) REFERENCES keycloak (id) ON DELETE SET NULL;
-
-ALTER TABLE post_comments ADD FOREIGN KEY (post_id) REFERENCES posts (id) ON DELETE CASCADE;
-
-ALTER TABLE post_comments ADD FOREIGN KEY (author_id) REFERENCES keycloak (id) ON DELETE SET NULL;
-
-ALTER TABLE post_comments ADD FOREIGN KEY (reply_to) REFERENCES post_comments (id) ON DELETE CASCADE;
-
-ALTER TABLE post_like ADD FOREIGN KEY (post_id) REFERENCES posts (id) ON DELETE CASCADE;
-
-ALTER TABLE post_like ADD FOREIGN KEY (user_id) REFERENCES keycloak (id) ON DELETE CASCADE;
