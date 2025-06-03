@@ -1,14 +1,21 @@
--- name: CreateUser :one
-INSERT INTO users (id, dob) VALUES ($1, $2) RETURNING *;
+-- name: SyncKCUser :one
+INSERT INTO users (id, username, email, display_name)
+VALUES (:user_id, :username, :email, :display_name)
+ON CONFLICT (id) DO UPDATE
+    SET username = EXCLUDED.username,
+        email = EXCLUDED.email,
+        display_name = EXCLUDED.display_name
+RETURNING *;
 
 -- name: GetUserByID :one
-SELECT * FROM users WHERE id = $1;
-
--- name: UpdateUser :exec
-UPDATE users SET dob = $2, updated_at = now() WHERE id = $1;
+SELECT
+    u.id,
+    u.username,
+    u.email,
+    u.display_name,
+    u.avatar_url
+FROM users u
+WHERE id = :user_id;
 
 -- name: DeleteUser :exec
-DELETE FROM users WHERE id = $1;
-
--- name: ListUsers :many
-SELECT * FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2;
+DELETE FROM users WHERE id = :user_id;
