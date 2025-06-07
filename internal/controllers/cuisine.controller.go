@@ -4,6 +4,7 @@ import (
 	"e-gourmet/core/internal/database"
 	"github.com/gofiber/fiber/v2"
 	"strconv"
+	"strings"
 )
 
 func (c *Controller) GetCuisineRecursionById(ctx *fiber.Ctx) error {
@@ -25,19 +26,30 @@ func (c *Controller) GetCuisineRecursionById(ctx *fiber.Ctx) error {
 }
 
 func (c *Controller) AddCuisine(ctx *fiber.Ctx) error {
-	params := new(database.AddCuisineParams)
+	params := &database.AddCuisineParams{
+		Name:     "",
+		ParentID: &[]int16{0}[0],
+		ImageUrl: nil,
+	}
 
 	if err := ctx.BodyParser(&params); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid request body",
-		})
+		return fiber.NewError(
+			fiber.StatusBadRequest,
+			"Invalid request body. Valid fields: name(string), parentId(int), imageUrl(string)")
+	}
+
+	params.Name = strings.TrimSpace(params.Name)
+	if params.Name == "" {
+		return fiber.NewError(
+			fiber.StatusBadRequest,
+			"Cuisine name is required")
 	}
 
 	cuisine, err := c.service.AddCuisine(params)
+
 	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to add cuisine",
-		})
+		return fiber.NewError(fiber.StatusInternalServerError, err.Error())
 	}
+
 	return ctx.Status(fiber.StatusCreated).JSON(cuisine)
 }

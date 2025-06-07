@@ -59,12 +59,10 @@ CREATE TABLE cuisines (
                           id smallserial NOT NULL,
                           "name" varchar(255) NOT NULL,
                           parent_id int2 NULL,
-                          branch_order int4 NOT NULL,
                           image_url varchar(255) NULL,
                           created_at timestamptz DEFAULT now() NULL,
                           updated_at timestamptz DEFAULT now() NULL,
                           CONSTRAINT cuisines_pkey PRIMARY KEY (id),
-                          CONSTRAINT cuisines_weight_unique UNIQUE (weight),
                           CONSTRAINT cuisine_parent_id_fk FOREIGN KEY (parent_id) REFERENCES cuisines(id) ON DELETE CASCADE
 );
 

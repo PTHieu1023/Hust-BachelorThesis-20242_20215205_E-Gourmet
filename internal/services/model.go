@@ -1,7 +1,7 @@
 package services
 
 type Cuisine struct {
-	ID       int16
+	ID       int16              `json:"id"`
 	Name     string             `json:"name"`
 	ImageUrl *string            `json:"imageUrl,omitempty"`
 	ParentId *int16             `json:"parentId,omitempty"`

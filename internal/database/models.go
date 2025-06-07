@@ -9,13 +9,12 @@ import (
 )
 
 type Cuisine struct {
-	ID          int16              `json:"id"`
-	Name        string             `json:"name"`
-	ParentID    *int16             `json:"parentId"`
-	BranchOrder int32              `json:"branchOrder"`
-	ImageUrl    *string            `json:"imageUrl"`
-	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
-	UpdatedAt   pgtype.Timestamptz `json:"updatedAt"`
+	ID        int16              `json:"id"`
+	Name      string             `json:"name"`
+	ParentID  *int16             `json:"parentId"`
+	ImageUrl  *string            `json:"imageUrl"`
+	CreatedAt pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt pgtype.Timestamptz `json:"updatedAt"`
 }
 
 type Dish struct {

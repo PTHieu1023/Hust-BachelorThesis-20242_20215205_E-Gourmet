@@ -22,5 +22,6 @@ func InitHandler() {
 	app.
 		Group("/api/v1/cuisine/").
 		Get("/", handlers.GetCuisineRecursionById).
+		Post("/", handlers.AddCuisine).
 		Get("/:id", handlers.GetCuisineRecursionById)
 }

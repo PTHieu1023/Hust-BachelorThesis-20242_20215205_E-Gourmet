@@ -12,7 +12,7 @@ import (
 const addCuisine = `-- name: AddCuisine :one
 INSERT INTO cuisines (name, parent_id, image_url)
 VALUES ($1,$2,$3)
-RETURNING id, name, parent_id, branch_order, image_url, created_at, updated_at
+RETURNING id, name, parent_id, image_url, created_at, updated_at
 `
 
 type AddCuisineParams struct {
@@ -28,7 +28,6 @@ func (q *Queries) AddCuisine(ctx context.Context, db DBTX, arg *AddCuisineParams
 		&i.ID,
 		&i.Name,
 		&i.ParentID,
-		&i.BranchOrder,
 		&i.ImageUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
