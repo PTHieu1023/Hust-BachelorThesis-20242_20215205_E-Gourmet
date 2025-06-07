@@ -2,7 +2,7 @@
 WITH inserted_dish AS (
     INSERT INTO dishes (restaurant_id, name, description, price, cuisine_id)
     VALUES
-        (:restaurant_id, :name, :description, :price, :cuisine_id)
+        ($1, $2, $3, $4, $5)
     RETURNING *
 )
 SELECT
@@ -42,17 +42,17 @@ SELECT
 FROM dishes d
 LEFT JOIN restaurants r ON r.id = d.restaurant_id
 LEFT JOIN cuisines c ON c.id = d.cuisine_id
-WHERE d.id = :dish_id;
+WHERE d.id = $1;
 
 -- name: UpdateDish :one
 WITH inserted_dish AS (
     UPDATE dishes
-    SET name = coalesce(:name, name),
-        description = coalesce(:description, description),
-        price = coalesce(:price, price),
-        cuisine_id = coalesce(:cuisine, cuisine_id),
+    SET name = coalesce(sqlc.narg('name'), name),
+        description = coalesce(sqlc.narg('description'), description),
+        price = coalesce(sqlc.narg('price'), price),
+        cuisine_id = coalesce(sqlc.narg('cuisine'), cuisine_id),
         updated_at = now()
-    WHERE id = :dish_id
+    WHERE id = sqlc.narg('dish_id')
     RETURNING *
 )
 SELECT
@@ -75,7 +75,7 @@ LEFT JOIN cuisines    c ON c.id = d.cuisine_id;
 
 
 -- name: DeleteFood :exec
-DELETE FROM dishes WHERE id = :dish_id;
+DELETE FROM dishes WHERE id = $1;
 
 -- name: ListFoodsByRestaurant :many
 SELECT
@@ -95,6 +95,6 @@ SELECT
 FROM dishes d
 LEFT JOIN restaurants r ON r.id = d.restaurant_id
 LEFT JOIN cuisines c ON c.id = d.cuisine_id
-WHERE d.restaurant_id = :restaurant_id
-ORDER BY updated_at DESC
-LIMIT :limit OFFSET :offset;
+WHERE d.restaurant_id = $1
+ORDER BY d.updated_at DESC
+LIMIT $2 OFFSET $3;

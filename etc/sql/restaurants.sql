@@ -1,6 +1,6 @@
 -- name: CreateRestaurant :one
 INSERT INTO restaurants (name, description, avatar_url, username, email, phone, address, lat, lng, document)
-VALUES (:name, :description, :avatar_url, :username, :email, :phone, :address, :lat, :lng, :document)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 RETURNING *;
 
 -- name: GetRestaurantByID :one
@@ -18,26 +18,26 @@ SELECT
     r.created_at,
     r.updated_at
 FROM restaurants r
-WHERE id = :restaurant_id;
+WHERE id = $1;
 
 -- name: UpdateRestaurant :exec
 UPDATE restaurants
 SET
-    name = coalesce(:name, name),
-    description = coalesce(:description, description),
-    avatar_url = coalesce(:avatar_url, avatar_url),
-    username = coalesce(:username, username),
-    email = coalesce(:email, email),
-    phone = coalesce(:phone, phone),
-    address = coalesce(:address, address),
-    lat = coalesce(:lat, lat),
-    lng = coalesce(:lng, lng),
+    name = coalesce(sqlc.narg('name'), name),
+    description = coalesce(sqlc.narg('description'), description),
+    avatar_url = coalesce(sqlc.narg('avatar_url'), avatar_url),
+    username = coalesce(sqlc.narg('username'), username),
+    email = coalesce(sqlc.narg('email'), email),
+    phone = coalesce(sqlc('phone'), phone),
+    address = coalesce(sqlc.narg('address'), address),
+    lat = coalesce(sqlc.narg('lat'), lat),
+    lng = coalesce(sqlc.narg('lng'), lng),
     updated_at = now()
-WHERE id = :restaurant_ids
+WHERE id = @restaurant_id
 RETURNING *;
 
 -- name: DeleteRestaurant :exec
-DELETE FROM restaurants WHERE id = :restaurant_id;
+DELETE FROM restaurants WHERE id = $1;
 
 -- name: GetRestaurants :many
 SELECT
@@ -55,10 +55,10 @@ SELECT
     r.updated_at,
     r.is_approved
 FROM restaurants r
-LIMIT :limit OFFSET :offset;
+LIMIT $1 OFFSET $2;
 
 -- name: ApproveRestaurantProfile :exec
 UPDATE restaurants
-SET is_approved = :is_approved
-WHERE id = :restaurant_id
+SET is_approved = $1
+WHERE id = $2
 RETURNING *;

@@ -1,6 +1,6 @@
 -- name: SyncKCUser :one
 INSERT INTO users (id, username, email, display_name)
-VALUES (:user_id, :username, :email, :display_name)
+VALUES ($1, $2, $3, $4)
 ON CONFLICT (id) DO UPDATE
     SET username = EXCLUDED.username,
         email = EXCLUDED.email,
@@ -15,7 +15,7 @@ SELECT
     u.display_name,
     u.avatar_url
 FROM users u
-WHERE id = :user_id;
+WHERE id = $1;
 
 -- name: DeleteUser :exec
-DELETE FROM users WHERE id = :user_id;
+DELETE FROM users WHERE id = $1;

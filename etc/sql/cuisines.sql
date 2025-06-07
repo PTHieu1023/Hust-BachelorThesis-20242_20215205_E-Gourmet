@@ -1,4 +1,4 @@
--- name: GetAllCuisine
+-- name: GetAllCuisine :many
 SELECT
     c.id,
     c.name,
@@ -7,47 +7,49 @@ SELECT
     c.weight,
     c.image_url
 FROM cuisines c
-order by parent_id, branch_order
+order by parent_id, branch_order;
 
--- name: AddCuisine
+-- name: AddCuisine :one
 WITH RECURSIVE cuisine_tree AS (
     SELECT
         id,
+        "name",
         coalesce(parent_id, 0) as parent_id,
-        1 AS level,
+        0.01 AS level,
         branch_order,
-        weight
+        branch_order * 0.01 as w
     FROM cuisines
     WHERE parent_id  is null
     UNION ALL
     SELECT
         c.id,
+        c."name",
         c.parent_id,
-        ct.level + 1 as level,
+        ct.level * 0.01 as level,
         c.branch_order,
-        c.weight
+        ct.w + ct."level" * 0.01 * c.branch_order as w
     FROM cuisines c
-    INNER JOIN cuisine_tree ct ON c.parent_id = ct.id
+             INNER JOIN cuisine_tree ct ON c.parent_id = ct.id
 ),
 parent_cuisine as(
     select
         ct.id,
         ct."level",
         coalesce(max(c.branch_order), 0) + 1 as next_order,
-        ct.weight
+        ct.w
     from cuisine_tree ct
     left join cuisines c on c.parent_id = ct.id
     where ct.id = 1
-    group by ct.id, ct."level", ct.weight
+    group by ct.id, ct."level", ct.w
 )
 INSERT INTO
     cuisines (name, parent_id, branch_order, weight, image_url
 )
 SELECT
-    :name,
-    :parent_id,
+    $1,
+    $2,
     pc.next_order,
-    pc.weight + pc.next_order * POWER(0.01, pc.level + 1),
-    :image_url
+    pc.w + pc.next_order * POWER(0.01, pc.level + 1),
+    $3
 FROM parent_cuisine pc
-RETURNING *
+RETURNING *;
