@@ -20,6 +20,7 @@ func InitHandler() {
 	handlers := controllers.New(services.New(dbtx))
 
 	app.
-		Group("/api/v1/profile").
-		Get("/", handlers.GetProfiles)
+		Group("/api/v1/cuisine/").
+		Get("/", handlers.GetCuisineRecursionById).
+		Get("/:id", handlers.GetCuisineRecursionById)
 }

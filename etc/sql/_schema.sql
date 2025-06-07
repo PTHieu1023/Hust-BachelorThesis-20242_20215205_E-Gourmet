@@ -60,7 +60,6 @@ CREATE TABLE cuisines (
                           "name" varchar(255) NOT NULL,
                           parent_id int2 NULL,
                           branch_order int4 NOT NULL,
-                          weight float8 DEFAULT 0 NOT NULL,
                           image_url varchar(255) NULL,
                           created_at timestamptz DEFAULT now() NULL,
                           updated_at timestamptz DEFAULT now() NULL,

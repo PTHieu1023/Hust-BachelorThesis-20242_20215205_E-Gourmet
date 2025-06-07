@@ -1,7 +1,7 @@
-url: http://localhost:9080
+url: https://sso.hiusnef.io.vn/realms/e-gourmet/
 realm: e-gourmet
 client_id: e-gourmet
 client_secret: iGmLV8AewiTa81MOJUztPcD8DJF8skhk
 scope:
 admin_user: eg_admin
-admin_pass: 10022003  
+admin_pass: 10022003

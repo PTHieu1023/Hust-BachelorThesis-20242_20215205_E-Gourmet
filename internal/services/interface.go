@@ -2,11 +2,11 @@ package services
 
 import (
 	"e-gourmet/core/internal/database"
-	"e-gourmet/core/pkg/pagination"
 )
 
 type IService interface {
-	GetListProfiles(filter *pagination.PageFilter) (pagination.Pagination[database.Profile], error)
+	GetCuisineRecursionById(id int16) (*Cuisine, error)
+	AddCuisine(params *database.AddCuisineParams) (*Cuisine, error)
 }
 
 type Service struct {

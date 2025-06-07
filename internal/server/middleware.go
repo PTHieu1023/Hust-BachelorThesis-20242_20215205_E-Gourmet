@@ -70,18 +70,18 @@ func InitMiddlewares() *Middlewares {
 func useAuth() fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
-		if authHeader == "" {
-			authHeader = "Bearer " + c.Query("token")
+		if !strings.HasPrefix(authHeader, "Bearer ") {
+			return fiber.NewError(fiber.StatusUnauthorized, "Missing or invalid Authorization header")
 		}
 		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
-
+		tokenStr = strings.TrimSpace(tokenStr)
 		if tokenStr == "" {
 			return fiber.NewError(fiber.StatusUnauthorized, "Missing or invalid Authorization header")
 		}
 
 		introspect, err := kc.Instance().RetrospectToken(c.Context(), tokenStr)
 		if err != nil || introspect == nil || !*introspect.Active {
-			return fiber.NewError(fiber.StatusUnauthorized, "Invalid token")
+			return fiber.NewError(fiber.StatusUnauthorized, "Invalid or expired token")
 		}
 
 		token, claims, err := kc.Instance().DecodeAccessToken(c.Context(), tokenStr)
@@ -90,13 +90,12 @@ func useAuth() fiber.Handler {
 		}
 
 		userID, ok := (*claims)["sub"].(string)
-		username, ok := (*claims)["preferred_username"].(string)
 		if !ok || userID == "" {
-			return fiber.NewError(fiber.StatusUnauthorized, "Token missing sub claim")
+			return fiber.NewError(fiber.StatusUnauthorized, "Invalid user in token")
 		}
 
 		c.Locals("userID", userID)
-		c.Locals("username", username)
+		c.Locals("claims", claims)
 
 		return c.Next()
 	}

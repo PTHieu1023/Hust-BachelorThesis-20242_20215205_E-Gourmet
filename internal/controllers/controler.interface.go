@@ -6,7 +6,8 @@ import (
 )
 
 type IController interface {
-	GetProfiles(ctx *fiber.Ctx) error
+	GetCuisineRecursionById(ctx *fiber.Ctx) error
+	AddCuisine(ctx *fiber.Ctx) error
 }
 
 type Controller struct {
