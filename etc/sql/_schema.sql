@@ -234,3 +234,37 @@ CREATE TABLE post_like (
                            CONSTRAINT post_like_post_id_fk FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
                            CONSTRAINT post_like_user_id_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
+
+-- DROP FUNCTION public.get_cuisine_recursion_by_id(int2);
+
+CREATE OR REPLACE FUNCTION public.get_cuisine_recursion_by_id(root_id smallint)
+    RETURNS TABLE(id smallint, name text, image_url text, parent_id smallint, level double precision, w double precision)
+    LANGUAGE sql
+    STABLE
+AS $function$
+WITH RECURSIVE cuisine_tree AS (
+    SELECT
+        c1.id,
+        c1.name,
+        c1.image_url,
+        c1.parent_id,
+        1::FLOAT AS level,
+        0::FLOAT AS w
+    FROM cuisines c1
+    WHERE COALESCE(root_id, 0) = c1.id
+    UNION ALL
+    SELECT
+        c.id,
+        c.name,
+        c.image_url,
+        c.parent_id,
+        ct.level * 0.01 AS level,
+        ct.w + ct.level * 0.01 * ROW_NUMBER() OVER (PARTITION BY c.parent_id ORDER BY c.id) AS w
+    FROM cuisines c
+             INNER JOIN cuisine_tree ct ON c.parent_id = ct.id
+)
+SELECT *
+FROM cuisine_tree
+ORDER BY level DESC, w, id;
+$function$
+;

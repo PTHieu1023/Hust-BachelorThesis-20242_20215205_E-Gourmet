@@ -8,6 +8,11 @@ import (
 type IController interface {
 	GetCuisineRecursionById(ctx *fiber.Ctx) error
 	AddCuisine(ctx *fiber.Ctx) error
+
+	CreateDish(ctx *fiber.Ctx) error
+	GetDishById(ctx *fiber.Ctx) error
+	DeleteDishById(ctx *fiber.Ctx) error
+	GetDishes(ctx *fiber.Ctx) error
 }
 
 type Controller struct {

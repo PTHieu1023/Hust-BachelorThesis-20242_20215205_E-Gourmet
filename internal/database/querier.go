@@ -14,35 +14,7 @@ type Querier interface {
 	CreateDish(ctx context.Context, db DBTX, arg *CreateDishParams) (*CreateDishRow, error)
 	CreateRestaurant(ctx context.Context, db DBTX, arg *CreateRestaurantParams) (*Restaurant, error)
 	CreateReview(ctx context.Context, db DBTX, arg *CreateReviewParams) (*CreateReviewRow, error)
-	// -- name: UpdateDish :one
-	// WITH inserted_dish AS (
-	//     UPDATE dishes
-	//     SET name = coalesce($1, name),
-	//         description = coalesce($2, description),
-	//         price = coalesce($3, price),
-	//         cuisine_id = coalesce($4, cuisine_id),
-	//         updated_at = now()
-	//     WHERE id = $5
-	//     RETURNING *
-	// )
-	// SELECT
-	//     d.id,
-	//     d.name,
-	//     d.description,
-	//     d.price,
-	//     d.restaurant_id,
-	//     r.name AS restaurant,
-	//     r.address,
-	//     r.lat,
-	//     r.lng,
-	//     d.cuisine_id,
-	//     c.name AS cuisine,
-	//     d.created_at,
-	//     d.updated_at
-	// FROM inserted_dish d
-	// LEFT JOIN restaurants r ON r.id = d.restaurant_id
-	// LEFT JOIN cuisines    c ON c.id = d.cuisine_id;
-	DeleteFood(ctx context.Context, db DBTX, id int32) error
+	DeleteDish(ctx context.Context, db DBTX, id int32) error
 	DeleteRestaurant(ctx context.Context, db DBTX, id int32) error
 	// -- name: UpdateReview :one
 	// WITH updated_review as (
@@ -68,11 +40,11 @@ type Querier interface {
 	GetCuisineRecursionById(ctx context.Context, db DBTX, id int16) ([]*GetCuisineRecursionByIdRow, error)
 	GetDishByID(ctx context.Context, db DBTX, id int32) (*GetDishByIDRow, error)
 	GetDishReviews(ctx context.Context, db DBTX, arg *GetDishReviewsParams) ([]*GetDishReviewsRow, error)
+	GetDishes(ctx context.Context, db DBTX, arg *GetDishesParams) ([]*GetDishesRow, error)
 	GetRestaurantByID(ctx context.Context, db DBTX, id int32) (*GetRestaurantByIDRow, error)
 	GetRestaurants(ctx context.Context, db DBTX, arg *GetRestaurantsParams) ([]*GetRestaurantsRow, error)
 	GetUserByID(ctx context.Context, db DBTX, id interface{}) (*GetUserByIDRow, error)
 	GetUserReviews(ctx context.Context, db DBTX, arg *GetUserReviewsParams) ([]*GetUserReviewsRow, error)
-	ListFoodsByRestaurant(ctx context.Context, db DBTX, arg *ListFoodsByRestaurantParams) ([]*ListFoodsByRestaurantRow, error)
 	SyncKCUser(ctx context.Context, db DBTX, arg *SyncKCUserParams) (*User, error)
 	UpdateRestaurant(ctx context.Context, db DBTX, arg *UpdateRestaurantParams) error
 }

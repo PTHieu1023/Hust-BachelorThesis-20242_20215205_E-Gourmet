@@ -7,6 +7,11 @@ import (
 type IService interface {
 	GetCuisineRecursionById(id int16) (*Cuisine, error)
 	AddCuisine(params *database.AddCuisineParams) (*Cuisine, error)
+
+	CreateDish(params *database.CreateDishParams) (*database.CreateDishRow, error)
+	GetDishById(id int32) (*database.GetDishByIDRow, error)
+	DeleteDishById(id int32) error
+	GetDishes(params *database.GetDishesParams) ([]*database.GetDishesRow, error)
 }
 
 type Service struct {

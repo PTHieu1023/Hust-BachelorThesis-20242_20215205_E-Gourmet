@@ -88,46 +88,12 @@ func (q *Queries) CreateDish(ctx context.Context, db DBTX, arg *CreateDishParams
 	return &i, err
 }
 
-const deleteFood = `-- name: DeleteFood :exec
-
-
+const deleteDish = `-- name: DeleteDish :exec
 DELETE FROM dishes WHERE id = $1
 `
 
-// -- name: UpdateDish :one
-// WITH inserted_dish AS (
-//
-//	UPDATE dishes
-//	SET name = coalesce($1, name),
-//	    description = coalesce($2, description),
-//	    price = coalesce($3, price),
-//	    cuisine_id = coalesce($4, cuisine_id),
-//	    updated_at = now()
-//	WHERE id = $5
-//	RETURNING *
-//
-// )
-// SELECT
-//
-//	d.id,
-//	d.name,
-//	d.description,
-//	d.price,
-//	d.restaurant_id,
-//	r.name AS restaurant,
-//	r.address,
-//	r.lat,
-//	r.lng,
-//	d.cuisine_id,
-//	c.name AS cuisine,
-//	d.created_at,
-//	d.updated_at
-//
-// FROM inserted_dish d
-// LEFT JOIN restaurants r ON r.id = d.restaurant_id
-// LEFT JOIN cuisines    c ON c.id = d.cuisine_id;
-func (q *Queries) DeleteFood(ctx context.Context, db DBTX, id int32) error {
-	_, err := db.Exec(ctx, deleteFood, id)
+func (q *Queries) DeleteDish(ctx context.Context, db DBTX, id int32) error {
+	_, err := db.Exec(ctx, deleteDish, id)
 	return err
 }
 
@@ -189,7 +155,7 @@ func (q *Queries) GetDishByID(ctx context.Context, db DBTX, id int32) (*GetDishB
 	return &i, err
 }
 
-const listFoodsByRestaurant = `-- name: ListFoodsByRestaurant :many
+const getDishes = `-- name: GetDishes :many
 SELECT
     d.id,
     d.name,
@@ -207,18 +173,22 @@ SELECT
 FROM dishes d
 LEFT JOIN restaurants r ON r.id = d.restaurant_id
 LEFT JOIN cuisines c ON c.id = d.cuisine_id
-WHERE d.restaurant_id = $1
+WHERE
+    ($3::int is null or d.restaurant_id = $3::int)
+  and
+    d.cuisine_id in (select id from get_cuisine_recursion_by_id($4::smallint))
 ORDER BY d.updated_at DESC
-LIMIT $2 OFFSET $3
+LIMIT $1 OFFSET $2
 `
 
-type ListFoodsByRestaurantParams struct {
-	RestaurantID int32 `json:"restaurantId"`
-	Limit        int32 `json:"limit"`
-	Offset       int32 `json:"offset"`
+type GetDishesParams struct {
+	Limit        int32  `json:"limit"`
+	Offset       int32  `json:"offset"`
+	RestaurantID *int32 `json:"restaurantId"`
+	CuisineID    *int16 `json:"cuisineId"`
 }
 
-type ListFoodsByRestaurantRow struct {
+type GetDishesRow struct {
 	ID           int32              `json:"id"`
 	Name         string             `json:"name"`
 	Description  *string            `json:"description"`
@@ -234,15 +204,20 @@ type ListFoodsByRestaurantRow struct {
 	UpdatedAt    pgtype.Timestamptz `json:"updatedAt"`
 }
 
-func (q *Queries) ListFoodsByRestaurant(ctx context.Context, db DBTX, arg *ListFoodsByRestaurantParams) ([]*ListFoodsByRestaurantRow, error) {
-	rows, err := db.Query(ctx, listFoodsByRestaurant, arg.RestaurantID, arg.Limit, arg.Offset)
+func (q *Queries) GetDishes(ctx context.Context, db DBTX, arg *GetDishesParams) ([]*GetDishesRow, error) {
+	rows, err := db.Query(ctx, getDishes,
+		arg.Limit,
+		arg.Offset,
+		arg.RestaurantID,
+		arg.CuisineID,
+	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []*ListFoodsByRestaurantRow{}
+	items := []*GetDishesRow{}
 	for rows.Next() {
-		var i ListFoodsByRestaurantRow
+		var i GetDishesRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,

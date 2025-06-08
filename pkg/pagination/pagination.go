@@ -35,6 +35,14 @@ func GetPageFilter(c *fiber.Ctx) (*PageFilter, error) {
 		return nil, fiber.NewError(fiber.StatusBadRequest, "Invalid 'size' parameter")
 	}
 
+	if filter.Page < 1 {
+		return nil, fiber.NewError(fiber.StatusBadRequest, "'page' must be greater than or equal to 1")
+	}
+
+	if filter.Size < 1 {
+		return nil, fiber.NewError(fiber.StatusBadRequest, "'size' must be greater than or equal to 1")
+	}
+
 	orderByStr := c.Query("orderBy", "")
 	if orderByStr != "" {
 		filter.OrderBy = strings.Split(orderByStr, ",")
