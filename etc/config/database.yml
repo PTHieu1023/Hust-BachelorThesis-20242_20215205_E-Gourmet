@@ -1,4 +1,4 @@
-host: "192.168.100.145"
+host: "localhost"
 port: 5432
 user: "egourmet"
 password: "egourmet"

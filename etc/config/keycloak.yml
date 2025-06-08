@@ -1,4 +1,4 @@
-url: http://192.168.100.145:9080
+url: http://localhost:9080
 realm: e-gourmet
 client_id: e-gourmet
 client_secret: iGmLV8AewiTa81MOJUztPcD8DJF8skhk
