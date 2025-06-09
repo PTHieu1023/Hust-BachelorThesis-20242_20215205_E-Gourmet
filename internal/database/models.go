@@ -89,7 +89,7 @@ type Review struct {
 }
 
 type User struct {
-	ID          interface{}        `json:"id"`
+	ID          string             `json:"id"`
 	Username    string             `json:"username"`
 	Email       string             `json:"email"`
 	DisplayName string             `json:"displayName"`
@@ -99,6 +99,7 @@ type User struct {
 	Budget      *int64             `json:"budget"`
 	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt   pgtype.Timestamptz `json:"updatedAt"`
+	Enable      bool               `json:"enable"`
 }
 
 type UserCuisine struct {

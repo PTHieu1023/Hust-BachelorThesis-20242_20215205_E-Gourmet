@@ -33,7 +33,7 @@ CREATE TABLE restaurants (
 -- DROP TABLE users;
 
 CREATE TABLE users (
-                       id bpchar(63) NOT NULL,
+                       id varchar(64) NOT NULL,
                        username varchar(64) NOT NULL,
                        email varchar(127) NOT NULL,
                        display_name varchar(255) NOT NULL,
@@ -43,6 +43,7 @@ CREATE TABLE users (
                        budget int8 NULL,
                        created_at timestamptz DEFAULT now() NULL,
                        updated_at timestamptz DEFAULT now() NULL,
+                        enable bool DEFAULT true NOT NULL,
                        CONSTRAINT users_email_key UNIQUE (email),
                        CONSTRAINT users_pkey PRIMARY KEY (id),
                        CONSTRAINT users_username_key UNIQUE (username)

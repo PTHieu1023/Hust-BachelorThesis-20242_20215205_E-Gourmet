@@ -7,68 +7,29 @@ package database
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const deleteUser = `-- name: DeleteUser :exec
-DELETE FROM users WHERE id = $1
-`
-
-func (q *Queries) DeleteUser(ctx context.Context, db DBTX, id interface{}) error {
-	_, err := db.Exec(ctx, deleteUser, id)
-	return err
-}
-
-const getUserByID = `-- name: GetUserByID :one
-SELECT
-    u.id,
-    u.username,
-    u.email,
-    u.display_name,
-    u.avatar_url
-FROM users u
-WHERE id = $1
-`
-
-type GetUserByIDRow struct {
-	ID          interface{} `json:"id"`
-	Username    string      `json:"username"`
-	Email       string      `json:"email"`
-	DisplayName string      `json:"displayName"`
-	AvatarUrl   *string     `json:"avatarUrl"`
-}
-
-func (q *Queries) GetUserByID(ctx context.Context, db DBTX, id interface{}) (*GetUserByIDRow, error) {
-	row := db.QueryRow(ctx, getUserByID, id)
-	var i GetUserByIDRow
-	err := row.Scan(
-		&i.ID,
-		&i.Username,
-		&i.Email,
-		&i.DisplayName,
-		&i.AvatarUrl,
-	)
-	return &i, err
-}
-
-const syncKCUser = `-- name: SyncKCUser :one
+const createUser = `-- name: CreateUser :one
 INSERT INTO users (id, username, email, display_name)
-VALUES ($1, $2, $3, $4)
-ON CONFLICT (id) DO UPDATE
-    SET username = EXCLUDED.username,
-        email = EXCLUDED.email,
-        display_name = EXCLUDED.display_name
-RETURNING id, username, email, display_name, avatar_url, lat, lng, budget, created_at, updated_at
+VALUES (
+        $1::varchar(64),
+        $2::varchar(64),
+        $3::varchar(127),
+        $4::varchar(255))
+RETURNING id, username, email, display_name, avatar_url, lat, lng, budget, created_at, updated_at, enable
 `
 
-type SyncKCUserParams struct {
-	ID          interface{} `json:"id"`
-	Username    string      `json:"username"`
-	Email       string      `json:"email"`
-	DisplayName string      `json:"displayName"`
+type CreateUserParams struct {
+	ID          *string `json:"id"`
+	Username    *string `json:"username"`
+	Email       *string `json:"email"`
+	DisplayName *string `json:"displayName"`
 }
 
-func (q *Queries) SyncKCUser(ctx context.Context, db DBTX, arg *SyncKCUserParams) (*User, error) {
-	row := db.QueryRow(ctx, syncKCUser,
+func (q *Queries) CreateUser(ctx context.Context, db DBTX, arg *CreateUserParams) (*User, error) {
+	row := db.QueryRow(ctx, createUser,
 		arg.ID,
 		arg.Username,
 		arg.Email,
@@ -86,6 +47,218 @@ func (q *Queries) SyncKCUser(ctx context.Context, db DBTX, arg *SyncKCUserParams
 		&i.Budget,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Enable,
+	)
+	return &i, err
+}
+
+const getUserById = `-- name: GetUserById :one
+SELECT
+    u.id,
+    u.username,
+    u.email,
+    u.display_name,
+    u.avatar_url,
+    u.lat,
+    u.lng,
+    u.budget,
+    u.created_at,
+    u.updated_at,
+    count(r.*) AS review_count,
+    coalesce(avg(r.rating), 0) as average_rating
+FROM users u
+         LEFT JOIN reviews r ON u.id = r.user_id
+WHERE u.id = $1::varchar(64)
+GROUP BY u.id, u.username, u.email, u.display_name, u.avatar_url, u.created_at, u.updated_at
+`
+
+type GetUserByIdRow struct {
+	ID            string             `json:"id"`
+	Username      string             `json:"username"`
+	Email         string             `json:"email"`
+	DisplayName   string             `json:"displayName"`
+	AvatarUrl     *string            `json:"avatarUrl"`
+	Lat           *float64           `json:"lat"`
+	Lng           *float64           `json:"lng"`
+	Budget        *int64             `json:"budget"`
+	CreatedAt     pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt     pgtype.Timestamptz `json:"updatedAt"`
+	ReviewCount   int64              `json:"reviewCount"`
+	AverageRating interface{}        `json:"averageRating"`
+}
+
+func (q *Queries) GetUserById(ctx context.Context, db DBTX, id string) (*GetUserByIdRow, error) {
+	row := db.QueryRow(ctx, getUserById, id)
+	var i GetUserByIdRow
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Email,
+		&i.DisplayName,
+		&i.AvatarUrl,
+		&i.Lat,
+		&i.Lng,
+		&i.Budget,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.ReviewCount,
+		&i.AverageRating,
+	)
+	return &i, err
+}
+
+const getUserByUsername = `-- name: GetUserByUsername :one
+SELECT
+    u.id,
+    u.username,
+    u.email,
+    u.display_name,
+    u.avatar_url,
+    u.lat,
+    u.lng,
+    u.budget,
+    u.created_at,
+    u.updated_at,
+    count(r.*) AS review_count,
+    coalesce(avg(r.rating), 0) as average_rating
+FROM users u
+LEFT JOIN reviews r ON u.id = r.user_id
+WHERE u.username = $1::varchar(64)
+GROUP BY u.id, u.username, u.email, u.display_name, u.avatar_url, u.created_at, u.updated_at
+`
+
+type GetUserByUsernameRow struct {
+	ID            string             `json:"id"`
+	Username      string             `json:"username"`
+	Email         string             `json:"email"`
+	DisplayName   string             `json:"displayName"`
+	AvatarUrl     *string            `json:"avatarUrl"`
+	Lat           *float64           `json:"lat"`
+	Lng           *float64           `json:"lng"`
+	Budget        *int64             `json:"budget"`
+	CreatedAt     pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt     pgtype.Timestamptz `json:"updatedAt"`
+	ReviewCount   int64              `json:"reviewCount"`
+	AverageRating interface{}        `json:"averageRating"`
+}
+
+func (q *Queries) GetUserByUsername(ctx context.Context, db DBTX, username string) (*GetUserByUsernameRow, error) {
+	row := db.QueryRow(ctx, getUserByUsername, username)
+	var i GetUserByUsernameRow
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Email,
+		&i.DisplayName,
+		&i.AvatarUrl,
+		&i.Lat,
+		&i.Lng,
+		&i.Budget,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.ReviewCount,
+		&i.AverageRating,
+	)
+	return &i, err
+}
+
+const updateUser = `-- name: UpdateUser :one
+WITH updated_user AS (
+    UPDATE users
+        SET
+            username = coalesce($1::varchar(64), username),
+            email = coalesce($2::varchar(127), email),
+            display_name= coalesce($3::varchar(255), display_name),
+            avatar_url = coalesce($4::varchar(255), avatar_url),
+            lat = coalesce($5::float8, lat),
+            lng = coalesce($6::float8, lng),
+            budget = coalesce($7::int8, budget),
+            enable = coalesce($8::bool, enable),
+            updated_at = now()
+        WHERE id = $9::varchar(64)
+    RETURNING id, username, email, display_name, avatar_url, lat, lng, budget, created_at, updated_at
+)
+SELECT
+    u.id,
+    u.username,
+    u.email,
+    u.display_name,
+    u.avatar_url,
+    u.lat,
+    u.lng,
+    u.budget,
+    u.created_at,
+    u.updated_at,
+    count(r.*) AS review_count,
+    coalesce(avg(r.rating), 0) as average_rating
+FROM updated_user u
+LEFT JOIN reviews r ON u.id = r.user_id
+GROUP BY
+    u.id,
+    u.username,
+    u.email,
+    u.display_name,
+    u.avatar_url,
+    u.lat,
+    u.lng,
+    u.budget,
+    u.created_at,
+    u.updated_at
+`
+
+type UpdateUserParams struct {
+	Username    *string  `json:"username"`
+	Email       *string  `json:"email"`
+	DisplayName *string  `json:"displayName"`
+	AvatarUrl   *string  `json:"avatarUrl"`
+	Lat         *float64 `json:"lat"`
+	Lng         *float64 `json:"lng"`
+	Budget      *int64   `json:"budget"`
+	Enable      *bool    `json:"enable"`
+	ID          *string  `json:"id"`
+}
+
+type UpdateUserRow struct {
+	ID            string             `json:"id"`
+	Username      string             `json:"username"`
+	Email         string             `json:"email"`
+	DisplayName   string             `json:"displayName"`
+	AvatarUrl     *string            `json:"avatarUrl"`
+	Lat           *float64           `json:"lat"`
+	Lng           *float64           `json:"lng"`
+	Budget        *int64             `json:"budget"`
+	CreatedAt     pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt     pgtype.Timestamptz `json:"updatedAt"`
+	ReviewCount   int64              `json:"reviewCount"`
+	AverageRating interface{}        `json:"averageRating"`
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, db DBTX, arg *UpdateUserParams) (*UpdateUserRow, error) {
+	row := db.QueryRow(ctx, updateUser,
+		arg.Username,
+		arg.Email,
+		arg.DisplayName,
+		arg.AvatarUrl,
+		arg.Lat,
+		arg.Lng,
+		arg.Budget,
+		arg.Enable,
+		arg.ID,
+	)
+	var i UpdateUserRow
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Email,
+		&i.DisplayName,
+		&i.AvatarUrl,
+		&i.Lat,
+		&i.Lng,
+		&i.Budget,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.ReviewCount,
+		&i.AverageRating,
 	)
 	return &i, err
 }

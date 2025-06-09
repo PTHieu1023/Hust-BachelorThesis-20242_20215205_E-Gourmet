@@ -17,6 +17,10 @@ type IController interface {
 	CreateReview(ctx *fiber.Ctx) error
 	GetReviews(ctx *fiber.Ctx) error
 	DeleteReview(ctx *fiber.Ctx) error
+
+	GetCurrentUser(ctx *fiber.Ctx) error
+	GetUserByUsername(ctx *fiber.Ctx) error
+	UpdateCurrentUser(ctx *fiber.Ctx) error
 }
 
 type Controller struct {

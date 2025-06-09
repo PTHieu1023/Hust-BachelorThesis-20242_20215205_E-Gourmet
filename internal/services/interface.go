@@ -16,6 +16,11 @@ type IService interface {
 	CreateReview(params *database.CreateReviewParams) (*database.CreateReviewRow, error)
 	GetReviews(params *database.GetReviewsParams) ([]*database.GetReviewsRow, error)
 	DeleteReview(dishId int64) error
+
+	CreateUser(params *database.CreateUserParams) (*database.User, error)
+	GetUserByUsername(username string) (*database.GetUserByUsernameRow, error)
+	GetUserById(id string) (*database.GetUserByIdRow, error)
+	UpdateUser(params *database.UpdateUserParams) (*database.UpdateUserRow, error)
 }
 
 type Service struct {

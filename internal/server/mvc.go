@@ -36,4 +36,9 @@ func InitHandler() {
 		Post("/", handlers.CreateReview).
 		Group("/:id").
 		Delete("/", handlers.DeleteReview)
+
+	routerV1.Group("/user").
+		Get("/me", handlers.GetCurrentUser).
+		Get("/:username", handlers.GetUserByUsername).
+		Put("/", handlers.UpdateCurrentUser)
 }

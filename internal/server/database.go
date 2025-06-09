@@ -64,17 +64,17 @@ func connectDB() *pgxpool.Pool {
 
 	poolConfig, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
-		logger.Instance().Error("error parsing database server", zap.Error(err))
+		logger.Instance().Error("exceptions parsing database server", zap.Error(err))
 		return nil
 	}
 	_pool, err = pgxpool.NewWithConfig(context.Background(), poolConfig)
 	if err != nil {
-		logger.Instance().Error("error connecting to database", zap.Error(err))
+		logger.Instance().Error("exceptions connecting to database", zap.Error(err))
 		return nil
 	}
 	err = _pool.Ping(context.Background())
 	if err != nil {
-		logger.Instance().Error("error pinging database", zap.Error(err))
+		logger.Instance().Error("exceptions pinging database", zap.Error(err))
 		return nil
 	}
 	logger.Instance().Info("Connected to database")

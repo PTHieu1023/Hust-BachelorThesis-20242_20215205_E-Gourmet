@@ -14,19 +14,20 @@ type Querier interface {
 	CreateDish(ctx context.Context, db DBTX, arg *CreateDishParams) (*CreateDishRow, error)
 	CreateRestaurant(ctx context.Context, db DBTX, arg *CreateRestaurantParams) (*Restaurant, error)
 	CreateReview(ctx context.Context, db DBTX, arg *CreateReviewParams) (*CreateReviewRow, error)
+	CreateUser(ctx context.Context, db DBTX, arg *CreateUserParams) (*User, error)
 	DeleteDish(ctx context.Context, db DBTX, id int32) error
 	DeleteRestaurant(ctx context.Context, db DBTX, id int32) error
 	DeleteReview(ctx context.Context, db DBTX, id int64) error
-	DeleteUser(ctx context.Context, db DBTX, id interface{}) error
 	GetCuisineRecursionById(ctx context.Context, db DBTX, id int16) ([]*GetCuisineRecursionByIdRow, error)
 	GetDishByID(ctx context.Context, db DBTX, id int32) (*GetDishByIDRow, error)
 	GetDishes(ctx context.Context, db DBTX, arg *GetDishesParams) ([]*GetDishesRow, error)
 	GetRestaurantByID(ctx context.Context, db DBTX, id int32) (*GetRestaurantByIDRow, error)
 	GetRestaurants(ctx context.Context, db DBTX, arg *GetRestaurantsParams) ([]*GetRestaurantsRow, error)
 	GetReviews(ctx context.Context, db DBTX, arg *GetReviewsParams) ([]*GetReviewsRow, error)
-	GetUserByID(ctx context.Context, db DBTX, id interface{}) (*GetUserByIDRow, error)
-	SyncKCUser(ctx context.Context, db DBTX, arg *SyncKCUserParams) (*User, error)
+	GetUserById(ctx context.Context, db DBTX, id string) (*GetUserByIdRow, error)
+	GetUserByUsername(ctx context.Context, db DBTX, username string) (*GetUserByUsernameRow, error)
 	UpdateRestaurant(ctx context.Context, db DBTX, arg *UpdateRestaurantParams) error
+	UpdateUser(ctx context.Context, db DBTX, arg *UpdateUserParams) (*UpdateUserRow, error)
 }
 
 var _ Querier = (*Queries)(nil)
