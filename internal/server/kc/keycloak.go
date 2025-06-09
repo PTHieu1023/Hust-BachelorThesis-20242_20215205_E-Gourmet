@@ -36,8 +36,8 @@ type Keycloak struct {
 
 const (
 	DefaultConfigPath = "etc/config/keycloak.yml"
-	ConfigPathEnv     = "EG_DATABASE_CONFIG"
-	EnvPrefixConfig   = "EG_DATABASE"
+	ConfigPathEnv     = "EG_KC_CONFIG"
+	EnvPrefixConfig   = "EG_KC"
 	SessionClient     = "session-cli"
 	SessionSecret     = "session-secret"
 )

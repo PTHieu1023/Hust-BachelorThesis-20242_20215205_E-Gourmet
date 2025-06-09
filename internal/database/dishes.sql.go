@@ -14,8 +14,12 @@ import (
 const createDish = `-- name: CreateDish :one
 WITH inserted_dish AS (
     INSERT INTO dishes (restaurant_id, name, description, price, cuisine_id)
-    VALUES
-        ($1, $2, $3, $4, $5)
+    VALUES(
+        $1::int,
+        $2::varchar(255),
+        $3::text,
+        $4::bigint,
+        $5::smallint)
     RETURNING id, name, description, price, cuisine_id, restaurant_id, created_at, updated_at
 )
 SELECT
@@ -38,11 +42,11 @@ LEFT JOIN cuisines    c ON c.id = d.cuisine_id
 `
 
 type CreateDishParams struct {
-	RestaurantID int32   `json:"restaurantId"`
-	Name         string  `json:"name"`
+	RestaurantID *int32  `json:"restaurantId"`
+	Name         *string `json:"name"`
 	Description  *string `json:"description"`
-	Price        int64   `json:"price"`
-	CuisineID    int16   `json:"cuisineId"`
+	Price        *int64  `json:"price"`
+	CuisineID    *int16  `json:"cuisineId"`
 }
 
 type CreateDishRow struct {

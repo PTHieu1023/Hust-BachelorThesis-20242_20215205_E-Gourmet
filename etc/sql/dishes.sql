@@ -1,8 +1,12 @@
 -- name: CreateDish :one
 WITH inserted_dish AS (
     INSERT INTO dishes (restaurant_id, name, description, price, cuisine_id)
-    VALUES
-        ($1, $2, $3, $4, $5)
+    VALUES(
+        sqlc.narg(restaurant_id)::int,
+        sqlc.narg(name)::varchar(255),
+        sqlc.narg(description)::text,
+        sqlc.narg(price)::bigint,
+        sqlc.narg(cuisine_id)::smallint)
     RETURNING *
 )
 SELECT

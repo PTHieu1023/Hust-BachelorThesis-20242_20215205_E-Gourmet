@@ -30,9 +30,11 @@ func (c *Controller) GetDishById(ctx *fiber.Ctx) error {
 			"error": "Invalid dish ID",
 		})
 	}
-
-	_, err = c.service.GetDishById(int32(id))
-	return err
+	dish, err := c.service.GetDishById(int32(id))
+	if err != nil {
+		return err
+	}
+	return ctx.Status(fiber.StatusOK).JSON(dish)
 }
 
 func (c *Controller) DeleteDishById(ctx *fiber.Ctx) error {
@@ -44,16 +46,18 @@ func (c *Controller) DeleteDishById(ctx *fiber.Ctx) error {
 		})
 	}
 
-	if err = c.service.DeleteDishById(int32(id)); err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to delete dish",
-		})
+	err = c.service.DeleteDishById(int32(id))
+	if err != nil {
+		return err
 	}
-	return err
+	return ctx.SendStatus(fiber.StatusNoContent)
 }
 
 func (c *Controller) GetDishes(ctx *fiber.Ctx) error {
 	pageFilter, err := pagination.GetPageFilter(ctx)
+	if err != nil {
+		return err
+	}
 	params := new(database.GetDishesParams)
 	params.Offset = int32((pageFilter.Page - 1) * pageFilter.Size)
 	params.Limit = int32(pageFilter.Size)
