@@ -17,8 +17,8 @@ type Config struct {
 	ClientID      string        `mapstructure:"client_id"`
 	ClientSecret  string        `mapstructure:"client_secret"`
 	Scope         string        `mapstructure:"scope"`
-	AdminUser     string        `mapstructure:"session_user"`
-	AdminPass     string        `mapstructure:"session_pass"`
+	AdminUser     string        `mapstructure:"admin_user"`
+	AdminPass     string        `mapstructure:"admin_pass"`
 	TimeThreshold time.Duration `mapstructure:"time_threshold"`
 }
 
@@ -38,8 +38,8 @@ const (
 	DefaultConfigPath = "etc/config/keycloak.yml"
 	ConfigPathEnv     = "EG_KC_CONFIG"
 	EnvPrefixConfig   = "EG_KC"
-	SessionClient     = "session-cli"
-	SessionSecret     = "session-secret"
+	SessionClient     = "admin-cli"
+	SessionSecret     = "admin-secret"
 )
 
 var _kc *Keycloak
@@ -105,6 +105,7 @@ func (kc *Keycloak) CloseSession(ctx context.Context) {
 		logger.Instance().Error("Failed to logout session session", zap.Error(err))
 		return
 	}
+	logger.Instance().Info("Keycloak session closed successfully")
 	kc.session.JWT = nil
 }
 
