@@ -18,15 +18,22 @@ func InitHandler() {
 	dbtx := connectDB()
 
 	handlers := controllers.New(services.New(dbtx))
-
-	app.Group("/api/v1/cuisine/").
+	routerV1 := app.Group("/api/v1")
+	routerV1.Group("/cuisine").
 		Get("/", handlers.GetCuisineRecursionById).
 		Post("/", handlers.AddCuisine).
 		Get("/:id", handlers.GetCuisineRecursionById)
 
-	app.Group("/api/v1/dish").
+	routerV1.Group("/dish").
 		Get("/", handlers.GetDishes).
 		Post("/", handlers.CreateDish).
-		Get("/:id", handlers.GetDishById).
-		Delete("/:id", handlers.DeleteDishById)
+		Group("/:id").
+		Get("/", handlers.GetDishById).
+		Delete("/", handlers.DeleteDishById)
+
+	routerV1.Group("/review").
+		Get("/", handlers.GetReviews).
+		Post("/", handlers.CreateReview).
+		Group("/:id").
+		Delete("/", handlers.DeleteReview)
 }

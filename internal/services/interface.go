@@ -12,6 +12,10 @@ type IService interface {
 	GetDishById(id int32) (*database.GetDishByIDRow, error)
 	DeleteDishById(id int32) error
 	GetDishes(params *database.GetDishesParams) ([]*database.GetDishesRow, error)
+
+	CreateReview(params *database.CreateReviewParams) (*database.CreateReviewRow, error)
+	GetReviews(params *database.GetReviewsParams) ([]*database.GetReviewsRow, error)
+	DeleteReview(dishId int64) error
 }
 
 type Service struct {

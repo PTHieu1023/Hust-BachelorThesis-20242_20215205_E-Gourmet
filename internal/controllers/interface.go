@@ -13,6 +13,10 @@ type IController interface {
 	GetDishById(ctx *fiber.Ctx) error
 	DeleteDishById(ctx *fiber.Ctx) error
 	GetDishes(ctx *fiber.Ctx) error
+
+	CreateReview(ctx *fiber.Ctx) error
+	GetReviews(ctx *fiber.Ctx) error
+	DeleteReview(ctx *fiber.Ctx) error
 }
 
 type Controller struct {

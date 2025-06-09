@@ -16,35 +16,15 @@ type Querier interface {
 	CreateReview(ctx context.Context, db DBTX, arg *CreateReviewParams) (*CreateReviewRow, error)
 	DeleteDish(ctx context.Context, db DBTX, id int32) error
 	DeleteRestaurant(ctx context.Context, db DBTX, id int32) error
-	// -- name: UpdateReview :one
-	// WITH updated_review as (
-	//     UPDATE reviews r
-	//     SET comment = coalesce(sqlc.narg('comment'), r.comment),
-	//         rating = coalesce(sqlc.narg('rating'), r.rating),
-	//         updated_at = now()
-	//     WHERE id = sqlc.narg('review_id')
-	//     RETURNING *
-	// )
-	// SELECT
-	//     r."comment",
-	//     r.rating,
-	//     u.username,
-	//     u.display_name,
-	//     d.id,
-	//     d.name
-	// FROM updated_review r
-	// LEFT JOIN  users u on u.id = r.user_id
-	// LEFT JOIN  dishes d on d.id = r.dish_id;
 	DeleteReview(ctx context.Context, db DBTX, id int64) error
 	DeleteUser(ctx context.Context, db DBTX, id interface{}) error
 	GetCuisineRecursionById(ctx context.Context, db DBTX, id int16) ([]*GetCuisineRecursionByIdRow, error)
 	GetDishByID(ctx context.Context, db DBTX, id int32) (*GetDishByIDRow, error)
-	GetDishReviews(ctx context.Context, db DBTX, arg *GetDishReviewsParams) ([]*GetDishReviewsRow, error)
 	GetDishes(ctx context.Context, db DBTX, arg *GetDishesParams) ([]*GetDishesRow, error)
 	GetRestaurantByID(ctx context.Context, db DBTX, id int32) (*GetRestaurantByIDRow, error)
 	GetRestaurants(ctx context.Context, db DBTX, arg *GetRestaurantsParams) ([]*GetRestaurantsRow, error)
+	GetReviews(ctx context.Context, db DBTX, arg *GetReviewsParams) ([]*GetReviewsRow, error)
 	GetUserByID(ctx context.Context, db DBTX, id interface{}) (*GetUserByIDRow, error)
-	GetUserReviews(ctx context.Context, db DBTX, arg *GetUserReviewsParams) ([]*GetUserReviewsRow, error)
 	SyncKCUser(ctx context.Context, db DBTX, arg *SyncKCUserParams) (*User, error)
 	UpdateRestaurant(ctx context.Context, db DBTX, arg *UpdateRestaurantParams) error
 }
