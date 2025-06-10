@@ -1,17 +1,13 @@
 package server
 
 import (
-	"context"
-	"e-gourmet/core/internal/server/kc"
-	"e-gourmet/core/internal/server/logger"
+	"e-gourmet/core/internal/middlewares"
 	"e-gourmet/core/pkg/configloader"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-	"go.uber.org/zap"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -64,72 +60,8 @@ func InitMiddlewares() *Middlewares {
 		Compress: compress.New(compress.Config{
 			Level: compress.LevelBestSpeed,
 		}),
-		Auth:    useAuth(),
-		Logger:  useLogging(),
-		Timeout: useTimeout(1 * time.Minute),
-	}
-}
-
-func useAuth() fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		authHeader := c.Get("Authorization")
-		if !strings.HasPrefix(authHeader, "Bearer ") {
-			return fiber.NewError(fiber.StatusUnauthorized, "Missing or invalid Authorization header")
-		}
-		tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
-		tokenStr = strings.TrimSpace(tokenStr)
-		if tokenStr == "" {
-			return fiber.NewError(fiber.StatusUnauthorized, "Missing or invalid Authorization header")
-		}
-
-		introspect, err := kc.Instance().RetrospectToken(c.Context(), tokenStr)
-		if err != nil || introspect == nil || !*introspect.Active {
-			return fiber.NewError(fiber.StatusUnauthorized, "Invalid or expired token")
-		}
-
-		token, claims, err := kc.Instance().DecodeAccessToken(c.Context(), tokenStr)
-		if err != nil || token == nil || !token.Valid {
-			return fiber.NewError(fiber.StatusUnauthorized, "Invalid token")
-		}
-
-		userID, ok := (*claims)["sub"].(string)
-		if !ok || userID == "" {
-			return fiber.NewError(fiber.StatusUnauthorized, "Invalid user in token")
-		}
-
-		c.Locals("userID", userID)
-		c.Locals("claims", claims)
-
-		return c.Next()
-	}
-}
-
-func useLogging() fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		c.Locals("startTime", time.Now())
-
-		if err := c.Next(); err != nil {
-			return err
-		}
-
-		fields := []zap.Field{
-			zap.String("method", c.Method()),
-			zap.String("ip", c.IP()),
-			zap.Int("status", c.Response().StatusCode()),
-			zap.String("latency", time.Since(c.Locals("startTime").(time.Time)).String()),
-			zap.String("url", c.OriginalURL()),
-		}
-
-		logger.Instance().Info("Request", fields...)
-		return nil
-	}
-}
-
-func useTimeout(duration time.Duration) fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		ctx, cancel := context.WithTimeout(c.UserContext(), duration)
-		defer cancel()
-		c.SetUserContext(ctx)
-		return c.Next()
+		Auth:    middlewares.UseAuth(),
+		Logger:  middlewares.UseLogging(),
+		Timeout: middlewares.UseTimeout(1 * time.Minute),
 	}
 }
