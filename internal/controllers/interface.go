@@ -21,6 +21,12 @@ type IController interface {
 	GetCurrentUser(ctx *fiber.Ctx) error
 	GetUserByUsername(ctx *fiber.Ctx) error
 	UpdateCurrentUser(ctx *fiber.Ctx) error
+
+	CreateRestaurant(ctx *fiber.Ctx) error
+	GetRestaurantById(ctx *fiber.Ctx) error
+	GetRestaurants(ctx *fiber.Ctx) error
+	UpdateRestaurant(ctx *fiber.Ctx) error
+	DeleteRestaurantById(ctx *fiber.Ctx) error
 }
 
 type Controller struct {

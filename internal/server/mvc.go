@@ -7,13 +7,14 @@ import (
 
 func InitHandler() {
 	app := AppInstance()
-	middlewares := InitMiddlewares()
+	middlewareSet := InitMiddlewares()
 
-	app.Use(middlewares.Logger)
-	app.Use(middlewares.Recover)
-	app.Use(middlewares.Cors)
-	app.Use(middlewares.Compress)
-	app.Use(middlewares.Auth)
+	app.Use(middlewareSet.Timeout)
+	app.Use(middlewareSet.Logger)
+	app.Use(middlewareSet.Recover)
+	app.Use(middlewareSet.Cors)
+	app.Use(middlewareSet.Compress)
+	app.Use(middlewareSet.Auth)
 
 	dbtx := connectDB()
 

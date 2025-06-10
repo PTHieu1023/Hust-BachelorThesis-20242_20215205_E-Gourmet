@@ -10,7 +10,7 @@ import (
 
 type Querier interface {
 	AddCuisine(ctx context.Context, db DBTX, arg *AddCuisineParams) (*Cuisine, error)
-	ApproveRestaurantProfile(ctx context.Context, db DBTX, arg *ApproveRestaurantProfileParams) error
+	AddRestaurantManager(ctx context.Context, db DBTX, arg *AddRestaurantManagerParams) error
 	CreateDish(ctx context.Context, db DBTX, arg *CreateDishParams) (*CreateDishRow, error)
 	CreateRestaurant(ctx context.Context, db DBTX, arg *CreateRestaurantParams) (*Restaurant, error)
 	CreateReview(ctx context.Context, db DBTX, arg *CreateReviewParams) (*CreateReviewRow, error)
@@ -21,12 +21,15 @@ type Querier interface {
 	GetCuisineRecursionById(ctx context.Context, db DBTX, id int16) ([]*GetCuisineRecursionByIdRow, error)
 	GetDishByID(ctx context.Context, db DBTX, id int32) (*GetDishByIDRow, error)
 	GetDishes(ctx context.Context, db DBTX, arg *GetDishesParams) ([]*GetDishesRow, error)
+	GetManagingRestaurantByUser(ctx context.Context, db DBTX, userID interface{}) ([]*GetManagingRestaurantByUserRow, error)
 	GetRestaurantByID(ctx context.Context, db DBTX, id int32) (*GetRestaurantByIDRow, error)
+	GetRestaurantManagers(ctx context.Context, db DBTX, restaurantID int32) ([]*GetRestaurantManagersRow, error)
 	GetRestaurants(ctx context.Context, db DBTX, arg *GetRestaurantsParams) ([]*GetRestaurantsRow, error)
 	GetReviews(ctx context.Context, db DBTX, arg *GetReviewsParams) ([]*GetReviewsRow, error)
 	GetUserById(ctx context.Context, db DBTX, id string) (*GetUserByIdRow, error)
 	GetUserByUsername(ctx context.Context, db DBTX, username string) (*GetUserByUsernameRow, error)
-	UpdateRestaurant(ctx context.Context, db DBTX, arg *UpdateRestaurantParams) error
+	RemoveRestaurantManager(ctx context.Context, db DBTX, arg *RemoveRestaurantManagerParams) error
+	UpdateRestaurant(ctx context.Context, db DBTX, arg *UpdateRestaurantParams) (*Restaurant, error)
 	UpdateUser(ctx context.Context, db DBTX, arg *UpdateUserParams) (*UpdateUserRow, error)
 }
 

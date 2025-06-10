@@ -20,7 +20,7 @@ SELECT
 FROM restaurants r
 WHERE id = $1;
 
--- name: UpdateRestaurant :exec
+-- name: UpdateRestaurant :one
 UPDATE restaurants
 SET
     name = coalesce(sqlc.narg('name'), name),
@@ -32,6 +32,7 @@ SET
     address = coalesce(sqlc.narg('address'), address),
     lat = coalesce(sqlc.narg('lat'), lat),
     lng = coalesce(sqlc.narg('lng'), lng),
+    is_approved = coalesce(sqlc.narg('is_approved'), is_approved),
     updated_at = now()
 WHERE id = @restaurant_id
 RETURNING *;
@@ -57,8 +58,29 @@ SELECT
 FROM restaurants r
 LIMIT $1 OFFSET $2;
 
--- name: ApproveRestaurantProfile :exec
-UPDATE restaurants
-SET is_approved = $1
-WHERE id = $2
-RETURNING *;
+-- name: AddRestaurantManager :exec
+INSERT INTO restaurant_manager (restaurant_id, user_id, is_owner)
+VALUES (@restaurant_id::int, @user_id::varchar(64), @is_owner::bool);
+
+-- name: GetRestaurantManagers :many
+SELECT
+    u.id,
+    u.username,
+    u.display_name,
+    u.email,
+    u.avatar_url,
+    rm.restaurant_id,
+    rm.is_owner
+FROM restaurant_manager rm
+JOIN users u ON rm.user_id = u.id
+WHERE rm.restaurant_id = $1;
+
+-- name: RemoveRestaurantManager :exec
+DELETE FROM restaurant_manager
+WHERE restaurant_id = $1 AND user_id = $2;
+
+-- name: GetManagingRestaurantByUser :many
+SELECT r.*, rm.is_owner
+FROM restaurant_manager rm
+JOIN restaurants r ON rm.restaurant_id = r.id
+WHERE rm.user_id = $1;

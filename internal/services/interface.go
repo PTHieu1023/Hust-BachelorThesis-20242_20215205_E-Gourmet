@@ -1,34 +1,42 @@
 package services
 
 import (
+	"context"
 	"e-gourmet/core/internal/database"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type IService interface {
-	GetCuisineRecursionById(id int16) (*Cuisine, error)
-	AddCuisine(params *database.AddCuisineParams) (*Cuisine, error)
+	GetCuisineRecursionById(ctx context.Context, id int16) (*Cuisine, error)
+	AddCuisine(ctx context.Context, params *database.AddCuisineParams) (*Cuisine, error)
 
-	CreateDish(params *database.CreateDishParams) (*database.CreateDishRow, error)
-	GetDishById(id int32) (*database.GetDishByIDRow, error)
-	DeleteDishById(id int32) error
-	GetDishes(params *database.GetDishesParams) ([]*database.GetDishesRow, error)
+	CreateDish(ctx context.Context, params *database.CreateDishParams) (*database.CreateDishRow, error)
+	GetDishById(ctx context.Context, id int32) (*database.GetDishByIDRow, error)
+	DeleteDishById(ctx context.Context, id int32) error
+	GetDishes(ctx context.Context, params *database.GetDishesParams) ([]*database.GetDishesRow, error)
 
-	CreateReview(params *database.CreateReviewParams) (*database.CreateReviewRow, error)
-	GetReviews(params *database.GetReviewsParams) ([]*database.GetReviewsRow, error)
-	DeleteReview(dishId int64) error
+	CreateReview(ctx context.Context, params *database.CreateReviewParams) (*database.CreateReviewRow, error)
+	GetReviews(ctx context.Context, params *database.GetReviewsParams) ([]*database.GetReviewsRow, error)
+	DeleteReview(ctx context.Context, dishId int64) error
 
-	CreateUser(params *database.CreateUserParams) (*database.User, error)
-	GetUserByUsername(username string) (*database.GetUserByUsernameRow, error)
-	GetUserById(id string) (*database.GetUserByIdRow, error)
-	UpdateUser(params *database.UpdateUserParams) (*database.UpdateUserRow, error)
+	CreateUser(ctx context.Context, params *database.CreateUserParams) (*database.User, error)
+	GetUserByUsername(ctx context.Context, username string) (*database.GetUserByUsernameRow, error)
+	GetUserById(ctx context.Context, id string) (*database.GetUserByIdRow, error)
+	UpdateUser(ctx context.Context, params *database.UpdateUserParams) (*database.UpdateUserRow, error)
+
+	GetRestaurants(ctx context.Context, params *database.GetRestaurantsParams) ([]*database.GetRestaurantsRow, error)
+	GetRestaurantById(ctx context.Context, id int32) (*database.GetRestaurantByIDRow, error)
+	CreateRestaurant(ctx context.Context, params *database.CreateRestaurantParams) (*database.Restaurant, error)
+	UpdateRestaurant(ctx context.Context, params *database.UpdateRestaurantParams) (*database.Restaurant, error)
+	DeleteRestaurantById(ctx context.Context, id int32) error
 }
 
 type Service struct {
-	dbtx    database.DBTX
+	dbtx    *pgxpool.Pool
 	querier database.Querier
 }
 
-func New(dbtx database.DBTX) IService {
+func New(dbtx *pgxpool.Pool) IService {
 	return &Service{
 		dbtx:    dbtx,
 		querier: database.New(),

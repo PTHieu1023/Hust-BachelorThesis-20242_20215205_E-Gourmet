@@ -11,20 +11,19 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const approveRestaurantProfile = `-- name: ApproveRestaurantProfile :exec
-UPDATE restaurants
-SET is_approved = $1
-WHERE id = $2
-RETURNING id, name, description, avatar_url, username, email, phone, address, lat, lng, document, created_at, updated_at, is_approved
+const addRestaurantManager = `-- name: AddRestaurantManager :exec
+INSERT INTO restaurant_manager (restaurant_id, user_id, is_owner)
+VALUES ($1::int, $2::varchar(64), $3::bool)
 `
 
-type ApproveRestaurantProfileParams struct {
-	IsApproved *bool `json:"isApproved"`
-	ID         int32 `json:"id"`
+type AddRestaurantManagerParams struct {
+	RestaurantID int32  `json:"restaurantId"`
+	UserID       string `json:"userId"`
+	IsOwner      bool   `json:"isOwner"`
 }
 
-func (q *Queries) ApproveRestaurantProfile(ctx context.Context, db DBTX, arg *ApproveRestaurantProfileParams) error {
-	_, err := db.Exec(ctx, approveRestaurantProfile, arg.IsApproved, arg.ID)
+func (q *Queries) AddRestaurantManager(ctx context.Context, db DBTX, arg *AddRestaurantManagerParams) error {
+	_, err := db.Exec(ctx, addRestaurantManager, arg.RestaurantID, arg.UserID, arg.IsOwner)
 	return err
 }
 
@@ -89,6 +88,67 @@ func (q *Queries) DeleteRestaurant(ctx context.Context, db DBTX, id int32) error
 	return err
 }
 
+const getManagingRestaurantByUser = `-- name: GetManagingRestaurantByUser :many
+SELECT r.id, r.name, r.description, r.avatar_url, r.username, r.email, r.phone, r.address, r.lat, r.lng, r.document, r.created_at, r.updated_at, r.is_approved, rm.is_owner
+FROM restaurant_manager rm
+JOIN restaurants r ON rm.restaurant_id = r.id
+WHERE rm.user_id = $1
+`
+
+type GetManagingRestaurantByUserRow struct {
+	ID          int32              `json:"id"`
+	Name        string             `json:"name"`
+	Description *string            `json:"description"`
+	AvatarUrl   *string            `json:"avatarUrl"`
+	Username    string             `json:"username"`
+	Email       *string            `json:"email"`
+	Phone       *string            `json:"phone"`
+	Address     *string            `json:"address"`
+	Lat         *float64           `json:"lat"`
+	Lng         *float64           `json:"lng"`
+	Document    []byte             `json:"document"`
+	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt   pgtype.Timestamptz `json:"updatedAt"`
+	IsApproved  *bool              `json:"isApproved"`
+	IsOwner     *bool              `json:"isOwner"`
+}
+
+func (q *Queries) GetManagingRestaurantByUser(ctx context.Context, db DBTX, userID interface{}) ([]*GetManagingRestaurantByUserRow, error) {
+	rows, err := db.Query(ctx, getManagingRestaurantByUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []*GetManagingRestaurantByUserRow{}
+	for rows.Next() {
+		var i GetManagingRestaurantByUserRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.AvatarUrl,
+			&i.Username,
+			&i.Email,
+			&i.Phone,
+			&i.Address,
+			&i.Lat,
+			&i.Lng,
+			&i.Document,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.IsApproved,
+			&i.IsOwner,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getRestaurantByID = `-- name: GetRestaurantByID :one
 SELECT
     r.id,
@@ -140,6 +200,58 @@ func (q *Queries) GetRestaurantByID(ctx context.Context, db DBTX, id int32) (*Ge
 		&i.UpdatedAt,
 	)
 	return &i, err
+}
+
+const getRestaurantManagers = `-- name: GetRestaurantManagers :many
+SELECT
+    u.id,
+    u.username,
+    u.display_name,
+    u.email,
+    u.avatar_url,
+    rm.restaurant_id,
+    rm.is_owner
+FROM restaurant_manager rm
+JOIN users u ON rm.user_id = u.id
+WHERE rm.restaurant_id = $1
+`
+
+type GetRestaurantManagersRow struct {
+	ID           string  `json:"id"`
+	Username     string  `json:"username"`
+	DisplayName  string  `json:"displayName"`
+	Email        string  `json:"email"`
+	AvatarUrl    *string `json:"avatarUrl"`
+	RestaurantID int32   `json:"restaurantId"`
+	IsOwner      *bool   `json:"isOwner"`
+}
+
+func (q *Queries) GetRestaurantManagers(ctx context.Context, db DBTX, restaurantID int32) ([]*GetRestaurantManagersRow, error) {
+	rows, err := db.Query(ctx, getRestaurantManagers, restaurantID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []*GetRestaurantManagersRow{}
+	for rows.Next() {
+		var i GetRestaurantManagersRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.DisplayName,
+			&i.Email,
+			&i.AvatarUrl,
+			&i.RestaurantID,
+			&i.IsOwner,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getRestaurants = `-- name: GetRestaurants :many
@@ -216,7 +328,22 @@ func (q *Queries) GetRestaurants(ctx context.Context, db DBTX, arg *GetRestauran
 	return items, nil
 }
 
-const updateRestaurant = `-- name: UpdateRestaurant :exec
+const removeRestaurantManager = `-- name: RemoveRestaurantManager :exec
+DELETE FROM restaurant_manager
+WHERE restaurant_id = $1 AND user_id = $2
+`
+
+type RemoveRestaurantManagerParams struct {
+	RestaurantID int32       `json:"restaurantId"`
+	UserID       interface{} `json:"userId"`
+}
+
+func (q *Queries) RemoveRestaurantManager(ctx context.Context, db DBTX, arg *RemoveRestaurantManagerParams) error {
+	_, err := db.Exec(ctx, removeRestaurantManager, arg.RestaurantID, arg.UserID)
+	return err
+}
+
+const updateRestaurant = `-- name: UpdateRestaurant :one
 UPDATE restaurants
 SET
     name = coalesce($1, name),
@@ -228,8 +355,9 @@ SET
     address = coalesce($6, address),
     lat = coalesce($7, lat),
     lng = coalesce($8, lng),
+    is_approved = coalesce($9, is_approved),
     updated_at = now()
-WHERE id = $9
+WHERE id = $10
 RETURNING id, name, description, avatar_url, username, email, phone, address, lat, lng, document, created_at, updated_at, is_approved
 `
 
@@ -242,11 +370,12 @@ type UpdateRestaurantParams struct {
 	Address      *string  `json:"address"`
 	Lat          *float64 `json:"lat"`
 	Lng          *float64 `json:"lng"`
+	IsApproved   *bool    `json:"isApproved"`
 	RestaurantID int32    `json:"restaurantId"`
 }
 
-func (q *Queries) UpdateRestaurant(ctx context.Context, db DBTX, arg *UpdateRestaurantParams) error {
-	_, err := db.Exec(ctx, updateRestaurant,
+func (q *Queries) UpdateRestaurant(ctx context.Context, db DBTX, arg *UpdateRestaurantParams) (*Restaurant, error) {
+	row := db.QueryRow(ctx, updateRestaurant,
 		arg.Name,
 		arg.Description,
 		arg.AvatarUrl,
@@ -255,7 +384,25 @@ func (q *Queries) UpdateRestaurant(ctx context.Context, db DBTX, arg *UpdateRest
 		arg.Address,
 		arg.Lat,
 		arg.Lng,
+		arg.IsApproved,
 		arg.RestaurantID,
 	)
-	return err
+	var i Restaurant
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.AvatarUrl,
+		&i.Username,
+		&i.Email,
+		&i.Phone,
+		&i.Address,
+		&i.Lat,
+		&i.Lng,
+		&i.Document,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.IsApproved,
+	)
+	return &i, err
 }
