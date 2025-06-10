@@ -13,7 +13,7 @@ func (c *Controller) CreateReview(ctx *fiber.Ctx) error {
 	}
 	params.UserID = new(string)
 	*params.UserID = ctx.Locals("userID").(string)
-	review, err := c.service.CreateReview(params)
+	review, err := c.service.CreateReview(ctx.UserContext(), params)
 	if err != nil {
 		return err
 	}
@@ -34,7 +34,7 @@ func (c *Controller) GetReviews(ctx *fiber.Ctx) error {
 	params.Limit = int32(pageFilter.Size)
 	params.Offset = int32((pageFilter.Page - 1) * pageFilter.Size)
 
-	reviews, err := c.service.GetReviews(params)
+	reviews, err := c.service.GetReviews(ctx.UserContext(), params)
 	if err != nil {
 		return err
 	}
@@ -47,7 +47,7 @@ func (c *Controller) DeleteReview(ctx *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid review ID")
 	}
 
-	if err = c.service.DeleteReview(int64(dishId)); err != nil {
+	if err = c.service.DeleteReview(ctx.UserContext(), int64(dishId)); err != nil {
 		return err
 	}
 	return ctx.SendStatus(fiber.StatusNoContent)

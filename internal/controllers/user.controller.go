@@ -14,7 +14,7 @@ func (c *Controller) GetCurrentUser(ctx *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized: No user ID found in context")
 	}
 
-	user, err := c.service.GetUserById(id)
+	user, err := c.service.GetUserById(ctx.UserContext(), id)
 	if err == nil {
 		return ctx.Status(fiber.StatusOK).JSON(user)
 	}
@@ -33,7 +33,7 @@ func (c *Controller) GetCurrentUser(ctx *fiber.Ctx) error {
 	params.Username = &username
 	params.Email = &email
 	params.DisplayName = &name
-	newUser, err := c.service.CreateUser(params)
+	newUser, err := c.service.CreateUser(ctx.UserContext(), params)
 
 	if err != nil {
 		return err
@@ -47,7 +47,7 @@ func (c *Controller) GetUserByUsername(ctx *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Username is required")
 	}
 
-	user, err := c.service.GetUserByUsername(username)
+	user, err := c.service.GetUserByUsername(ctx.UserContext(), username)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return fiber.NewError(fiber.StatusNotFound, "User not found")
@@ -75,7 +75,7 @@ func (c *Controller) UpdateCurrentUser(ctx *fiber.Ctx) error {
 	}
 	params.ID = &userId
 
-	updatedUser, err := c.service.UpdateUser(params)
+	updatedUser, err := c.service.UpdateUser(ctx.UserContext(), params)
 	if err != nil {
 		return err
 	}

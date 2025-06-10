@@ -14,10 +14,9 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"regexp"
 	"strings"
-	"time"
 )
 
-func (s *Service) CreateUser(params *database.CreateUserParams) (*database.User, error) {
+func (s *Service) CreateUser(ctx context.Context, params *database.CreateUserParams) (*database.User, error) {
 	if params == nil {
 		return nil, fiber.NewError(fiber.StatusBadRequest, "ERR_PARAMS_NIL")
 	}
@@ -33,9 +32,6 @@ func (s *Service) CreateUser(params *database.CreateUserParams) (*database.User,
 	if err := validateUsername(*params.Username); err != nil {
 		return nil, err
 	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
 
 	kcUser := &gocloak.User{
 		ID:            params.ID,
@@ -61,10 +57,7 @@ func (s *Service) CreateUser(params *database.CreateUserParams) (*database.User,
 	return user, err
 }
 
-func (s *Service) GetUserById(id string) (*database.GetUserByIdRow, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func (s *Service) GetUserById(ctx context.Context, id string) (*database.GetUserByIdRow, error) {
 	if id == "" {
 		return nil, fiber.NewError(fiber.StatusBadRequest, "MISSING_REQUIRED_FIELDS (id)")
 	}
@@ -76,10 +69,7 @@ func (s *Service) GetUserById(id string) (*database.GetUserByIdRow, error) {
 	return user, err
 }
 
-func (s *Service) GetUserByUsername(username string) (*database.GetUserByUsernameRow, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func (s *Service) GetUserByUsername(ctx context.Context, username string) (*database.GetUserByUsernameRow, error) {
 	if err := validateUsername(username); err != nil {
 		return nil, err
 	}
@@ -90,7 +80,7 @@ func (s *Service) GetUserByUsername(username string) (*database.GetUserByUsernam
 	return user, err
 }
 
-func (s *Service) UpdateUser(params *database.UpdateUserParams) (*database.UpdateUserRow, error) {
+func (s *Service) UpdateUser(ctx context.Context, params *database.UpdateUserParams) (*database.UpdateUserRow, error) {
 	if params == nil {
 		return nil, fiber.NewError(fiber.StatusBadRequest, "ERR_PARAMS_NIL")
 	}
@@ -107,9 +97,6 @@ func (s *Service) UpdateUser(params *database.UpdateUserParams) (*database.Updat
 			return nil, err
 		}
 	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-	defer cancel()
 
 	oldKC, _, err := updateKCUser(ctx, params)
 

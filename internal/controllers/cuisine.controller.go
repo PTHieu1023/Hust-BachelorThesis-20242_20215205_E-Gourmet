@@ -15,7 +15,7 @@ func (c *Controller) GetCuisineRecursionById(ctx *fiber.Ctx) error {
 		})
 	}
 
-	cuisine, err := c.service.GetCuisineRecursionById(int16(id))
+	cuisine, err := c.service.GetCuisineRecursionById(ctx.UserContext(), int16(id))
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to retrieve cuisine",
@@ -31,7 +31,7 @@ func (c *Controller) AddCuisine(ctx *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid request body.")
 	}
 
-	cuisine, err := c.service.AddCuisine(params)
+	cuisine, err := c.service.AddCuisine(ctx.UserContext(), params)
 
 	if err != nil {
 		return err

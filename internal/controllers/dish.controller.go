@@ -14,7 +14,7 @@ func (c *Controller) CreateDish(ctx *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid request body.")
 	}
 
-	dish, err := c.service.CreateDish(params)
+	dish, err := c.service.CreateDish(ctx.UserContext(), params)
 	if err != nil {
 		return err
 	}
@@ -30,7 +30,7 @@ func (c *Controller) GetDishById(ctx *fiber.Ctx) error {
 			"error": "Invalid dish ID",
 		})
 	}
-	dish, err := c.service.GetDishById(int32(id))
+	dish, err := c.service.GetDishById(ctx.UserContext(), int32(id))
 	if err != nil {
 		return err
 	}
@@ -46,7 +46,7 @@ func (c *Controller) DeleteDishById(ctx *fiber.Ctx) error {
 		})
 	}
 
-	err = c.service.DeleteDishById(int32(id))
+	err = c.service.DeleteDishById(ctx.UserContext(), int32(id))
 	if err != nil {
 		return err
 	}
@@ -66,7 +66,7 @@ func (c *Controller) GetDishes(ctx *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid query parameters.")
 	}
 
-	dishes, err := c.service.GetDishes(params)
+	dishes, err := c.service.GetDishes(ctx.UserContext(), params)
 
 	if err != nil {
 		return err

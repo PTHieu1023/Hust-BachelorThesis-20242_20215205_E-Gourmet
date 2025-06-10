@@ -2,17 +2,12 @@ package services
 
 import (
 	"context"
+	"e-gourmet/core/internal/database"
 	"github.com/gofiber/fiber/v2"
 	"strings"
-	"time"
-
-	"e-gourmet/core/internal/database"
 )
 
-func (s *Service) CreateReview(params *database.CreateReviewParams) (*database.CreateReviewRow, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func (s *Service) CreateReview(ctx context.Context, params *database.CreateReviewParams) (*database.CreateReviewRow, error) {
 	if params == nil {
 		return nil, fiber.NewError(fiber.StatusBadRequest, "params cannot be nil")
 	}
@@ -29,21 +24,17 @@ func (s *Service) CreateReview(params *database.CreateReviewParams) (*database.C
 	return s.querier.CreateReview(ctx, s.dbtx, params)
 }
 
-func (s *Service) GetReviews(params *database.GetReviewsParams) ([]*database.GetReviewsRow, error) {
+func (s *Service) GetReviews(ctx context.Context, params *database.GetReviewsParams) ([]*database.GetReviewsRow, error) {
 	if params == nil {
 		return nil, fiber.NewError(fiber.StatusBadRequest, "params cannot be nil")
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
 	return s.querier.GetReviews(ctx, s.dbtx, params)
 }
 
-func (s *Service) DeleteReview(dishId int64) error {
+func (s *Service) DeleteReview(ctx context.Context, dishId int64) error {
 	if dishId <= 0 {
 		return fiber.NewError(fiber.StatusBadRequest, "invalid dish ID")
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
 
 	return s.querier.DeleteReview(ctx, s.dbtx, dishId)
 }

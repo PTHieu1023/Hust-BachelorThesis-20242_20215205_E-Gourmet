@@ -7,13 +7,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5"
 	"strings"
-	"time"
 )
 
-func (s *Service) CreateDish(params *database.CreateDishParams) (*database.CreateDishRow, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func (s *Service) CreateDish(ctx context.Context, params *database.CreateDishParams) (*database.CreateDishRow, error) {
 	if params.RestaurantID == nil {
 		return nil, fiber.NewError(fiber.StatusBadRequest, "restaurantId is required")
 	}
@@ -39,10 +35,7 @@ func (s *Service) CreateDish(params *database.CreateDishParams) (*database.Creat
 	return s.querier.CreateDish(ctx, s.dbtx, params)
 }
 
-func (s *Service) GetDishById(id int32) (*database.GetDishByIDRow, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func (s *Service) GetDishById(ctx context.Context, id int32) (*database.GetDishByIDRow, error) {
 	dish, err := s.querier.GetDishByID(ctx, s.dbtx, id)
 	if errors.As(err, &pgx.ErrNoRows) {
 		return nil, fiber.NewError(fiber.StatusNotFound, "Dish not found")
@@ -54,17 +47,11 @@ func (s *Service) GetDishById(id int32) (*database.GetDishByIDRow, error) {
 	return dish, nil
 }
 
-func (s *Service) DeleteDishById(id int32) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func (s *Service) DeleteDishById(ctx context.Context, id int32) error {
 	return s.querier.DeleteDish(ctx, s.dbtx, id)
 }
 
-func (s *Service) GetDishes(params *database.GetDishesParams) ([]*database.GetDishesRow, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func (s *Service) GetDishes(ctx context.Context, params *database.GetDishesParams) ([]*database.GetDishesRow, error) {
 	menu, err := s.querier.GetDishes(ctx, s.dbtx, params)
 	if err != nil {
 		return nil, err

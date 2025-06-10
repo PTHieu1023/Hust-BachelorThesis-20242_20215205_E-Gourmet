@@ -5,12 +5,9 @@ import (
 	"e-gourmet/core/internal/database"
 	"github.com/gofiber/fiber/v2"
 	"strings"
-	"time"
 )
 
-func (s *Service) GetCuisineRecursionById(id int16) (*Cuisine, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+func (s *Service) GetCuisineRecursionById(ctx context.Context, id int16) (*Cuisine, error) {
 	cuisinesRow, err := s.querier.GetCuisineRecursionById(ctx, s.dbtx, id)
 	if err != nil {
 		return nil, err
@@ -35,10 +32,7 @@ func (s *Service) GetCuisineRecursionById(id int16) (*Cuisine, error) {
 	return cuisinesMap[id], nil
 }
 
-func (s *Service) AddCuisine(params *database.AddCuisineParams) (*Cuisine, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
+func (s *Service) AddCuisine(ctx context.Context, params *database.AddCuisineParams) (*Cuisine, error) {
 	params.Name = strings.TrimSpace(params.Name)
 	if params.Name == "" {
 		return nil, fiber.NewError(
