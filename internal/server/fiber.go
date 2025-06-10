@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"e-gourmet/core/internal/server/logger"
 	"e-gourmet/core/pkg/configloader"
 	"errors"
@@ -34,9 +35,11 @@ var (
 func errorHandler() fiber.ErrorHandler {
 	return func(c *fiber.Ctx, err error) error {
 		code := fiber.StatusInternalServerError
-		var e *fiber.Error
-		if errors.As(err, &e) {
-			code = e.Code
+		var fiberErr *fiber.Error
+		if errors.Is(err, context.DeadlineExceeded) {
+			code = fiber.StatusRequestTimeout
+		} else if errors.As(err, &fiberErr) {
+			code = fiberErr.Code
 		}
 		c.Status(code)
 

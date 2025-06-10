@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"e-gourmet/core/internal/server/kc"
 	"e-gourmet/core/internal/server/logger"
 	"e-gourmet/core/pkg/configloader"
@@ -37,6 +38,7 @@ type Middlewares struct {
 	Cors     fiber.Handler
 	Compress fiber.Handler
 	Auth     fiber.Handler
+	Timeout  fiber.Handler
 }
 
 const (
@@ -62,8 +64,9 @@ func InitMiddlewares() *Middlewares {
 		Compress: compress.New(compress.Config{
 			Level: compress.LevelBestSpeed,
 		}),
-		Auth:   useAuth(),
-		Logger: useLogging(),
+		Auth:    useAuth(),
+		Logger:  useLogging(),
+		Timeout: useTimeout(1 * time.Minute),
 	}
 }
 
@@ -119,5 +122,14 @@ func useLogging() fiber.Handler {
 
 		logger.Instance().Info("Request", fields...)
 		return nil
+	}
+}
+
+func useTimeout(duration time.Duration) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		ctx, cancel := context.WithTimeout(c.UserContext(), duration)
+		defer cancel()
+		c.SetUserContext(ctx)
+		return c.Next()
 	}
 }
