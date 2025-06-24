@@ -1,8 +1,5 @@
 "use server"
 
-// Refresh token when access token is expired
-import prisma from "@/services/prisma";
-
 export const refreshToken = async (refreshToken: string) => {
     try {
         const res = await fetch(`${process.env.OAUTH_TOKEN_URL}`, {
@@ -26,37 +23,8 @@ export const refreshToken = async (refreshToken: string) => {
 }
 
 // Clear session in keycloak server via API
-export const clearSession = async (idToken: string) => {
+export const clearSession = async (idToken: string | undefined) => {
     if (!idToken) return { error: "Invalid token" };
     const url = `${process.env.OAUTH_LOGOUT_URL}?id_token_hint=${idToken}&post_logout_redirect_uri=${encodeURIComponent(process.env.NEXTAUTH_URL || '')}`;
     fetch(url).finally(() => ({ message: "Session revoked" }));
-}
-
-export const syncUser = async (user: {
-    name: string,
-    username: string,
-    email: string,
-    imageUrl: imageUrl
-}) => {
-    try {
-        const userData = await prisma.user.findFirst({
-            where: { email: user.email }
-        })
-        const lastUser = await prisma.user.findFirst({
-            orderBy: { id: 'desc' },
-            select: { id: true },
-        })
-        if (!userData) return prisma.user.create({
-            data: {
-                id: lastUser ? lastUser.id + 1 : 1,
-                name: user.name,
-                username: user.username,
-                email: user.email,
-                // imageUrl: user.imageUrl,
-            },
-        });
-    } catch (error) {
-        console.error(error);
-        throw new Error("Failed to sync user");
-    }
 }

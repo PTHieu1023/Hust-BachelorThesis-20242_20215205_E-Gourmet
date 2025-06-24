@@ -73,10 +73,18 @@ export const authOptions: NextAuthOptions = {
     }
 }
 
-interface KCSession extends Session{
+export interface KCSession extends Session{
     error?: string | number
-    access_token?: string | undefined
-    id_token?: string | undefined
+    access_token?: string
+    id_token?: string
+    user?: {
+        name?: string
+        username?: string
+        email?: string
+        imageUrl?: string
+        realmRoles?: string[]
+        locale?: string
+    }
 }
 
 export const getAuthSession:() => Promise<KCSession | null | undefined> = async () => await getServerSession(authOptions);

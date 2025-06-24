@@ -1,24 +1,16 @@
 {
-  "common": {
-    "welcome": "Welcome",
-    "login": "Login",
-    "logout": "Logout",
-    "register": "Register",
-    "search": "Search",
-    "menu": "Menu",
-    "cart": "Cart",
-    "profile": "Profile"
-  },
-  "auth": {
-    "loginTitle": "Login to your account",
-    "email": "Email",
-    "password": "Password",
-    "forgotPassword": "Forgot password?",
-    "rememberMe": "Remember me"
-  },
-  "errors": {
-    "required": "This field is required",
-    "invalidEmail": "Invalid email address",
-    "invalidPassword": "Invalid password"
+  "header": {
+    "navbar": {
+      "discovery": "Discovery",
+      "newsfeed": "Newsfeed",
+      "for-you": "For You"
+    },
+    "user-menu": {
+      "sign-in": "Sign In"
+    },
+    "settings": {
+      "language": "Language",
+      "theme": "Theme"
+    }
   }
 } 
