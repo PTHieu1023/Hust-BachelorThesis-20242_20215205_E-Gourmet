@@ -43,7 +43,7 @@ const Landing = () => {
     ];
 
     return (
-        <>
+        <div className="container mx-auto px-4 py-6">
             <section className="bg-gradient-to-br from-orange-50 via-white to-red-50 py-20">
                 <div className="container mx-auto px-4 text-center">
                     <div className="max-w-4xl mx-auto space-y-8">
@@ -131,7 +131,7 @@ const Landing = () => {
                     </div>
                 </div>
             </section>
-        </>
+        </div>
     );
 };
 

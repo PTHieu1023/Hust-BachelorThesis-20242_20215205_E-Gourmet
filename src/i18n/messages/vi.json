@@ -6,7 +6,10 @@
       "for-you": "Dành cho bạn"
     },
     "user-menu": {
-      "sign-in": "Đăng nhập"
+      "sign-in": "Đăng nhập",
+      "restaurant": "Nhà hàng",
+      "profile": "Hồ sơ",
+      "logout": "Đăng xuất"
     },
     "settings": {
       "language": "Ngôn ngữ",

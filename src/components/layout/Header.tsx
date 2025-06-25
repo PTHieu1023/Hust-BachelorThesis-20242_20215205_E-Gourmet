@@ -1,6 +1,6 @@
 "use client";
 
-import {Compass, ForkKnife, Heart, Home, LogOut, Settings, User, Menu, X, Sun, Moon} from "lucide-react";
+import {Compass, ForkKnife, Heart, Home, LogOut, Settings, User, Menu, X, Sun, Moon, PcCase} from "lucide-react";
 import {signIn, signOut, useSession} from "next-auth/react";
 import {KCSession} from "@/configs/auth.config";
 import {useLocale, useTranslations} from "next-intl";
@@ -105,20 +105,22 @@ function UserMenu() {
             <DropdownMenuContent align="end" className="w-56 text-foreground">
                 <DropdownMenuLabel>@{user?.username}</DropdownMenuLabel>
                 <DropdownMenuItem asChild>
-                    <Link href="/profile" className="flex items-center">
+                    <Link href={`/profile/${user.username}`} className="flex items-center">
                         <User className="mr-2 h-4 w-4"/>
                         <span>{user.name}</span>
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                    <Settings className="mr-2 h-4 w-4"/>
-                    <span>Settings</span>
+                    <Link href={"/restaurant"} className="flex items-center" >
+                        <PcCase className={"mr-2 h-4 w-4"}/>
+                        <span>{t("restaurant")}</span>
+                    </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                     className={"hover:bg-red-400 hover:text-white"}
                     onClick={() => clearSession(session?.id_token).then(() => signOut())}>
                     <LogOut className="mr-2 h-4 w-4"/>
-                    <span>Log out</span>
+                    <span>{t("logout")}</span>
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

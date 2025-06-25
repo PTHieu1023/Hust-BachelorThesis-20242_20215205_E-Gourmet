@@ -6,7 +6,10 @@
       "for-you": "For You"
     },
     "user-menu": {
-      "sign-in": "Sign In"
+      "sign-in": "Sign In",
+      "restaurant": "Restaurant",
+      "profile": "Profile",
+        "logout": "Logout"
     },
     "settings": {
       "language": "Language",

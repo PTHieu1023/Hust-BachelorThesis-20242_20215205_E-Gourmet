@@ -8,6 +8,7 @@ import type {Metadata} from "next";
 import RootProviders from "@/app/[locale]/providers";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
+import {Toaster} from "@/components/ui/sonner";
 
 export function generateStaticParams() {
     return routing.locales.map((locale) => ({locale}));
@@ -46,9 +47,10 @@ export default async function LocaleLayout({children, params}:
         <RootProviders>
             <NextIntlClientProvider>
                 <Header/>
-                <main className="flex-grow container mx-auto px-4 py-8 min-h-screen bg-background">
+                <main className="flex-grow mx-auto px-4 py-8 min-h-screen bg-background bg-gradient-to-br from-orange-50 via-white to-green-50">
                     {children}
                 </main>
+                <Toaster />
                 <Footer/>
             </NextIntlClientProvider>
         </RootProviders>
