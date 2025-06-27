@@ -2,7 +2,8 @@ import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
-import {Heart, Star, MapPin, TrendingUp, Users, Clock} from "lucide-react";
+import {Heart, Star, MapPin, TrendingUp, Users} from "lucide-react";
+import Image from "next/image";
 
 export default function ForYouPage() {
     const recommendations = [
@@ -11,7 +12,7 @@ export default function ForYouPage() {
             type: "restaurant",
             title: "New Italian spot based on your love for pasta",
             restaurant: "Nonna's Kitchen",
-            image: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400",
+            image: "https://images.unsplash.com/photo-1514933651103-005eec06c04b",
             rating: 4.6,
             reason: "Similar to Bella Nonna which you rated 5★",
             distance: "0.8 miles away"
@@ -22,7 +23,7 @@ export default function ForYouPage() {
             title: "Try this popular ramen everyone's talking about",
             restaurant: "Tokyo Bowl",
             dish: "Tonkotsu Ramen",
-            image: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=400",
+            image: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624",
             rating: 4.8,
             reason: "Trending in your area",
             price: "$$"
@@ -33,7 +34,7 @@ export default function ForYouPage() {
             title: "Follow Sarah - she has similar taste to you",
             reviewer: {
                 name: "Sarah Chen",
-                avatar: "https://images.unsplash.com/photo-1494790108755-2616b812b6ab?w=400",
+                avatar: "https://images.unsplash.com/photo-1494790108755-2616b812b6ab",
                 reviews: 127,
                 similarity: "89% taste match"
             },
@@ -47,17 +48,18 @@ export default function ForYouPage() {
             name: "Spicy Tuna Bowl",
             restaurant: "Poke Paradise",
             trending: "+25% orders this week",
-            image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400"
+            image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c"
         },
         {
             id: 2,
             name: "Truffle Pizza",
             restaurant: "Artisan Slice",
             trending: "+18% orders this week",
-            image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400"
+            image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b"
         }
     ];
 
+    // @ts-ignore
     return (
 
         <div className="container mx-auto px-4 py-6">
@@ -86,10 +88,11 @@ export default function ForYouPage() {
                                                     <AvatarFallback>SC</AvatarFallback>
                                                 </Avatar>
                                             ) : (
-                                                <img
-                                                    src={rec.image}
+                                                <Image
+                                                    src={`${rec.image}`}
                                                     alt={rec.title}
                                                     className="w-16 h-16 rounded-lg object-cover"
+                                                    width={32} height={32}
                                                 />
                                             )}
                                         </div>

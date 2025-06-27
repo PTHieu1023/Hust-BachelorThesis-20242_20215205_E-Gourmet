@@ -5,8 +5,8 @@ import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {MapPin, Star, Clock, Phone, Globe, Heart} from "lucide-react";
 
-export default async function RestaurantProfilePage({params}: { params: { locale: string, username: string } }) {
-    const {username} = await params;
+export default async function RestaurantProfilePage() {
+    // const {username} = await params;
 
     const restaurant = {
         id: "1",

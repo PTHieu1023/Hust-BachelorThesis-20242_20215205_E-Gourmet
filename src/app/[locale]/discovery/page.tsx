@@ -7,6 +7,7 @@ import {Badge} from "@/components/ui/badge";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {Search, Filter, MapPin, Star} from "lucide-react";
 import {Link} from "@/i18n/navigation";
+import Image from "next/image";
 
 export default function DiscoveryPage() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -117,10 +118,11 @@ export default function DiscoveryPage() {
                     <Link key={dish.id} href={`/restaurant/1/${dish.id}`}>
                         <Card className="border-gray-100 hover:shadow-lg transition-shadow cursor-pointer">
                             <div className="relative">
-                                <img
+                                <Image
                                     src={dish.image}
                                     alt={dish.name}
                                     className="w-full h-48 object-cover rounded-t-lg"
+                                    width={32} height={32}
                                 />
                                 <Badge className="absolute top-2 right-2 bg-white text-gray-800">
                                     {dish.price}

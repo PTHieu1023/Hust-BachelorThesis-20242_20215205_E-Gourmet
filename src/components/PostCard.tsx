@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Heart, MessageCircle, Share2, MapPin, DollarSign } from "lucide-react";
 import {Link} from "@/i18n/navigation";
+import Image from "next/image";
 
 interface PostCardProps {
     post: {
@@ -142,10 +143,11 @@ const PostCard = ({ post }: PostCardProps) => {
                                     post.content.images.length === 3 && index === 0 ? "row-span-2" : ""
                                 }`}
                             >
-                                <img
+                                <Image
                                     src={image}
                                     alt={`Post image ${index + 1}`}
                                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                                    width={32} height={32}
                                 />
                                 {post.content.images.length > 4 && index === 3 && (
                                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
