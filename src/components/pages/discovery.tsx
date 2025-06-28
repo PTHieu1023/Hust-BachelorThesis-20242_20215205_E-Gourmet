@@ -14,32 +14,41 @@ import Image from "next/image";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import {Link} from "@/i18n/navigation";
+import {Cuisine} from "@/types/food";
+import {getCuisines} from "@/services/cuisine.service";
 
 interface FilterProps {
     search?: string;
-    cuisineId?: number;
+    cuisine?: string;
     priceRange?: [number, number];
     maxPrice?: number
 }
 
 export const DiscoveryFilter = () => {
-    const max = 9999999; // TODO: Replace with dynamic max price from API or config
-    const cuisines = ["All", "Italian", "Japanese", "Mexican", "Chinese", "American", "Thai", "Indian", "French"]; // API or config based list of cuisines
+    const max = 9999999;
+    const [cuisines, setCuisines] = useState<Cuisine[]>([]);
+    useEffect(() => {
+        const fetchCuisines = async () => {
+            setCuisines(await getCuisines());
+        };
+
+        fetchCuisines().then();
+    }, []);
+
 
     const t = useTranslations("discovery.filter");
     const router = useRouter();
     const searchParams = useSearchParams();
 
     // Initialize filters from URL query params
-    const initialSearch = searchParams.get("search") || "";
-    const initialCuisineId = Number(searchParams.get("cuisineId")) || 0;
-    const initialMinPrice = Number(searchParams.get("minPrice")) || 0;
-    const initialMaxPrice = Number(searchParams.get("maxPrice")) || max;
+    const initialSearch = searchParams.get("search") || undefined;
+    const initialCuisine = searchParams.get("cuisine") || undefined;
+    const initialMinPrice = Number(searchParams.get("minPrice"));
+    const initialMaxPrice = Number(searchParams.get("maxPrice"));
 
     const [filters, setFilters] = useState<FilterProps>({
         search: initialSearch,
-        cuisineId: initialCuisineId,
-        priceRange: [initialMinPrice, initialMaxPrice],
+        cuisine: initialCuisine,
         maxPrice: max
     });
 
@@ -56,7 +65,7 @@ export const DiscoveryFilter = () => {
     React.useEffect(() => {
         const params = new URLSearchParams();
         if (debouncedFilters.search) params.set("search", debouncedFilters.search);
-        if (debouncedFilters.cuisineId !== undefined) params.set("cuisineId", String(debouncedFilters.cuisineId));
+        if (debouncedFilters.cuisine !== undefined) params.set("cuisine", String(debouncedFilters.cuisine));
         if (debouncedFilters.priceRange) {
             params.set("minPrice", String(debouncedFilters.priceRange[0]));
             params.set("maxPrice", String(debouncedFilters.priceRange[1]));
@@ -81,8 +90,8 @@ export const DiscoveryFilter = () => {
                 <div className="flex gap-4 col-span-3">
                     <CuisineFilter
                         cuisines={cuisines}
-                        cuisineId={filters.cuisineId}
-                        onValueChange={(value) => setFilters({...filters, cuisineId: Number(value) || 0})}
+                        selected={filters.cuisine}
+                        onValueChange={(value) => setFilters({...filters, cuisine: value || "all"})}
                     />
                     <PriceRangeFilter
                         priceRange={filters.priceRange}
@@ -105,7 +114,6 @@ const SearchFilter = ({className, value, onChange}: SearchFilterProps) => {
     const t = useTranslations("discovery.filter");
     return (
         <div className={cn("w-full justify-center items-center", className)}>
-            <span className="flex items-center space-x-2">{t("search")}</span>
             < Input
                 placeholder="Search dishes or restaurants..."
                 value={value}
@@ -117,24 +125,23 @@ const SearchFilter = ({className, value, onChange}: SearchFilterProps) => {
 }
 
 interface CuisineFilterProps {
-    cuisines: string[];
-    cuisineId?: number;
+    cuisines: Cuisine[];
+    selected?: string;
     onValueChange?: (value: string) => void;
     className?: string;
 }
 
-function CuisineFilter({cuisines, cuisineId = 0, onValueChange, className}: CuisineFilterProps) {
+function CuisineFilter({cuisines, selected, onValueChange, className}: CuisineFilterProps) {
     const t = useTranslations("discovery.filter");
     return (
         <div className={cn("w-full justify-center items-center", className)}>
-            <span className="flex items-center space-x-2">{t("cuisines")}</span>
-            <Select value={`${cuisineId}`} onValueChange={onValueChange}>
+            <Select value={selected} onValueChange={onValueChange}>
                 <SelectTrigger className="w-full md:w-[180px]">
                     <SelectValue placeholder={t("cuisines")}/>
                 </SelectTrigger>
                 <SelectContent>
-                    {cuisines.map((cuisine, index) => (
-                        <SelectItem key={cuisine} value={`${index}`}>{cuisine}</SelectItem>
+                    {cuisines.map((cuisine) => (
+                        <SelectItem key={cuisine.id} value={cuisine.urlName}>{cuisine.name}</SelectItem>
                     ))}
                 </SelectContent>
             </Select>
@@ -156,14 +163,13 @@ const PriceRangeFilter = (
 
     return (
         <div className={cn("w-full justify-center items-center", className)}>
-            <span className="flex items-center space-x-2">{t("price-range")}</span>
             <div className="w-full flex items-center justify-between gap-2">
                 <span className="text-sm text-muted-foreground">0</span>
-                <Slider value={priceRange} onValueChange={onValueChange} max={max} step={step}/>
+                <Slider value={priceRange || [0, max]} onValueChange={onValueChange} max={max} step={step}/>
                 <span className="text-sm text-muted-foreground">{max}</span>
             </div>
             <p className="mt-2 text-center text-sm text-muted-foreground">
-                {priceRange ? priceRange[0] : 0} - {priceRange ? priceRange[1] : max}
+                {t("price-range")}: {priceRange ? priceRange[0] : 0} - {priceRange ? priceRange[1] : max}
             </p>
         </div>
     );
