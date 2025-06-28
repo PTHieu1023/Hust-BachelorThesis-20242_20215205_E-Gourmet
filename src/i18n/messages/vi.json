@@ -15,5 +15,13 @@
       "language": "Ngôn ngữ",
       "theme": "Chủ đề"
     }
-  }
+  },
+    "discovery": {
+        "filter": {
+        "title": "Khám phá món ăn",
+        "search": "Tìm kiếm",
+        "cuisines": "Ẩm thực",
+        "price-range": "Khoảng giá"
+        }
+    }
 }

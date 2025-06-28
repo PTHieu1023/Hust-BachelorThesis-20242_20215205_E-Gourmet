@@ -10,7 +10,7 @@ export default function RootProviders({ children }: Readonly<{ children: ReactNo
             <SessionProvider>
                 <NextThemesProvider
                     attribute="class"
-                    defaultTheme="system"
+                    defaultTheme="light"
                     enableSystem
                     disableTransitionOnChange
                     themes={["light", "dark"]}

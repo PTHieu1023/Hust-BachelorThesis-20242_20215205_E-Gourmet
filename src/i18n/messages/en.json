@@ -15,5 +15,13 @@
       "language": "Language",
       "theme": "Theme"
     }
+  },
+  "discovery": {
+    "filter": {
+      "title": "Discover Dishes",
+      "search": "Search",
+      "cuisines": "Cuisines",
+      "price-range": "Price Range"
+    }
   }
 } 
