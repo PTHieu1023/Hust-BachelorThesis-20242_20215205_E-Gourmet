@@ -10,10 +10,6 @@ import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import {Toaster} from "@/components/ui/sonner";
 
-export function generateStaticParams() {
-    return routing.locales.map((locale) => ({locale}));
-}
-
 const sourceSans3 = Source_Sans_3({
     weight: ["300", "400", "500", "600", "700"],
     style: ["normal", "italic"],

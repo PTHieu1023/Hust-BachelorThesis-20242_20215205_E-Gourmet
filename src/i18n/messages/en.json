@@ -23,5 +23,16 @@
       "cuisines": "Cuisines",
       "price-range": "Price Range"
     }
+  },
+  "for-you": {
+    "title": "Personalized For You",
+    "trending-near-you": "Trending Near You",
+    "description": "Personalized recommendations based on your preferences and past interactions.",
+    "statistics": {
+      "title": "Taste profile",
+      "fav-cuisine": "Favorite Cuisine",
+      "avg-rating": "Average Rating",
+      "total-review": "Total Reviews"
+    }
   }
 } 

@@ -17,7 +17,8 @@ export interface Cuisine {
     id: number;
     name: string;
     urlName: string;
-    imageUrl: string;
+    imageUrl?: string;
+    description?: string;
 }
 
 export interface FoodRecommendation {
