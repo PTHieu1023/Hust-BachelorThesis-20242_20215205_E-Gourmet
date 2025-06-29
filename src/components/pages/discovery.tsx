@@ -4,7 +4,7 @@ import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {MapPin, Search, Star} from "lucide-react";
 import {Input} from "@/components/ui/input";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {ChangeEventHandler, Suspense, useEffect, useState} from "react";
+import {ChangeEventHandler, useEffect, useState} from "react";
 import {useTranslations} from "next-intl";
 import * as React from "react";
 import {Slider} from "@/components/ui/slider";
@@ -43,8 +43,6 @@ export const DiscoveryFilter = () => {
     // Initialize filters from URL query params
     const initialSearch = searchParams.get("search") || undefined;
     const initialCuisine = searchParams.get("cuisine") || undefined;
-    const initialMinPrice = Number(searchParams.get("minPrice"));
-    const initialMaxPrice = Number(searchParams.get("maxPrice"));
 
     const [filters, setFilters] = useState<FilterProps>({
         search: initialSearch,
@@ -71,7 +69,7 @@ export const DiscoveryFilter = () => {
             params.set("maxPrice", String(debouncedFilters.priceRange[1]));
         }
         router.replace(`?${params.toString()}`);
-    }, [debouncedFilters, router]);
+    }, [debouncedFilters]);
 
 
     return (
@@ -114,9 +112,9 @@ const SearchFilter = ({className, value, onChange}: SearchFilterProps) => {
     const t = useTranslations("discovery.filter");
     return (
         <div className={cn("w-full justify-center items-center", className)}>
-            < Input
-                placeholder="Search dishes or restaurants..."
-                value={value}
+            <Input
+                placeholder={t("search-placeholder")}
+                value={value ?? ""}
                 onChange={onChange}
                 className="w-full"
             />

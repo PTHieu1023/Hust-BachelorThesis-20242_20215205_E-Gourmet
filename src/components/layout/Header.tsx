@@ -99,7 +99,7 @@ function UserMenu() {
 
     if (status !== "authenticated" || !user)
         return (
-            <Button className="bg-orange-500 hover:bg-orange-600" onClick={() => signIn("keycloak").then()}>
+            <Button className="bg-orange-500 hover:bg-orange-600" onClick={() => signIn("keycloak", {callbackUrl: "/"})}>
                 {t("sign-in")}
             </Button>
         )
