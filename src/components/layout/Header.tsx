@@ -15,7 +15,7 @@ import {
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {Link, usePathname} from "@/i18n/navigation";
 import {clearSession} from "@/services/auth.service";
-import {ReactNode} from "react";
+import {ReactNode, useEffect} from "react";
 import {clsx} from "clsx";
 
 export default function Header() {
@@ -88,6 +88,15 @@ function UserMenu() {
     const user = session?.user;
     const t = useTranslations("header.user-menu");
 
+    const logout = () => clearSession(session?.id_token).then(() => signOut({callbackUrl: "/home"}));
+
+
+    useEffect(() => {
+        if(session?.error){
+            logout().then()
+        }
+    }, [session]);
+
     if (status !== "authenticated" || !user)
         return (
             <Button className="bg-orange-500 hover:bg-orange-600" onClick={() => signIn("keycloak").then()}>
@@ -118,7 +127,7 @@ function UserMenu() {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                     className={"hover:bg-red-400 hover:text-white"}
-                    onClick={() => clearSession(session?.id_token).then(() => signOut())}>
+                    onClick={logout}>
                     <LogOut className="mr-2 h-4 w-4"/>
                     <span>{t("logout")}</span>
                 </DropdownMenuItem>

@@ -1,6 +1,5 @@
 import {Suspense} from "react";
-import * as React from "react";
-import {DiscoveryFilter, FoodCard} from "@/components/pages/discovery";;
+import {DiscoveryFilter, FoodCard} from "@/components/pages/discovery";
 import {getDish} from "@/services/dish.service";
 
 export default async function DiscoveryPage({searchParams}: { searchParams: Promise<Record<string, any>> }) {

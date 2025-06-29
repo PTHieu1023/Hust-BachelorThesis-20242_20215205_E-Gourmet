@@ -1,5 +1,5 @@
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import {Heart, TrendingUp, Users} from "lucide-react";
+import {Heart, TrendingUp} from "lucide-react";
 import {getRecommendations, getTrendingNearYou} from "@/services/dish.service";
 import {getTranslations} from "next-intl/server";
 import {Suspense} from "react";
@@ -49,10 +49,10 @@ export default async function ForYouPage() {
 
 const RecommendationList = async () => {
     const recommendations = await getRecommendations();
-    return recommendations.map((rec: any, index) => <RecommendItemCard rec={rec} key={`cc${index}`}/>)
+    return recommendations.map((rec: any, index) => <RecommendItemCard rec={rec} key={`cc_${index}`}/>)
 }
 
 const TrendingNearYouList = async () => {
     const trendingNearYou = await getTrendingNearYou();
-    return trendingNearYou.map((item, index) => <TrendingNearYouCard item={item} key={`cc2${index}`}/>)
+    return trendingNearYou.map((item, index) => <TrendingNearYouCard item={item} key={`cc2_${index}`}/>)
 }
