@@ -18,6 +18,7 @@
   },
   "discovery": {
     "filter": {
+        "search-placeholder": "Tìm kiếm nhà hàng, món ăn hoặc ẩm thực...",
       "title": "Khám phá món ăn",
       "search": "Tìm kiếm",
       "cuisines": "Ẩm thực",

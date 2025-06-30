@@ -18,6 +18,7 @@
   },
   "discovery": {
     "filter": {
+      "search-placeholder": "Search for restaurants, dishes, or cuisines...",
       "title": "Discover Dishes",
       "search": "Search",
       "cuisines": "Cuisines",

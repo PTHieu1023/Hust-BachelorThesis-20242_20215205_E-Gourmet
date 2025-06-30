@@ -10,9 +10,6 @@ const nextConfig: NextConfig = {
             pathname: '/**'
         }]
     },
-    experimental: {
-        useCache: true,
-    },
     output: "standalone"
 };
 
