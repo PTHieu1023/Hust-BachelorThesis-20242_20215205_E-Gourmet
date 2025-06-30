@@ -1,7 +1,13 @@
 "use server"
 
+export interface Cuisine{
+    id: number;
+    name: string;
+    imageUrl: string;
+    urlName: string;
+    description: string;
+}
 
-import {Cuisine} from "@/types/food";
 
 export const getCuisines = async (): Promise<Cuisine[]> => {
     await new Promise(resolve => setTimeout(resolve, 500));

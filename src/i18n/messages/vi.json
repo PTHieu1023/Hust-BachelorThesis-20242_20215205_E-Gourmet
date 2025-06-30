@@ -2,7 +2,7 @@
   "header": {
     "navbar": {
       "discovery": "Khám phá",
-      "newsfeed": "Bảng tin",
+      "newsfeed": "Bản tin",
       "for-you": "Dành cho bạn"
     },
     "user-menu": {
@@ -13,20 +13,22 @@
     },
     "settings": {
       "language": "Ngôn ngữ",
-      "theme": "Chủ đề"
+      "theme": "Giao diện"
     }
   },
   "discovery": {
     "filter": {
-        "search-placeholder": "Tìm kiếm nhà hàng, món ăn hoặc ẩm thực...",
+      "search-placeholder": "Tìm kiếm nhà hàng, món ăn hoặc ẩm thực...",
       "title": "Khám phá món ăn",
       "search": "Tìm kiếm",
       "cuisines": "Ẩm thực",
       "price-range": "Khoảng giá"
-    }
+    },
+    "loading": "Đang tải...",
+    "no-results": "Không tìm thấy kết quả."
   },
   "for-you": {
-    "title": "Dành cho bạn",
+    "title": "Dành riêng cho bạn",
     "trending-near-you": "Xu hướng gần bạn",
     "description": "Gợi ý cá nhân hóa dựa trên sở thích và tương tác trước đây của bạn.",
     "statistics": {
@@ -42,7 +44,8 @@
       "description": "Mô tả",
       "address": "Địa chỉ",
       "phone": "Điện thoại",
-      "website": "Website",
+      "loading": "Đang tải...",
+      "website": "Trang web",
       "menu": "Thực đơn",
       "reviews": "Đánh giá",
       "hours": "Giờ mở cửa",
@@ -50,8 +53,8 @@
       "posts": "Bài đăng",
       "follow": "Theo dõi nhà hàng",
       "view-menu": "Xem thực đơn",
-      "make-reservation": "Đặt bàn",
-      "category": "Loại hình",
+      "make-reservation": "Đặt chỗ",
+      "category": "Danh mục",
       "price-range": "Khoảng giá"
     },
     "tabs": {
@@ -65,19 +68,19 @@
     },
     "posts": {
       "coming-soon-title": "Bài đăng nhà hàng sắp ra mắt",
-      "coming-soon-desc": "Xem tất cả bài đăng của nhà hàng tại đây."
+      "coming-soon-desc": "Xem tất cả bài đăng từ nhà hàng này tại đây."
     },
     "photos": {
-      "coming-soon-title": "Bộ sưu tập ảnh sắp ra mắt",
-      "coming-soon-desc": "Xem tất cả hình ảnh của nhà hàng tại đây."
+      "coming-soon-title": "Thư viện ảnh sắp ra mắt",
+      "coming-soon-desc": "Duyệt tất cả hình ảnh từ nhà hàng này tại đây."
     },
     "reviews": {
-      "ordered": "Đã gọi món",
+      "ordered": "Đã đặt",
       "write-review": "Viết đánh giá"
     },
     "register": {
       "title": "Đăng ký nhà hàng của bạn",
-      "subtitle": "Cung cấp thông tin mọi người tiếp cận nhà hàng của bạn.",
+      "subtitle": "Cung cấp thông tin để đưa nhà hàng của bạn vào danh sách.",
       "restaurantInfo": "Thông tin nhà hàng",
       "restaurantName": "Tên nhà hàng",
       "restaurantNamePlaceholder": "Nhập tên nhà hàng của bạn",
@@ -91,11 +94,97 @@
       "emailPlaceholder": "Nhập địa chỉ email của bạn",
       "hours": "Giờ hoạt động",
       "hoursPlaceholder": "Nhập giờ hoạt động của bạn",
-      "website": "Website",
-      "websitePlaceholder": "Nhập URL website của bạn",
+      "website": "Trang web",
+      "websitePlaceholder": "Nhập URL trang web của bạn",
       "description": "Mô tả",
       "descriptionPlaceholder": "Cung cấp mô tả về nhà hàng của bạn",
-      "license": "Giấy phép đăng ký"
+      "license": "Giấy phép"
+    }
+  },
+  "dashboard": {
+    "title": "Bảng điều khiển nhà hàng",
+    "subtitle": "Quản lý sự hiện diện của nhà hàng bạn trên Savor Street",
+    "create-post": "Tạo bài đăng mới",
+    "view-public-profile": "Xem hồ sơ công khai",
+    "manage-posts": "Quản lý bài đăng",
+    "post-management-coming-soon": "Quản lý bài đăng sắp ra mắt",
+    "post-management-desc": "Các tính năng quản lý bài đăng nâng cao sẽ có sẵn tại đây.",
+    "customer-reviews": "Đánh giá của khách hàng",
+    "review-management-coming-soon": "Quản lý đánh giá sắp ra mắt",
+    "review-management-desc": "Phản hồi và quản lý đánh giá của khách hàng tại đây.",
+    "analytics-dashboard": "Bảng phân tích",
+    "analytics-coming-soon": "Phân tích sắp ra mắt",
+    "analytics-desc": "Phân tích chi tiết và thông tin chi tiết sẽ có sẵn tại đây.",
+    "recent-posts": "Bài đăng gần đây",
+    "quick-actions": "Hành động nhanh",
+    "create-food-post": "Tạo bài đăng món ăn",
+    "update-menu": "Cập nhật thực đơn",
+    "respond-to-reviews": "Phản hồi đánh giá",
+    "schedule-promotion": "Lên lịch khuyến mãi",
+    "view-analytics": "Xem phân tích",
+    "likes": "lượt thích",
+    "comments": "bình luận",
+    "shares": "chia sẻ",
+    "tabs": {
+      "overview": "Tổng quan",
+      "posts": "Bài đăng",
+      "reviews": "Đánh giá",
+      "analytics": "Phân tích"
+    }
+  },
+  "home": {
+    "title": "Trang chủ",
+    "filter": {
+      "all": "Tất cả",
+      "menu": "Thực đơn",
+      "specials": "Đặc biệt",
+      "events": "Sự kiện",
+      "announcements": "Thông báo"
+    }
+  },
+  "profile": {
+    "title": "Hồ sơ người dùng",
+    "edit_profile": "Chỉnh sửa hồ sơ",
+    "followers": "Người theo dõi",
+    "following": "Đang theo dõi",
+    "reviews": "Đánh giá",
+    "loading": "Đang tải...",
+    "no_reviews": "Chưa có đánh giá nào",
+    "no_following": "Chưa theo dõi nhà hàng nào",
+    "tabs": {
+      "reviews": "Đánh giá",
+      "following": "Đang theo dõi"
+    },
+    "stats": {
+      "reviews": "Đánh giá",
+      "following": "Đang theo dõi",
+      "favorites": "Yêu thích"
+    }
+  },
+  "dish": {
+    "reviews": "Đánh giá",
+    "ingredients": "Nguyên liệu",
+    "preparation": "Cách chế biến",
+    "nutrition": "Thông tin dinh dưỡng",
+    "order": "Thêm vào đơn hàng",
+    "back_to_menu": "Quay lại thực đơn",
+    "write_review": "Viết đánh giá",
+    "share": "Chia sẻ",
+    "calories": "Calo",
+    "serving": "Khẩu phần",
+    "prep_time": "Thời gian chuẩn bị",
+    "difficulty": "Độ khó",
+    "similar_dishes": "Các món tương tự",
+    "you_might_like": "Bạn có thể thích",
+    "like": "Thích",
+    "unlike": "Bỏ thích",
+    "similar_dishes_empty": "Không tìm thấy món tương tự",
+    "quantity": "Số lượng",
+    "back": "Quay lại",
+    "breadcrumb": {
+      "home": "Trang chủ",
+      "discovery": "Khám phá",
+      "restaurant": "Nhà hàng"
     }
   }
 }

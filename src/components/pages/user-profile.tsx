@@ -9,6 +9,7 @@ import {Badge} from "@/components/ui/badge";
 import EditProfileModal from "@/components/EditProfileModal";
 import {useState} from "react";
 import {Link} from "@/i18n/navigation";
+import { Post } from "@/services/post.type";
 
 export const UserProfileCard = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);

@@ -1,15 +1,26 @@
 "use client"
 
-import {useState} from "react";
-import {mockPosts} from "@/data/mockData";
+import {useEffect, useState} from "react";
+import {fetchPosts} from "@/services/post.service";
 import PostCard from "@/components/PostCard";
 import DiscoveryPanel from "@/components/DiscoverPanel";
+import { Post } from "@/services/post.type";
+import { useTranslations } from "next-intl";
 
 export default function Home() {
     const [activeFilter, setActiveFilter] = useState("all");
-    const [posts] = useState(mockPosts);
+    const [posts, setPosts] = useState<Post[]>([]);
 
-    const filteredPosts = posts.filter(post => {
+    useEffect(() => {
+        async function loadPosts() {
+            const fetchedPosts = await fetchPosts();
+            setPosts(fetchedPosts);
+        }
+
+        loadPosts();
+    }, []);
+
+    const filteredPosts = posts.filter((post: Post) => {
         if (activeFilter === "all") return true;
         if (activeFilter === "menu") return post.content.category === "menu";
         if (activeFilter === "specials") return post.content.category === "special";

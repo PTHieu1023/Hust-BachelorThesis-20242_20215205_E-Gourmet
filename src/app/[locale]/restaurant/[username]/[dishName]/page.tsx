@@ -4,18 +4,12 @@ import {Card, CardContent} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
-import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator
-} from "@/components/ui/breadcrumb";
-import {Heart, Star, MapPin, Clock, Phone, ArrowLeft, Share2, Edit, Minus, Plus} from "lucide-react";
+import {Heart, Star, MapPin, Clock, Phone, ArrowLeft, Share2, Edit, Minus, Plus, Home} from "lucide-react";
 import {useState} from "react";
 import {useParams} from "next/navigation";
 import {Link} from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
+import CommonBreadcrumb, {BreadcrumbItemProps} from "@/components/layout/CommonBreadcrumb";
 
 const DishDetail = () => {
     const {id} = useParams();
@@ -23,6 +17,7 @@ const DishDetail = () => {
     const [quantity, setQuantity] = useState(1);
     const [selectedImage, setSelectedImage] = useState(0);
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+    const t = useTranslations("dish");
 
     // Mock dish data - in a real app this would be fetched based on the ID
     const dish = {
@@ -94,31 +89,6 @@ const DishDetail = () => {
         avatar: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400"
     };
 
-    // Mock related dishes
-    const relatedDishes = [
-        {
-            id: "2",
-            name: "Margherita Pizza",
-            price: "$22",
-            image: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400",
-            rating: 4.7
-        },
-        {
-            id: "3",
-            name: "Osso Buco",
-            price: "$34",
-            image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400",
-            rating: 4.9
-        },
-        {
-            id: "4",
-            name: "Tiramisu",
-            price: "$12",
-            image: "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400",
-            rating: 4.6
-        }
-    ];
-
     // Mock reviews
     const reviews = [
         {
@@ -172,34 +142,28 @@ const DishDetail = () => {
         setIsReviewModalOpen(false);
     };
 
+    const breadCrumbs:BreadcrumbItemProps[] = [
+        {
+            href: '/',
+            label: <Home className={"size-3"}/>
+        },
+        {
+            href: '/discovery',
+            label: t('breadcrumb.discovery')
+        },
+        {
+            href: `/${dish.restaurantId}`,
+            label: dish.restaurant
+        },
+        {
+            href: `/${dish.restaurantId}/${dish.id}`,
+            label: dish.name
+        }
+    ]
+
     return (
         <div className="container mx-auto px-4 py-6">
-            {/* Breadcrumb */}
-            <Breadcrumb className="mb-6">
-                <BreadcrumbList>
-                    <BreadcrumbItem>
-                        <BreadcrumbLink asChild>
-                            <Link href="/">Home</Link>
-                        </BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator/>
-                    <BreadcrumbItem>
-                        <BreadcrumbLink asChild>
-                            <Link href="/discovery">Discovery</Link>
-                        </BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator/>
-                    <BreadcrumbItem>
-                        <BreadcrumbLink asChild>
-                            <Link href={`/restaurant/${dish.restaurantId}`}>{dish.restaurant}</Link>
-                        </BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator/>
-                    <BreadcrumbItem>
-                        <BreadcrumbPage>{dish.name}</BreadcrumbPage>
-                    </BreadcrumbItem>
-                </BreadcrumbList>
-            </Breadcrumb>
+            <CommonBreadcrumb items={breadCrumbs}/>
 
             {/* Back Button */}
             <Button
@@ -208,7 +172,7 @@ const DishDetail = () => {
                 className="mb-6 hover:bg-orange-50"
             >
                 <ArrowLeft className="w-4 h-4 mr-2"/>
-                Back
+                {t('back')}
             </Button>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
@@ -511,40 +475,6 @@ const DishDetail = () => {
                                     </div>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
-
-            {/* Related Dishes */}
-            <Card className="border-gray-100">
-                <CardContent className="p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-6">You Might Also Like</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {relatedDishes.map((relatedDish) => (
-                            <Link key={relatedDish.id} href={`/dish/${relatedDish.id}`}>
-                                <div className="group cursor-pointer">
-                                    <div className="relative aspect-square rounded-lg overflow-hidden mb-3">
-                                        <img
-                                            src={relatedDish.image}
-                                            alt={relatedDish.name}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <div className="flex items-center justify-between">
-                                            <h4 className="font-medium text-gray-900 group-hover:text-orange-600 transition-colors">
-                                                {relatedDish.name}
-                                            </h4>
-                                            <span className="font-bold text-orange-600">{relatedDish.price}</span>
-                                        </div>
-                                        <div className="flex items-center space-x-1">
-                                            <Star className="w-4 h-4 text-yellow-400 fill-yellow-400"/>
-                                            <span className="text-sm font-medium">{relatedDish.rating}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </Link>
                         ))}
                     </div>
                 </CardContent>

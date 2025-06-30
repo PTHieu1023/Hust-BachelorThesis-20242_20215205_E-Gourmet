@@ -1,31 +1,35 @@
 import {Card, CardContent} from "@/components/ui/card";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
-import {Star, Heart, Users} from "lucide-react";
+import {Star, Heart} from "lucide-react";
 import {FollowingItemCard, UserProfileCard} from "@/components/pages/user-profile";
 import {getCurrentReview} from "@/services/review.service";
 import {Suspense} from "react";
 import {getFollowingRestaurants} from "@/services/restaurant.service";
+import {getTranslations, setRequestLocale} from "next-intl/server";
 
-const Profile = () => {
+export default async function Profile({params}: { params: Promise<{ username: string, locale: string }> }) {
+    const {username, locale} = await params;
+    setRequestLocale(locale)
+    const t = await getTranslations("profile");
     return (
         <div className="container mx-auto px-4 py-6">
             <UserProfileCard/>
 
             <Tabs defaultValue="reviews" className="space-y-6">
                 <TabsList className="grid w-full grid-cols-2 lg:w-[500px]">
-                    <TabsTrigger value="reviews">Reviews</TabsTrigger>
-                    <TabsTrigger value="following">Following</TabsTrigger>
+                    <TabsTrigger value="reviews">{t('tabs.reviews')}</TabsTrigger>
+                    <TabsTrigger value="following">{t('tabs.following')}</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="reviews" className="space-y-6">
-                    <Suspense fallback="Loading">
-                        <CurrentReviewTab/>
+                    <Suspense fallback={<div>{t('loading')}</div>}>
+                        <CurrentReviewTab t={t}/>
                     </Suspense>
                 </TabsContent>
 
                 <TabsContent value="following" className="space-y-6">
-                    <Suspense fallback="Loading">
-                        <FollowingTab/>
+                    <Suspense fallback={<div>{t('loading')}</div>}>
+                        <FollowingTab t={t}/>
                     </Suspense>
                 </TabsContent>
             </Tabs>
@@ -33,8 +37,12 @@ const Profile = () => {
     )
 };
 
-const CurrentReviewTab = async () => {
+const CurrentReviewTab = async ({t}: any) => {
     const recentReviews = await getCurrentReview();
+
+    if (recentReviews.length === 0) {
+        return <div className="text-center py-8 text-gray-500">{t('no_reviews')}</div>;
+    }
 
     return (
         <div className="grid gap-6">
@@ -67,29 +75,21 @@ const CurrentReviewTab = async () => {
                 </Card>
             ))}
         </div>
-    )
-}
+    );
+};
 
-const FollowingTab = async () => {
-    const followingList = await getFollowingRestaurants();
+const FollowingTab = async ({t}: any) => {
+    const followingRestaurants = await getFollowingRestaurants();
+
+    if (followingRestaurants.length === 0) {
+        return <div className="text-center py-8 text-gray-500">{t('no_following')}</div>;
+    }
+
     return (
-        <div className="sm:flex-row items-start sm:items-center justify-between mb-6 space-y-4 sm:space-y-0">
-            <h2 className="text-xl font-semibold text-gray-900">Following ({followingList?.length})</h2>
-            <div className="grid gap-4">
-                {followingList.map(item => <FollowingItemCard item={item} key={item?.id}/>)}
-            </div>
-
-            {followingList?.length === 0 && (
-                <Card className="border-gray-100">
-                    <CardContent className="p-12 text-center">
-                        <Users className="w-12 h-12 text-gray-400 mx-auto mb-4"/>
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">No Results Found</h3>
-                        <p className="text-gray-600">Try adjusting your search or filter criteria.</p>
-                    </CardContent>
-                </Card>
-            )}
+        <div className="grid gap-6">
+            {followingRestaurants.map((restaurant) => (
+                <FollowingItemCard key={restaurant.id} item={restaurant} />
+            ))}
         </div>
-    )
-}
-
-export default Profile;
+    );
+};

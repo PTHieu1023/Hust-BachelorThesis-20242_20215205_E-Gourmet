@@ -23,7 +23,9 @@
       "search": "Search",
       "cuisines": "Cuisines",
       "price-range": "Price Range"
-    }
+    },
+    "loading": "Loading...",
+    "no-results": "No results found."
   },
   "for-you": {
     "title": "Personalized For You",
@@ -42,6 +44,7 @@
       "description": "Description",
       "address": "Address",
       "phone": "Phone",
+      "loading": "Loading...",
       "website": "Website",
       "menu": "Menu",
       "reviews": "Reviews",
@@ -96,6 +99,92 @@
       "description": "Description",
       "descriptionPlaceholder": "Provide a description of your restaurant",
       "license": "License"
+    }
+  },
+  "dashboard": {
+    "title": "Restaurant Dashboard",
+    "subtitle": "Manage your restaurant's presence on Savor Street",
+    "create-post": "Create New Post",
+    "view-public-profile": "View Public Profile",
+    "manage-posts": "Manage Posts",
+    "post-management-coming-soon": "Post Management Coming Soon",
+    "post-management-desc": "Advanced post management features will be available here.",
+    "customer-reviews": "Customer Reviews",
+    "review-management-coming-soon": "Review Management Coming Soon",
+    "review-management-desc": "Respond to and manage customer reviews here.",
+    "analytics-dashboard": "Analytics Dashboard",
+    "analytics-coming-soon": "Analytics Coming Soon",
+    "analytics-desc": "Detailed analytics and insights will be available here.",
+    "recent-posts": "Recent Posts",
+    "quick-actions": "Quick Actions",
+    "create-food-post": "Create Food Post",
+    "update-menu": "Update Menu",
+    "respond-to-reviews": "Respond to Reviews",
+    "schedule-promotion": "Schedule Promotion",
+    "view-analytics": "View Analytics",
+    "likes": "likes",
+    "comments": "comments",
+    "shares": "shares",
+    "tabs": {
+      "overview": "Overview",
+      "posts": "Posts",
+      "reviews": "Reviews",
+      "analytics": "Analytics"
+    }
+  },
+  "home": {
+    "title": "Home",
+    "filter": {
+      "all": "All",
+      "menu": "Menu",
+      "specials": "Specials",
+      "events": "Events",
+      "announcements": "Announcements"
+    }
+  },
+  "profile": {
+    "title": "User Profile",
+    "edit_profile": "Edit Profile",
+    "followers": "Followers",
+    "following": "Following",
+    "reviews": "Reviews",
+    "loading": "Loading...",
+    "no_reviews": "No reviews yet",
+    "no_following": "Not following any restaurants yet",
+    "tabs": {
+      "reviews": "Reviews",
+      "following": "Following"
+    },
+    "stats": {
+      "reviews": "Reviews",
+      "following": "Following",
+      "favorites": "Favorites"
+    }
+  },
+  "dish": {
+    "reviews": "Reviews",
+    "ingredients": "Ingredients",
+    "preparation": "Preparation",
+    "nutrition": "Nutrition Facts",
+    "order": "Add to Order",
+    "back_to_menu": "Back to Menu",
+    "write_review": "Write a Review",
+    "share": "Share",
+    "calories": "Calories",
+    "serving": "Serving Size",
+    "prep_time": "Preparation Time",
+    "difficulty": "Difficulty",
+    "similar_dishes": "Similar Dishes",
+    "you_might_like": "You Might Also Like",
+    "like": "Like",
+    "unlike": "Unlike",
+    "similar_dishes_empty": "No similar dishes found",
+    "quantity": "Quantity",
+    "back": "Back",
+    "breadcrumb": {
+      "home": "Home",
+      "discovery": "Discovery",
+      "restaurant": "Restaurant"
     }
   }
 }

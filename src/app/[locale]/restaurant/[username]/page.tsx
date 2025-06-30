@@ -4,10 +4,10 @@ import {
     getRestaurantProfile,
     getRestaurantRecentReviews
 } from "@/services/restaurant.service";
-import {getTranslations, setRequestLocale} from "next-intl/server";
+import {getTranslations} from "next-intl/server";
 import Image from "next/image";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
-import {Clock, Globe, Heart, MapPin, Phone, Star} from "lucide-react";
+import {Clock, Globe, Heart, Home, MapPin, Phone, Star} from "lucide-react";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {RatingStar} from "@/components/ui/rating-star";
@@ -16,9 +16,10 @@ import CommonBreadcrumb, {BreadcrumbItemProps} from "@/components/layout/CommonB
 
 export default async function RestaurantProfilePage({params}: Readonly<{ params: Promise<{ locale: string, username: string }> }>) {
     const {locale, username} = await params;
+    const t = await getTranslations("restaurant");
     const breadcrumbItems:BreadcrumbItemProps[] = [
         {
-            label: "Home",
+            label: <Home className={"size-3"}/>,
             href: `/`,
             isCurrent: false
         },
@@ -29,13 +30,10 @@ export default async function RestaurantProfilePage({params}: Readonly<{ params:
         }
     ]
 
-
-    setRequestLocale(locale);
-    const t = await getTranslations("restaurant")
     return (
         <div className="container mx-auto px-4 py-6">
             <CommonBreadcrumb items={breadcrumbItems}/>
-            <Suspense fallback={"loading..."}>
+            <Suspense fallback={<div className="text-center py-4">{t('details.loading', {default: 'Loading...'})}</div>}>
                 <RestaurantInfo t={t}/>
             </Suspense>
             <Tabs defaultValue="menu" className="space-y-6">
@@ -45,17 +43,17 @@ export default async function RestaurantProfilePage({params}: Readonly<{ params:
                     <TabsTrigger value="reviews">{t('tabs.reviews')}</TabsTrigger>
                 </TabsList>
                 <TabsContent value="menu" className="space-y-6">
-                    <Suspense fallback={"loading..."}>
+                    <Suspense fallback={<div className="text-center py-4">{t('details.loading', {default: 'Loading...'})}</div>}>
                         <MenuTab t={t}/>
                     </Suspense>
                 </TabsContent>
                 <TabsContent value="posts" className="space-y-6">
-                    <Suspense fallback={"loading..."}>
+                    <Suspense fallback={<div className="text-center py-4">{t('details.loading', {default: 'Loading...'})}</div>}>
                         <PostTab t={t}/>
                     </Suspense>
                 </TabsContent>
                 <TabsContent value="reviews" className="space-y-6">
-                    <Suspense fallback={"loading..."}>
+                    <Suspense fallback={<div className="text-center py-4">{t('details.loading', {default: 'Loading...'})}</div>}>
                         <ReviewTab t={t}/>
                     </Suspense>
                 </TabsContent>
@@ -105,8 +103,7 @@ const RestaurantInfo = async ({t}: any) => {
                     <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4 text-center">
                             <div>
-                                <div
-                                    className="text-2xl font-bold text-gray-900">{restaurant.followers.toLocaleString()}</div>
+                                <div className="text-2xl font-bold text-gray-900">{restaurant.followers.toLocaleString()}</div>
                                 <div className="text-sm text-gray-600">{t('details.followers')}</div>
                             </div>
                             <div>

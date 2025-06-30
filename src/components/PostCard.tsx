@@ -6,33 +6,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Heart, MessageCircle, Share2, MapPin, DollarSign } from "lucide-react";
 import {Link} from "@/i18n/navigation";
 import Image from "next/image";
+import { Post } from "@/services/post.type";
 
 interface PostCardProps {
-    post: {
-        id: string;
-        type: "restaurant";
-        author: {
-            name: string;
-            avatar: string;
-            isRestaurant: true;
-            restaurantId: string;
-        };
-        content: {
-            title: string;
-            description: string;
-            images: string[];
-            price?: string;
-            category: "menu" | "special" | "event" | "announcement";
-        };
-        engagement: {
-            likes: number;
-            comments: number;
-            shares: number;
-        };
-        timestamp: string;
-        cuisine: string;
-        location?: string;
-    };
+    post: Post;
 }
 
 const PostCard = ({ post }: PostCardProps) => {
@@ -130,13 +107,11 @@ const PostCard = ({ post }: PostCardProps) => {
                     <div className={`grid gap-2 rounded-xl overflow-hidden ${
                         post.content.images.length === 1
                             ? "grid-cols-1"
-                            : post.content.images.length === 2
-                                ? "grid-cols-2"
-                                : "grid-cols-2"
+                            :"grid-cols-2"
                     }`}>
                         {post.content.images.slice(0, 4).map((image, index) => (
                             <div
-                                key={index}
+                                key={`post-content-image-${index}`}
                                 className={`relative overflow-hidden bg-gray-100 ${
                                     post.content.images.length === 1 ? "aspect-[16/10]" : "aspect-square"
                                 } ${

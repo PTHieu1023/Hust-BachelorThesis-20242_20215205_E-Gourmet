@@ -5,10 +5,10 @@ import {
     BreadcrumbSeparator
 } from "@/components/ui/breadcrumb";
 import {Link} from "@/i18n/navigation";
-import {Fragment} from "react";
+import {Fragment, ReactNode} from "react";
 
 export interface BreadcrumbItemProps {
-    label: string;
+    label: string | ReactNode;
     href: string;
     isCurrent?: boolean;
 }
