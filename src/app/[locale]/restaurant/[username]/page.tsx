@@ -12,13 +12,29 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {RatingStar} from "@/components/ui/rating-star";
 import {Button} from "@/components/ui/button";
+import CommonBreadcrumb, {BreadcrumbItemProps} from "@/components/layout/CommonBreadcrumb";
 
-export default async function RestaurantProfilePage({params}: Readonly<{ params: Promise<{ locale: string }> }>) {
-    const {locale} = await params;
+export default async function RestaurantProfilePage({params}: Readonly<{ params: Promise<{ locale: string, username: string }> }>) {
+    const {locale, username} = await params;
+    const breadcrumbItems:BreadcrumbItemProps[] = [
+        {
+            label: "Home",
+            href: `/`,
+            isCurrent: false
+        },
+        {
+            label: username,
+            href: `/restaurant/${username}`,
+            isCurrent: true
+        }
+    ]
+
+
     setRequestLocale(locale);
     const t = await getTranslations("restaurant")
     return (
         <div className="container mx-auto px-4 py-6">
+            <CommonBreadcrumb items={breadcrumbItems}/>
             <Suspense fallback={"loading..."}>
                 <RestaurantInfo t={t}/>
             </Suspense>
