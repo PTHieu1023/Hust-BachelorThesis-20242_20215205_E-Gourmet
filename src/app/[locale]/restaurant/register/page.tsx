@@ -5,12 +5,16 @@ import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {Textarea} from "@/components/ui/textarea";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {FormEvent, useState} from "react";
-import {MapPin, Clock, Phone, Mail, Building2, Upload, CheckCircle} from "lucide-react";
+import {FormEvent, useEffect, useState} from "react";
+import {Clock, Phone, Mail, Building2, Upload} from "lucide-react";
 import {toast} from "sonner";
 import {useRouter} from "@/i18n/navigation";
+import {useTranslations} from "next-intl";
+import {getCuisines} from "@/services/cuisine.service";
+import {Cuisine} from "@/types/food";
 
 const CreateRestaurant = () => {
+    const t = useTranslations("restaurant.register");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const router = useRouter()
     const [formData, setFormData] = useState({
@@ -23,30 +27,36 @@ const CreateRestaurant = () => {
         hours: "",
         website: ""
     });
+    const [cuisines, setCuisines] = useState<Cuisine[]>();
+
+    useEffect(() => {
+        const fetchCuisines = async () => {
+            try {
+                setCuisines( await getCuisines());
+            } catch (error) {
+                toast.error(t("fetchError"));
+            }
+        };
+
+        fetchCuisines().then();
+    }, [])
+
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
-
-        // Validate required fields
-        const requiredFields = ['name', 'cuisine', 'address', 'phone', 'email', 'hours'];
-        // @ts-ignore
+        const requiredFields: (keyof typeof formData)[] = ['name', 'cuisine', 'address', 'phone', 'email', 'hours'];
         const missingFields = requiredFields.filter(field => !formData[field]);
 
         if (missingFields.length > 0) {
-            toast.error("Please fill in all required fields: " + missingFields.join(", "));
+            toast.error(t("missingFields", { fields: missingFields.join(", ") }));
             setIsSubmitting(false);
             return;
         }
 
         try {
-            // Simulate API call
             await new Promise(resolve => setTimeout(resolve, 2000));
-
-            console.log("Restaurant registration data:", formData);
-
             toast.info("Your restaurant is being registered. You will receive a confirmation email once approved.");
-
             router.push("/restaurant");
         } catch (error) {
             toast.error("An error occurred while registering your restaurant. Please try again later.");
@@ -59,12 +69,6 @@ const CreateRestaurant = () => {
         setFormData(prev => ({...prev, [field]: value}));
     };
 
-    const cuisineTypes = [
-        "Italian", "Chinese", "Japanese", "Mexican", "Indian", "French", "Thai",
-        "Mediterranean", "American", "Korean", "Vietnamese", "Greek", "Spanish",
-        "Middle Eastern", "African", "Fusion", "Vegetarian", "Vegan", "Other"
-    ];
-
     return (
         <div className="container mx-auto px-4 py-6">
             <div className="max-w-2xl mx-auto">
@@ -73,25 +77,25 @@ const CreateRestaurant = () => {
                         className="w-16 h-16 bg-gradient-to-r from-orange-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
                         <Building2 className="w-8 h-8 text-white"/>
                     </div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Register Your Restaurant</h1>
-                    <p className="text-gray-600">Join E-Gourmet and connect with food lovers in your area</p>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{t("title")}</h1>
+                    <p className="text-gray-600">{t("subtitle")}</p>
                 </div>
 
                 <Card className="border-gray-100">
                     <CardHeader>
                         <CardTitle className="flex items-center space-x-2">
                             <Building2 className="w-5 h-5 text-orange-500"/>
-                            <span>Restaurant Information</span>
+                            <span>{t("restaurantInfo")}</span>
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="name">Restaurant Name *</Label>
+                                    <Label htmlFor="name">{t("restaurantName")} <span className="text-red-500">*</span></Label>
                                     <Input
                                         id="name"
-                                        placeholder="Enter restaurant name"
+                                        placeholder={t("restaurantNamePlaceholder")}
                                         value={formData.name}
                                         onChange={(e) => handleInputChange("name", e.target.value)}
                                         required
@@ -99,15 +103,15 @@ const CreateRestaurant = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="cuisine">Cuisine Type *</Label>
+                                    <Label htmlFor="cuisine">{t("cuisineType")} <span className="text-red-500">*</span></Label>
                                     <Select onValueChange={(value) => handleInputChange("cuisine", value)}>
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Select cuisine type"/>
+                                            <SelectValue placeholder={t("cuisineTypePlaceholder")}/>
                                         </SelectTrigger>
                                         <SelectContent>
-                                            {cuisineTypes.map((cuisine) => (
-                                                <SelectItem key={cuisine} value={cuisine.toLowerCase()}>
-                                                    {cuisine}
+                                            {cuisines?.map((cuisine) => (
+                                                <SelectItem key={cuisine.id} value={cuisine.urlName}>
+                                                    {cuisine.name}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
@@ -116,30 +120,25 @@ const CreateRestaurant = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="address">Address *</Label>
-                                <div className="relative">
-                                    <MapPin
-                                        className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4"/>
-                                    <Input
-                                        id="address"
-                                        placeholder="Full restaurant address"
-                                        className="pl-10"
-                                        value={formData.address}
-                                        onChange={(e) => handleInputChange("address", e.target.value)}
-                                        required
-                                    />
-                                </div>
+                                <Label htmlFor="address">{t("address")} <span className="text-red-500">*</span></Label>
+                                <Input
+                                    id="address"
+                                    placeholder={t("addressPlaceholder")}
+                                    value={formData.address}
+                                    onChange={(e) => handleInputChange("address", e.target.value)}
+                                    required
+                                />
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="phone">Phone Number *</Label>
+                                    <Label htmlFor="phone">{t("phone")} <span className="text-red-500">*</span></Label>
                                     <div className="relative">
                                         <Phone
                                             className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4"/>
                                         <Input
                                             id="phone"
-                                            placeholder="(555) 123-4567"
+                                            placeholder={t("phonePlaceholder")}
                                             className="pl-10"
                                             value={formData.phone}
                                             onChange={(e) => handleInputChange("phone", e.target.value)}
@@ -149,14 +148,13 @@ const CreateRestaurant = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="email">Email Address *</Label>
+                                    <Label htmlFor="email">{t("email")} <span className="text-red-500">*</span></Label>
                                     <div className="relative">
                                         <Mail
                                             className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4"/>
                                         <Input
                                             id="email"
-                                            type="email"
-                                            placeholder="restaurant@example.com"
+                                            placeholder={t("emailPlaceholder")}
                                             className="pl-10"
                                             value={formData.email}
                                             onChange={(e) => handleInputChange("email", e.target.value)}
@@ -168,12 +166,12 @@ const CreateRestaurant = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="hours">Operating Hours *</Label>
+                                    <Label htmlFor="hours">{t("hours")} <span className="text-red-500">*</span></Label>
                                     <div className="relative">
                                         <Clock className="absolute left-3 top-3 text-gray-400 w-4 h-4"/>
                                         <Input
                                             id="hours"
-                                            placeholder="e.g., Mon-Sun: 11:00 AM - 10:00 PM"
+                                            placeholder={t("hoursPlaceholder")}
                                             className="pl-10"
                                             value={formData.hours}
                                             onChange={(e) => handleInputChange("hours", e.target.value)}
@@ -183,10 +181,10 @@ const CreateRestaurant = () => {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="website">Website (Optional)</Label>
+                                    <Label htmlFor="website">{t("website")}</Label>
                                     <Input
                                         id="website"
-                                        placeholder="https://yourrestaurant.com"
+                                        placeholder={t("websitePlaceholder")}
                                         value={formData.website}
                                         onChange={(e) => handleInputChange("website", e.target.value)}
                                     />
@@ -194,19 +192,17 @@ const CreateRestaurant = () => {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="description">Description</Label>
+                                <Label htmlFor="description">{t("description")}</Label>
                                 <Textarea
                                     id="description"
-                                    placeholder="Tell customers about your restaurant, specialties, and what makes you unique..."
-                                    rows={4}
+                                    placeholder={t("descriptionPlaceholder")}
                                     value={formData.description}
                                     onChange={(e) => handleInputChange("description", e.target.value)}
                                 />
                             </div>
 
-                            {/* Photo Upload Section */}
                             <div className="space-y-2">
-                                <Label>Restaurant Photos (Optional)</Label>
+                                <Label>{t("license")}</Label>
                                 <div
                                     className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-orange-300 transition-colors">
                                     <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2"/>
@@ -217,27 +213,12 @@ const CreateRestaurant = () => {
                                     </Button>
                                 </div>
                             </div>
-
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <div className="flex items-start space-x-3">
-                                    <CheckCircle className="w-5 h-5 text-blue-600 mt-0.5"/>
-                                    <div className="text-sm text-blue-800">
-                                        <p className="font-medium mb-1">What happens next?</p>
-                                        <ul className="space-y-1 text-blue-700">
-                                            <li>• Your restaurant will be reviewed within 24 hours</li>
-                                            <li>• You'll receive an email confirmation once approved</li>
-                                            <li>• You can then access your business dashboard</li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-
                             <div className="flex flex-col sm:flex-row gap-4 pt-4">
                                 <Button
                                     type="button"
                                     variant="outline"
                                     className="flex-1"
-                                    onClick={() => router.push("/profile")}
+                                    onClick={() => router.push("/restaurant")}
                                     disabled={isSubmitting}
                                 >
                                     Cancel
@@ -261,13 +242,6 @@ const CreateRestaurant = () => {
                         </form>
                     </CardContent>
                 </Card>
-
-                <div className="text-center mt-6 text-sm text-gray-600">
-                    <p>By registering your restaurant, you agree to our <a href="#"
-                                                                           className="text-orange-600 hover:underline">Terms
-                        of Service</a> and <a href="#" className="text-orange-600 hover:underline">Privacy Policy</a>.
-                    </p>
-                </div>
             </div>
         </div>
     );

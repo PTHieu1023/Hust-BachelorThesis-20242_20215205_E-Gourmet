@@ -1,11 +1,11 @@
 import {
     Breadcrumb,
     BreadcrumbItem,
-    BreadcrumbLink,
     BreadcrumbList,
     BreadcrumbSeparator
 } from "@/components/ui/breadcrumb";
 import {Link} from "@/i18n/navigation";
+import {Fragment} from "react";
 
 export interface BreadcrumbItemProps {
     label: string;
@@ -18,12 +18,12 @@ export default function CommonBreadcrumb({items}: { items: BreadcrumbItemProps[]
         <Breadcrumb className="mb-6">
             <BreadcrumbList>
                 {items.map((item, index) => (
-                    <BreadcrumbItem key={"breadcrumb-item-" + index}>
-                        <BreadcrumbLink asChild>
+                    <Fragment key={"breadcrumb-item-" + index}>
+                        <BreadcrumbItem>
                             <Link href={item.href} className={`${item?.isCurrent && "font-bold"}`}>{item.label}</Link>
-                        </BreadcrumbLink>
+                        </BreadcrumbItem>
                         {index < items.length - 1 && <BreadcrumbSeparator/>}
-                    </BreadcrumbItem>
+                    </Fragment>
                 ))}
             </BreadcrumbList>
         </Breadcrumb>

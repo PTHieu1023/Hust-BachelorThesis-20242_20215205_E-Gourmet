@@ -74,6 +74,28 @@
     "reviews": {
       "ordered": "Ordered",
       "write-review": "Write a Review"
+    },
+    "register": {
+      "title": "Register Your Restaurant",
+      "subtitle": "Provide details to get your restaurant listed.",
+      "restaurantInfo": "Restaurant Information",
+      "restaurantName": "Restaurant Name",
+      "restaurantNamePlaceholder": "Enter your restaurant's name",
+      "cuisineType": "Cuisine Type",
+      "cuisineTypePlaceholder": "Select a cuisine type",
+      "address": "Address",
+      "addressPlaceholder": "Enter the full address",
+      "phone": "Phone Number",
+      "phonePlaceholder": "Enter your phone number",
+      "email": "Email Address",
+      "emailPlaceholder": "Enter your email address",
+      "hours": "Operating Hours",
+      "hoursPlaceholder": "Enter your operating hours",
+      "website": "Website",
+      "websitePlaceholder": "Enter your website URL",
+      "description": "Description",
+      "descriptionPlaceholder": "Provide a description of your restaurant",
+      "license": "License"
     }
   }
 }

@@ -74,6 +74,28 @@
     "reviews": {
       "ordered": "Đã gọi món",
       "write-review": "Viết đánh giá"
+    },
+    "register": {
+      "title": "Đăng ký nhà hàng của bạn",
+      "subtitle": "Cung cấp thông tin mọi người tiếp cận nhà hàng của bạn.",
+      "restaurantInfo": "Thông tin nhà hàng",
+      "restaurantName": "Tên nhà hàng",
+      "restaurantNamePlaceholder": "Nhập tên nhà hàng của bạn",
+      "cuisineType": "Loại ẩm thực",
+      "cuisineTypePlaceholder": "Chọn loại ẩm thực",
+      "address": "Địa chỉ",
+      "addressPlaceholder": "Nhập địa chỉ đầy đủ",
+      "phone": "Số điện thoại",
+      "phonePlaceholder": "Nhập số điện thoại của bạn",
+      "email": "Địa chỉ email",
+      "emailPlaceholder": "Nhập địa chỉ email của bạn",
+      "hours": "Giờ hoạt động",
+      "hoursPlaceholder": "Nhập giờ hoạt động của bạn",
+      "website": "Website",
+      "websitePlaceholder": "Nhập URL website của bạn",
+      "description": "Mô tả",
+      "descriptionPlaceholder": "Cung cấp mô tả về nhà hàng của bạn",
+      "license": "Giấy phép đăng ký"
     }
   }
 }
