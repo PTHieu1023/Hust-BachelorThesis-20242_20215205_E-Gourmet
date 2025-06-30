@@ -35,5 +35,45 @@
       "avg-rating": "Đánh giá trung bình",
       "total-review": "Tổng số đánh giá"
     }
+  },
+  "restaurant": {
+    "details": {
+      "title": "Chi tiết nhà hàng",
+      "description": "Mô tả",
+      "address": "Địa chỉ",
+      "phone": "Điện thoại",
+      "website": "Website",
+      "menu": "Thực đơn",
+      "reviews": "Đánh giá",
+      "hours": "Giờ mở cửa",
+      "followers": "Người theo dõi",
+      "posts": "Bài đăng",
+      "follow": "Theo dõi nhà hàng",
+      "view-menu": "Xem thực đơn",
+      "make-reservation": "Đặt bàn",
+      "category": "Loại hình",
+      "price-range": "Khoảng giá"
+    },
+    "tabs": {
+      "menu": "Thực đơn",
+      "posts": "Bài đăng",
+      "reviews": "Đánh giá",
+      "photos": "Hình ảnh"
+    },
+    "menu": {
+      "highlights": "Món nổi bật"
+    },
+    "posts": {
+      "coming-soon-title": "Bài đăng nhà hàng sắp ra mắt",
+      "coming-soon-desc": "Xem tất cả bài đăng của nhà hàng tại đây."
+    },
+    "photos": {
+      "coming-soon-title": "Bộ sưu tập ảnh sắp ra mắt",
+      "coming-soon-desc": "Xem tất cả hình ảnh của nhà hàng tại đây."
+    },
+    "reviews": {
+      "ordered": "Đã gọi món",
+      "write-review": "Viết đánh giá"
+    }
   }
 }

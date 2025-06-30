@@ -43,4 +43,80 @@ export const getFollowingRestaurants = async () => {
             lastPost: "6 hours ago"
         }
     ];
-}
+};
+
+export const getRestaurantProfile = async () => {
+    await new Promise(resolve => setTimeout(resolve, 200));
+    return {
+        id: "1",
+        name: "Bella Nonna Ristorante",
+        category: "Italian",
+        rating: 4.8,
+        reviewCount: 247,
+        priceRange: "$$",
+        image: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800",
+        coverImage: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200",
+        description: "Authentic Italian cuisine in the heart of the city. Family recipes passed down through generations.",
+        address: "123 Main Street, San Francisco, CA",
+        phone: "(555) 123-4567",
+        website: "www.bellanonna.com",
+        hours: "Mon-Sun: 5:00 PM - 10:00 PM",
+        followers: 2847,
+        posts: 156
+    };
+};
+
+export const getRestaurantMenuHighlights = async () => {
+    await new Promise(resolve => setTimeout(resolve, 200));
+    return [
+        {
+            id: "1",
+            name: "Truffle Carbonara",
+            price: "$28",
+            description: "House-made pasta with truffle cream sauce and pancetta",
+            image: "https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5?w=400",
+            rating: 4.9
+        },
+        {
+            id: "2",
+            name: "Margherita Pizza",
+            price: "$22",
+            description: "San Marzano tomatoes, fresh mozzarella, basil",
+            image: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400",
+            rating: 4.7
+        },
+        {
+            id: "3",
+            name: "Tiramisu",
+            price: "$12",
+            description: "Classic Italian dessert with espresso and mascarpone",
+            image: "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400",
+            rating: 4.8
+        }
+    ];
+};
+
+export const getRestaurantRecentReviews = async () => {
+    await new Promise(resolve => setTimeout(resolve, 200));
+    return [
+        {
+            id: "1",
+            author: "Sarah Chen",
+            avatar: "https://images.unsplash.com/photo-1494790108755-2616b812b6ab?w=400",
+            rating: 5,
+            review: "Outstanding service and the carbonara was perfection! The atmosphere is cozy and romantic.",
+            date: "2024-01-15",
+            dish: "Truffle Carbonara"
+        },
+        {
+            id: "2",
+            author: "Marco Rodriguez",
+            avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400",
+            rating: 4,
+            review: "Great authentic Italian food. The pizza dough was perfectly crispy and the ingredients were fresh.",
+            date: "2024-01-12",
+            dish: "Margherita Pizza"
+        }
+    ];
+};
+

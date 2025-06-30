@@ -35,5 +35,45 @@
       "avg-rating": "Average Rating",
       "total-review": "Total Reviews"
     }
+  },
+  "restaurant": {
+    "details": {
+      "title": "Restaurant Details",
+      "description": "Description",
+      "address": "Address",
+      "phone": "Phone",
+      "website": "Website",
+      "menu": "Menu",
+      "reviews": "Reviews",
+      "hours": "Hours",
+      "followers": "Followers",
+      "posts": "Posts",
+      "follow": "Follow Restaurant",
+      "view-menu": "View Menu",
+      "make-reservation": "Make Reservation",
+      "category": "Category",
+      "price-range": "Price Range"
+    },
+    "tabs": {
+      "menu": "Menu",
+      "posts": "Posts",
+      "reviews": "Reviews",
+      "photos": "Photos"
+    },
+    "menu": {
+      "highlights": "Menu Highlights"
+    },
+    "posts": {
+      "coming-soon-title": "Restaurant Posts Coming Soon",
+      "coming-soon-desc": "See all posts from this restaurant here."
+    },
+    "photos": {
+      "coming-soon-title": "Photo Gallery Coming Soon",
+      "coming-soon-desc": "Browse all photos from this restaurant here."
+    },
+    "reviews": {
+      "ordered": "Ordered",
+      "write-review": "Write a Review"
+    }
   }
-} 
+}
