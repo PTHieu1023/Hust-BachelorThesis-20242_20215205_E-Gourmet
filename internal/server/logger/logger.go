@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-var _logger *zap.Logger
+var _logger *zap.Logger = nil
 
 const (
 	DefaultLoggingConfigPath = "etc/config/logging.yml"

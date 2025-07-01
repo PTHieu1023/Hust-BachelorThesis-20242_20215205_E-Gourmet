@@ -13,8 +13,7 @@ import (
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (id, username, email, display_name)
-VALUES (
-        $1::varchar(64),
+VALUES ($1::varchar(64),
         $2::varchar(64),
         $3::varchar(127),
         $4::varchar(255))
@@ -61,15 +60,37 @@ SELECT
     u.avatar_url,
     u.lat,
     u.lng,
-    u.budget,
+    COALESCE(u.budget, 0) AS budget,
     u.created_at,
     u.updated_at,
-    count(r.*) AS review_count,
-    coalesce(avg(r.rating), 0) as average_rating
-FROM users u
-         LEFT JOIN reviews r ON u.id = r.user_id
-WHERE u.id = $1::varchar(64)
-GROUP BY u.id, u.username, u.email, u.display_name, u.avatar_url, u.created_at, u.updated_at
+    COUNT(r.id) AS review_count,
+    COALESCE(AVG(r.rating), 0) AS average_rating,
+    ARRAY_AGG(DISTINCT JSONB_BUILD_OBJECT(
+            'id',   c.id,
+            'name', c.name,
+            'imageUrl', c.image_url
+                       )) FILTER (
+        WHERE
+        c.name IS NOT NULL
+        ) AS fav_cuisines
+FROM
+    users u
+        LEFT JOIN reviews r ON r.user_id = u.id
+        LEFT JOIN user_cuisine uc ON uc.user_id = u.id
+        LEFT JOIN cuisines c ON c.id = uc.cuisine_id
+WHERE
+    u.id = $1 :: varchar(64)
+GROUP BY
+    u.id,
+    u.username,
+    u.email,
+    u.display_name,
+    u.avatar_url,
+    u.lat,
+    u.lng,
+    u.budget,
+    u.created_at,
+    u.updated_at
 `
 
 type GetUserByIdRow struct {
@@ -80,11 +101,12 @@ type GetUserByIdRow struct {
 	AvatarUrl     *string            `json:"avatarUrl"`
 	Lat           *float64           `json:"lat"`
 	Lng           *float64           `json:"lng"`
-	Budget        *int64             `json:"budget"`
+	Budget        int64              `json:"budget"`
 	CreatedAt     pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt     pgtype.Timestamptz `json:"updatedAt"`
 	ReviewCount   int64              `json:"reviewCount"`
 	AverageRating interface{}        `json:"averageRating"`
+	FavCuisines   interface{}        `json:"favCuisines"`
 }
 
 func (q *Queries) GetUserById(ctx context.Context, db DBTX, id string) (*GetUserByIdRow, error) {
@@ -103,26 +125,26 @@ func (q *Queries) GetUserById(ctx context.Context, db DBTX, id string) (*GetUser
 		&i.UpdatedAt,
 		&i.ReviewCount,
 		&i.AverageRating,
+		&i.FavCuisines,
 	)
 	return &i, err
 }
 
 const getUserByUsername = `-- name: GetUserByUsername :one
-SELECT
-    u.id,
-    u.username,
-    u.email,
-    u.display_name,
-    u.avatar_url,
-    u.lat,
-    u.lng,
-    u.budget,
-    u.created_at,
-    u.updated_at,
-    count(r.*) AS review_count,
-    coalesce(avg(r.rating), 0) as average_rating
+SELECT u.id,
+       u.username,
+       u.email,
+       u.display_name,
+       u.avatar_url,
+       u.lat,
+       u.lng,
+       u.budget,
+       u.created_at,
+       u.updated_at,
+       count(r.*)                 AS review_count,
+       coalesce(avg(r.rating), 0) as average_rating
 FROM users u
-LEFT JOIN reviews r ON u.id = r.user_id
+         LEFT JOIN reviews r ON u.id = r.user_id
 WHERE u.username = $1::varchar(64)
 GROUP BY u.id, u.username, u.email, u.display_name, u.avatar_url, u.created_at, u.updated_at
 `
@@ -168,7 +190,7 @@ WITH updated_user AS (
         SET
             username = coalesce($1::varchar(64), username),
             email = coalesce($2::varchar(127), email),
-            display_name= coalesce($3::varchar(255), display_name),
+            display_name = coalesce($3::varchar(255), display_name),
             avatar_url = coalesce($4::varchar(255), avatar_url),
             lat = coalesce($5::float8, lat),
             lng = coalesce($6::float8, lng),
@@ -176,34 +198,31 @@ WITH updated_user AS (
             enable = coalesce($8::bool, enable),
             updated_at = now()
         WHERE id = $9::varchar(64)
-    RETURNING id, username, email, display_name, avatar_url, lat, lng, budget, created_at, updated_at
-)
-SELECT
-    u.id,
-    u.username,
-    u.email,
-    u.display_name,
-    u.avatar_url,
-    u.lat,
-    u.lng,
-    u.budget,
-    u.created_at,
-    u.updated_at,
-    count(r.*) AS review_count,
-    coalesce(avg(r.rating), 0) as average_rating
+        RETURNING id, username, email, display_name, avatar_url, lat, lng, budget, created_at, updated_at)
+SELECT u.id,
+       u.username,
+       u.email,
+       u.display_name,
+       u.avatar_url,
+       u.lat,
+       u.lng,
+       u.budget,
+       u.created_at,
+       u.updated_at,
+       count(r.*)                 AS review_count,
+       coalesce(avg(r.rating), 0) as average_rating
 FROM updated_user u
-LEFT JOIN reviews r ON u.id = r.user_id
-GROUP BY
-    u.id,
-    u.username,
-    u.email,
-    u.display_name,
-    u.avatar_url,
-    u.lat,
-    u.lng,
-    u.budget,
-    u.created_at,
-    u.updated_at
+         LEFT JOIN reviews r ON u.id = r.user_id
+GROUP BY u.id,
+         u.username,
+         u.email,
+         u.display_name,
+         u.avatar_url,
+         u.lat,
+         u.lng,
+         u.budget,
+         u.created_at,
+         u.updated_at
 `
 
 type UpdateUserParams struct {

@@ -3,13 +3,14 @@ package controllers
 import (
 	"database/sql"
 	"e-gourmet/core/internal/database"
+	"e-gourmet/core/internal/middlewares"
 	"errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 )
 
 func (c *Controller) GetCurrentUser(ctx *fiber.Ctx) error {
-	id := ctx.Locals("userID").(string)
+	id := ctx.UserContext().Value(middlewares.CtxUserID).(string)
 	if id == "" {
 		return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized: No user ID found in context")
 	}
@@ -24,7 +25,7 @@ func (c *Controller) GetCurrentUser(ctx *fiber.Ctx) error {
 	}
 
 	params := new(database.CreateUserParams)
-	claims := ctx.Locals("claims").(*jwt.MapClaims)
+	claims := ctx.UserContext().Value(middlewares.CtxClaims).(*jwt.MapClaims)
 	username := (*claims)["preferred_username"].(string)
 	email := (*claims)["email"].(string)
 	name := (*claims)["name"].(string)

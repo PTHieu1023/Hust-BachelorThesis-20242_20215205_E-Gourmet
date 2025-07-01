@@ -2,12 +2,14 @@ package controllers
 
 import (
 	"e-gourmet/core/internal/database"
+	"e-gourmet/core/internal/services"
 	"github.com/gofiber/fiber/v2"
 	"strconv"
 )
 
 func (c *Controller) GetCuisineRecursionById(ctx *fiber.Ctx) error {
 	idStr := ctx.Params("id", "0")
+	displayMode := ctx.Query("tree", "0")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -15,13 +17,40 @@ func (c *Controller) GetCuisineRecursionById(ctx *fiber.Ctx) error {
 		})
 	}
 
-	cuisine, err := c.service.GetCuisineRecursionById(ctx.UserContext(), int16(id))
+	cuisines, err := c.service.GetCuisineRecursionById(ctx.UserContext(), int16(id))
 	if err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			return ctx.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"error": "Cuisine not found",
+			})
+		}
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to retrieve cuisine",
 		})
 	}
-	return ctx.Status(fiber.StatusOK).JSON(cuisine)
+	if displayMode == "0" || displayMode == "" {
+		return ctx.Status(fiber.StatusOK).JSON(cuisines)
+	}
+
+	tree := make(map[int16]*services.Cuisine)
+	for _, row := range cuisines {
+		tree[row.ID] = services.NewCuisine(row.ID, row.Name, row.ParentID, row.ImageUrl)
+	}
+	for _, cuisine := range tree {
+		if cuisine.ParentId == nil {
+			continue
+		}
+		parent, exists := tree[*cuisine.ParentId]
+		if !exists {
+			continue
+		}
+		if parent.Children == nil {
+			parent.Children = make(map[int16]*services.Cuisine)
+		}
+		parent.Children[cuisine.ID] = cuisine
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(tree[int16(id)])
 }
 
 func (c *Controller) AddCuisine(ctx *fiber.Ctx) error {

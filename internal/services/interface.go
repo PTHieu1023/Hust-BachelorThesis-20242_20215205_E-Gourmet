@@ -3,11 +3,12 @@ package services
 import (
 	"context"
 	"e-gourmet/core/internal/database"
+	"github.com/Nerzal/gocloak/v13"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type IService interface {
-	GetCuisineRecursionById(ctx context.Context, id int16) (*Cuisine, error)
+	GetCuisineRecursionById(ctx context.Context, id int16) ([]*database.GetCuisineRecursionByIdRow, error)
 	AddCuisine(ctx context.Context, params *database.AddCuisineParams) (*Cuisine, error)
 
 	CreateDish(ctx context.Context, params *database.CreateDishParams) (*database.CreateDishRow, error)
@@ -32,12 +33,14 @@ type IService interface {
 }
 
 type Service struct {
+	kc      *gocloak.GoCloak
 	dbtx    *pgxpool.Pool
 	querier database.Querier
 }
 
-func New(dbtx *pgxpool.Pool) IService {
+func New(dbtx *pgxpool.Pool, kc *gocloak.GoCloak) IService {
 	return &Service{
+		kc:      kc,
 		dbtx:    dbtx,
 		querier: database.New(),
 	}

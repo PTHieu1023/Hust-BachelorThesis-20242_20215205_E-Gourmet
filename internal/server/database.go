@@ -81,9 +81,9 @@ func connectDB() *pgxpool.Pool {
 	return _pool
 }
 
-func closeDB() {
-	if _pool != nil {
-		_pool.Close()
+func closeDB(pool *pgxpool.Pool) {
+	if pool != nil {
+		pool.Close()
 	}
 	logger.Instance().Info("Closed database connection")
 }

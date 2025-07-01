@@ -1,7 +1,0 @@
-name: E-Gourmet
-port: 8080
-header: "e-gourmet"
-prefork: false
-network: "tcp4"
-case-sensitive: true
-immutable: false

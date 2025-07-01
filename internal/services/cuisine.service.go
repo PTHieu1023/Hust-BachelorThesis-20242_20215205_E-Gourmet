@@ -7,29 +7,8 @@ import (
 	"strings"
 )
 
-func (s *Service) GetCuisineRecursionById(ctx context.Context, id int16) (*Cuisine, error) {
-	cuisinesRow, err := s.querier.GetCuisineRecursionById(ctx, s.dbtx, id)
-	if err != nil {
-		return nil, err
-	}
-	cuisinesMap := make(map[int16]*Cuisine)
-	for _, row := range cuisinesRow {
-		cuisinesMap[row.ID] = NewCuisine(row.ID, row.Name, row.ParentID, row.ImageUrl)
-	}
-	for _, cuisine := range cuisinesMap {
-		if cuisine.ParentId == nil {
-			continue
-		}
-		parent, exists := cuisinesMap[*cuisine.ParentId]
-		if !exists {
-			continue
-		}
-		if parent.Children == nil {
-			parent.Children = make(map[int16]*Cuisine)
-		}
-		parent.Children[cuisine.ID] = cuisine
-	}
-	return cuisinesMap[id], nil
+func (s *Service) GetCuisineRecursionById(ctx context.Context, id int16) ([]*database.GetCuisineRecursionByIdRow, error) {
+	return s.querier.GetCuisineRecursionById(ctx, s.dbtx, id)
 }
 
 func (s *Service) AddCuisine(ctx context.Context, params *database.AddCuisineParams) (*Cuisine, error) {
