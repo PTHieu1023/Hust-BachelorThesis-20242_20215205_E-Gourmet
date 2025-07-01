@@ -22,19 +22,8 @@ export default function RestaurantRegistryPrompt({...props}) {
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 text-xs text-gray-600 mb-4">
-                        <div className="flex items-center space-x-2">
-                            <Users className="w-4 h-4 text-orange-500" />
-                            <span>Reach new customers</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <Star className="w-4 h-4 text-orange-500" />
-                            <span>Showcase your dishes</span>
-                        </div>
-                    </div>
-
                     <Link href="/restaurant/register">
-                        <Button className="w-full bg-orange-500 hover:bg-orange-600">
+                        <Button className="w-max bg-orange-500 hover:bg-orange-600">
                             <Plus className="w-4 h-4 mr-2" />
                             Register Your Restaurant
                         </Button>

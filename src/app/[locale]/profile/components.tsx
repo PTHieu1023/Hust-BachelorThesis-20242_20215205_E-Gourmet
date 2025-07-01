@@ -1,40 +1,48 @@
-"use client";
+import {getCurrentUserInfo} from "@/services/auth.service";
+import {getCuisines} from "@/services/cuisine.service";
 import {Card, CardContent} from "@/components/ui/card";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
-import {Edit, Heart, MapPin, Star} from "lucide-react";
-import {Button} from "@/components/ui/button";
-import {useSession} from "next-auth/react";
-import {KCSession} from "@/configs/auth.config";
-import {Badge} from "@/components/ui/badge";
 import EditProfileModal from "@/components/EditProfileModal";
-import {useState} from "react";
+import {Heart, MapPin, Star} from "lucide-react";
+import {Badge} from "@/components/ui/badge";
 import {Link} from "@/i18n/navigation";
-import { Post } from "@/services/post.type";
+import {Button} from "@/components/ui/button";
+import {getCurrentReview} from "@/services/review.service";
+import {getFollowingRestaurants} from "@/services/restaurant.service";
 
-export const UserProfileCard = () => {
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [profile, setProfile] = useState({
-        name: "Sarah Chen",
-        email: "sarah.chen@example.com",
-        username: "user",
-        reviews: 89,
-        followers: 1247,
-        following: 342,
-        likes: 2156,
-        bio: "Food enthusiast and restaurant explorer based in San Francisco. Love discovering hidden gems and sharing culinary adventures!",
-        address: "San Francisco, CA",
-        avatar: "https://images.unsplash.com/photo-1494790108755-2616b812b6ab?w=400",
-        preferences: ["Italian", "Japanese", "Mediterranean"]
-    });
+export const CurrentReviewTab = async ({t}: any) => {
+    const recentReviews = await getCurrentReview();
 
-    const handleSaveProfile = (updatedProfile: any) => {
-        setProfile(updatedProfile);
-    };
+    if (recentReviews.length === 0) {
+        return <div className="text-center py-8 text-gray-500">{t('no_reviews')}</div>;
+    }
 
-    const {data} = useSession();
-    const user = data?.user as KCSession["user"] | undefined;
-    const isCurrentUser = user?.username === profile.username;
+    return (
+        <div className="grid gap-6">
+            {recentReviews.map((review) => <ReviewCard key={review.id} review={review}/>)}
+        </div>
+    );
+};
 
+export const FollowingTab = async ({t}: any) => {
+    const followingRestaurants = await getFollowingRestaurants();
+
+    if (followingRestaurants.length === 0) {
+        return <div className="text-center py-8 text-gray-500">{t('no_following')}</div>;
+    }
+
+    return (
+        <div className="grid gap-6">
+            {followingRestaurants.map((restaurant) => (
+                <FollowingItemCard key={restaurant.id} item={restaurant}/>
+            ))}
+        </div>
+    );
+};
+
+
+export const UserProfileCard = async () => {
+    const [profile, cuisines] = await Promise.all([getCurrentUserInfo(), getCuisines()])
     return (
         <Card className="border-gray-100 mb-6">
             <CardContent className="p-8">
@@ -45,22 +53,10 @@ export const UserProfileCard = () => {
                             <AvatarImage src={profile.avatar} alt={profile.name}/>
                             <AvatarFallback>{profile.name}</AvatarFallback>
                         </Avatar>
-                        <Button
-                            className="bg-orange-500 hover:bg-orange-600"
-                            onClick={isCurrentUser ? () => setIsEditModalOpen(true) : () => alert("Follow User")}
-                        >
-                            {isCurrentUser ? (
-                                <div className="flex items-center">
-                                    <Edit className="w-4 h-4 mr-2"/>
-                                    Edit Profile
-                                </div>
-                            ) : (
-                                <div className="flex items-center">
-                                    <Heart className="w-4 h-4 mr-2"/>
-                                    Follow User
-                                </div>
-                            )}
-                        </Button>
+                        <EditProfileModal
+                            userProfile={profile}
+                            cuisines={cuisines}
+                        />
                     </div>
 
                     <div className="flex-1">
@@ -72,15 +68,14 @@ export const UserProfileCard = () => {
                             <span>{profile.address}</span>
                         </div>
 
-                        {/* Preferences and Dietary Restrictions */}
                         <div className="space-y-2 mb-4">
-                            {profile.preferences.length > 0 && (
+                            {profile.favCuisines.length > 0 && (
                                 <div className="flex items-center space-x-2">
                                     <span className="text-sm text-gray-600">Loves:</span>
                                     <div className="flex flex-wrap gap-1">
-                                        {profile.preferences.map((pref) => (
-                                            <Badge key={pref} variant="outline" className="text-xs">
-                                                {pref}
+                                        {profile.favCuisines.map((pref) => (
+                                            <Badge key={pref.id} variant="outline" className="text-xs">
+                                                {pref.name}
                                             </Badge>
                                         ))}
                                     </div>
@@ -111,17 +106,11 @@ export const UserProfileCard = () => {
                     </div>
                 </div>
             </CardContent>
-            <EditProfileModal
-                isOpen={isEditModalOpen}
-                onClose={() => setIsEditModalOpen(false)}
-                userProfile={profile}
-                onSave={handleSaveProfile}
-            />
         </Card>
     )
 }
 
-export const FollowingItemCard = ({item}: {item: any}) => {
+const FollowingItemCard = ({item}: { item: any }) => {
     return (
         <Card key={item.id} className="border-gray-100">
             <CardContent className="p-6">
@@ -159,6 +148,36 @@ export const FollowingItemCard = ({item}: {item: any}) => {
                                 View Restaurant
                             </Button>
                         </Link>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    )
+}
+
+const ReviewCard = ({review}: { review: any }) => {
+    return (<Card key={review.id} className="border-gray-100">
+            <CardContent className="p-6">
+                <div className="flex items-start justify-between mb-4">
+                    <div>
+                        <h3 className="font-semibold text-gray-900">{review.restaurant}</h3>
+                        <p className="text-sm text-gray-600">{review.dish}</p>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                        <Star className="w-3 h-3 text-yellow-400 fill-yellow-400"/>
+                        <span>{review.rating}</span>
+                    </div>
+                </div>
+
+                <p className="text-gray-700 mb-4">{review.review}</p>
+
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                    <span>{review.date}</span>
+                    <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-1">
+                            <Heart className="w-4 h-4"/>
+                            <span>{review.likes}</span>
+                        </div>
                     </div>
                 </div>
             </CardContent>

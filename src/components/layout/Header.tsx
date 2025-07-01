@@ -67,7 +67,7 @@ export default function Header() {
     );
 };
 
-function NavButton({href, label, icon}: { href: string; label: string; icon: ReactNode }) {
+function NavButton({href, label, icon}: Readonly<{ href: string; label: string; icon: ReactNode }>) {
     const pathname = usePathname();
     const isActive = pathname.startsWith(href + "/") || pathname === href
     return (
@@ -107,14 +107,14 @@ function UserMenu() {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Avatar>
-                    <AvatarImage src={user.imageUrl || `https://ui-avatars.com/api/?name=${user.name}`}/>
+                    <AvatarImage src={user.imageUrl ?? `https://ui-avatars.com/api/?name=${user.name}`}/>
                     <AvatarFallback>CN</AvatarFallback>
                 </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 text-foreground">
                 <DropdownMenuLabel>@{user?.username}</DropdownMenuLabel>
                 <DropdownMenuItem asChild>
-                    <Link href={`/profile/${user.username}`} className="flex items-center">
+                    <Link href={`/profile`} className="flex items-center">
                         <User className="mr-2 h-4 w-4"/>
                         <span>{user.name}</span>
                     </Link>

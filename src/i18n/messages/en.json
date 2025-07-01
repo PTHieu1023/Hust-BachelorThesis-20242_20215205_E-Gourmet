@@ -103,7 +103,7 @@
   },
   "dashboard": {
     "title": "Restaurant Dashboard",
-    "subtitle": "Manage your restaurant's presence on Savor Street",
+    "subtitle": "Manage your restaurant's presence on E-Gourmet",
     "create-post": "Create New Post",
     "view-public-profile": "View Public Profile",
     "manage-posts": "Manage Posts",
@@ -125,11 +125,22 @@
     "likes": "likes",
     "comments": "comments",
     "shares": "shares",
+    "menu": {
+      "title": "Menu Management",
+      "add-dish": "Add New Dish",
+      "edit-dish": "Edit Dish",
+      "delete-dish": "Delete Dish",
+      "dish-name": "Dish Name",
+      "dish-description": "Dish Description",
+      "dish-price": "Dish Price",
+      "dish-image": "Dish Image",
+      "save-changes": "Save Changes",
+      "cancel": "Cancel"
+    },
     "tabs": {
-      "overview": "Overview",
+      "menu": "Menu",
       "posts": "Posts",
-      "reviews": "Reviews",
-      "analytics": "Analytics"
+      "reviews": "Reviews"
     }
   },
   "home": {
@@ -140,7 +151,12 @@
       "specials": "Specials",
       "events": "Events",
       "announcements": "Announcements"
-    }
+    },
+    "logoAlt": "E-Gourmet",
+    "discoverYour": "Discover Your",
+    "favoriteDish": "Favorite Dish",
+    "subtitle": "Connect with fellow food enthusiasts, discover amazing restaurants, and share your culinary adventures.",
+    "startExploring": "Start Exploring"
   },
   "profile": {
     "title": "User Profile",

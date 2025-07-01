@@ -4,7 +4,7 @@ import {
     getRestaurantProfile,
     getRestaurantRecentReviews
 } from "@/services/restaurant.service";
-import {getTranslations} from "next-intl/server";
+import {getTranslations, setRequestLocale} from "next-intl/server";
 import Image from "next/image";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {Clock, Globe, Heart, Home, MapPin, Phone, Star} from "lucide-react";
@@ -16,6 +16,7 @@ import CommonBreadcrumb, {BreadcrumbItemProps} from "@/components/layout/CommonB
 
 export default async function RestaurantProfilePage({params}: Readonly<{ params: Promise<{ locale: string, username: string }> }>) {
     const {locale, username} = await params;
+    setRequestLocale(locale)
     const t = await getTranslations("restaurant");
     const breadcrumbItems:BreadcrumbItemProps[] = [
         {
