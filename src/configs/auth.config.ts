@@ -16,12 +16,12 @@ const validateToken = async (token: KCTokenSet) => {
         if (token.expires_at && nowTimeStamp < token.expires_at) {
             return token;
         }
-        const newToken: KCTokenSet = await refreshToken(token.refresh_token || '');
+        const newToken: KCTokenSet = await refreshToken(token.refresh_token ?? '');
         return {
             ...token,
             access_token: newToken.access_token,
             id_token: newToken.id_token,
-            expires_at: Math.floor(Date.now() / 1000) + (newToken.expires_in || 0),
+            expires_at: Math.floor(Date.now() / 1000) + (newToken.expires_in ?? 0),
             refresh_token: newToken.refresh_token,
         };
     } catch (error) {
@@ -65,7 +65,7 @@ export const authOptions: NextAuthOptions = {
                     email: tokenDecoded.email,
                     imageUrl: tokenDecoded.image_url,
                     realmRoles: tokenDecoded.realm_access.roles,
-                    locale: tokenDecoded?.locale || 'en'
+                    locale: tokenDecoded?.locale ?? 'en'
                 }
             }
             return session;

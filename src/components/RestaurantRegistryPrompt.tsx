@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Building2, Plus, Star, Users } from "lucide-react";
+import { Building2, Plus } from "lucide-react";
 import {Link} from "@/i18n/navigation";
 import {cn} from "@/lib/utils";
 

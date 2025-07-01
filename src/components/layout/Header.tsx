@@ -15,7 +15,7 @@ import {
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {Link, usePathname} from "@/i18n/navigation";
 import {clearSession} from "@/services/auth.service";
-import {ReactNode, useEffect} from "react";
+import {ReactNode, useCallback, useEffect} from "react";
 import {clsx} from "clsx";
 
 export default function Header() {
@@ -88,14 +88,14 @@ function UserMenu() {
     const user = session?.user;
     const t = useTranslations("header.user-menu");
 
-    const logout = () => clearSession(session?.id_token).then(() => signOut({callbackUrl: "/home"}));
+    const logout = useCallback(() => clearSession(session?.id_token).then(() => signOut({callbackUrl: "/home"})), [session?.id_token]);
 
 
     useEffect(() => {
         if(session?.error){
-            logout().then()
+            logout().then();
         }
-    }, [session]);
+    }, [session, logout]);
 
     if (status !== "authenticated" || !user)
         return (

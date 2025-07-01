@@ -1,21 +1,9 @@
-"use client"
-
-import {useEffect, useState} from "react";
-import {fetchPosts, Post} from "@/services/post.service";
+import {fetchPosts} from "@/services/post.service";
 import PostCard from "@/components/PostCard";
 import DiscoveryPanel from "@/components/DiscoverPanel";
 
-export default function Home() {
-    const [posts, setPosts] = useState<Post[]>([]);
-
-    useEffect(() => {
-        async function loadPosts() {
-            const fetchedPosts = await fetchPosts();
-            setPosts(fetchedPosts);
-        }
-
-        loadPosts();
-    }, []);
+export default async function Home() {
+    const posts = await fetchPosts();
 
     return (
         <div className="container mx-auto px-4 py-6">

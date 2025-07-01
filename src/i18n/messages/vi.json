@@ -139,6 +139,14 @@
       "reviews": "Đánh giá"
     }
   },
+  "home": {
+    "title": "Trang chủ",
+    "logoAlt": "E-Gourmet",
+    "discoverYour": "Khám phá",
+    "favoriteDish": "ẩm thực của bạn",
+    "subtitle": "Kết nối với những món ăn ngon nhất gần bạn",
+    "startExploring": "Bắt đầu khám phá"
+  },
   "profile": {
     "title": "Hồ sơ người dùng",
     "edit_profile": "Chỉnh sửa hồ sơ",
@@ -183,5 +191,22 @@
       "discovery": "Khám phá",
       "restaurant": "Nhà hàng"
     }
+  },
+  "common": {
+    "error": {
+      "not-found": "Không tìm thấy",
+      "server-error": "Lỗi máy chủ, vui lòng thử lại sau",
+      "unauthorized": "Truy cập không được phép"
+    },
+    "loading": "Đang tải...",
+    "no-data": "Không có dữ liệu",
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "delete": "Xóa",
+    "edit": "Chỉnh sửa",
+    "confirm": "Xác nhận",
+    "back": "Quay lại",
+    "next": "Tiếp theo",
+    "previous": "Trước đó"
   }
 }

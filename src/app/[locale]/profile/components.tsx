@@ -1,17 +1,19 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {getCurrentUserInfo} from "@/services/auth.service";
 import {getCuisines} from "@/services/cuisine.service";
 import {Card, CardContent} from "@/components/ui/card";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import EditProfileModal from "@/components/EditProfileModal";
-import {Heart, MapPin, Star} from "lucide-react";
+import {MapPin, Star} from "lucide-react";
 import {Badge} from "@/components/ui/badge";
 import {Link} from "@/i18n/navigation";
 import {Button} from "@/components/ui/button";
-import {getCurrentReview} from "@/services/review.service";
+import {getReviews, Review} from "@/services/review.service";
 import {getFollowingRestaurants} from "@/services/restaurant.service";
+import {RatingStar} from "@/components/ui/rating-star";
 
 export const CurrentReviewTab = async ({t}: any) => {
-    const recentReviews = await getCurrentReview();
+    const recentReviews = await getReviews();
 
     if (recentReviews.length === 0) {
         return <div className="text-center py-8 text-gray-500">{t('no_reviews')}</div>;
@@ -155,31 +157,17 @@ const FollowingItemCard = ({item}: { item: any }) => {
     )
 }
 
-const ReviewCard = ({review}: { review: any }) => {
+const ReviewCard = ({review}: { review: Review }) => {
     return (<Card key={review.id} className="border-gray-100">
             <CardContent className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                    <div>
-                        <h3 className="font-semibold text-gray-900">{review.restaurant}</h3>
-                        <p className="text-sm text-gray-600">{review.dish}</p>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                        <Star className="w-3 h-3 text-yellow-400 fill-yellow-400"/>
-                        <span>{review.rating}</span>
-                    </div>
+                <div>
+                    <h3 className="font-semibold text-gray-900">{review.dish.restaurant.name}</h3>
+                    <p className="text-sm text-gray-600">{review.dish.name}</p>
                 </div>
+                <RatingStar rating={review.rating} />
 
                 <p className="text-gray-700 mb-4">{review.review}</p>
-
-                <div className="flex items-center justify-between text-sm text-gray-500">
-                    <span>{review.date}</span>
-                    <div className="flex items-center space-x-4">
-                        <div className="flex items-center space-x-1">
-                            <Heart className="w-4 h-4"/>
-                            <span>{review.likes}</span>
-                        </div>
-                    </div>
-                </div>
+                <span>{review.createdAt.toLocaleDateString()}</span>
             </CardContent>
         </Card>
     )

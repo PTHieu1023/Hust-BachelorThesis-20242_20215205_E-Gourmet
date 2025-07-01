@@ -1,9 +1,8 @@
 import {Card, CardHeader, CardTitle} from "@/components/ui/card";
 import {Heart} from "lucide-react";
-import {getRecommendations} from "@/services/dish.service";
 import {getTranslations, setRequestLocale} from "next-intl/server";
 import {Suspense} from "react";
-import {RecommendItemCard, UserStatsCard} from "@/app/[locale]/for-you/components";
+import {RecommendationList, UserStatsCard} from "@/app/[locale]/for-you/components";
 
 interface PageProps {
     params: Promise<{ locale: string }>;
@@ -38,7 +37,3 @@ export default async function ForYouPage({params}: Readonly<PageProps>) {
     );
 };
 
-const RecommendationList = async () => {
-    const recommendations = await getRecommendations();
-    return recommendations.map((rec: any, index) => <RecommendItemCard rec={rec} key={rec.id}/>)
-}

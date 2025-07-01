@@ -4,9 +4,9 @@ import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import {MapPin, Search, Star} from "lucide-react";
 import {Input} from "@/components/ui/input";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import * as React from "react";
 import {ChangeEventHandler, useEffect, useState} from "react";
 import {useTranslations} from "next-intl";
-import * as React from "react";
 import {Slider} from "@/components/ui/slider";
 import {cn} from "@/lib/utils";
 import {useRouter, useSearchParams} from "next/navigation";
@@ -14,8 +14,8 @@ import Image from "next/image";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import {Link} from "@/i18n/navigation";
-import {Cuisine} from "@/types/food";
-import {getCuisines} from "@/services/cuisine.service";
+import {Cuisine, getCuisines} from "@/services/cuisine.service";
+import {ShortDishProps} from "@/services/dish.service";
 
 interface FilterProps {
     search?: string;
@@ -41,8 +41,8 @@ export const DiscoveryFilter = () => {
     const searchParams = useSearchParams();
 
     // Initialize filters from URL query params
-    const initialSearch = searchParams.get("search") || undefined;
-    const initialCuisine = searchParams.get("cuisine") || undefined;
+    const initialSearch = searchParams.get("search") ?? undefined;
+    const initialCuisine = searchParams.get("cuisine") ?? undefined;
 
     const [filters, setFilters] = useState<FilterProps>({
         search: initialSearch,
@@ -69,7 +69,7 @@ export const DiscoveryFilter = () => {
             params.set("maxPrice", String(debouncedFilters.priceRange[1]));
         }
         router.replace(`?${params.toString()}`);
-    }, [debouncedFilters]);
+    }, [debouncedFilters, router]);
 
 
     return (
@@ -129,7 +129,7 @@ interface CuisineFilterProps {
     className?: string;
 }
 
-function CuisineFilter({cuisines, selected, onValueChange, className}: CuisineFilterProps) {
+function CuisineFilter({cuisines, selected, onValueChange, className}: Readonly<CuisineFilterProps>) {
     const t = useTranslations("discovery.filter");
     return (
         <div className={cn("w-full justify-center items-center", className)}>
@@ -173,7 +173,7 @@ const PriceRangeFilter = (
     );
 }
 
-export const FoodCard = ({dish}:{dish: any}) => {
+export const FoodCard = ({dish}:{dish: ShortDishProps}) => {
     return (
         <Link key={dish.id} href={`/restaurant/1/${dish.id}`}>
             <Card className="border-gray-100 hover:shadow-lg transition-shadow cursor-pointer">

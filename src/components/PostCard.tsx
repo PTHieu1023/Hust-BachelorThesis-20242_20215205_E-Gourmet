@@ -3,7 +3,7 @@ import {useState} from "react";
 import {Button} from "@/components/ui/button";
 import {Card, CardContent, CardHeader} from "@/components/ui/card";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
-import {Heart, MessageCircle, Share2} from "lucide-react";
+import {Heart, MessageCircle} from "lucide-react";
 import {Link} from "@/i18n/navigation";
 import Image from "next/image";
 import {Post} from "@/services/post.service";
@@ -56,7 +56,7 @@ const PostCard = ({post}: { post: Post }) => {
                         .map((image, index) =>
                             <Image
                                 className={"w-full h-60 md:h-80 lg:h-100  rounded-lg"}
-                                key={index}
+                                key={"post-image-" + index}
                                 src={image}
                                 alt={image}
                                 width={1920}

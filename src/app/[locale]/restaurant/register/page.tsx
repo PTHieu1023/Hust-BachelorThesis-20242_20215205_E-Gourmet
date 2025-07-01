@@ -10,8 +10,7 @@ import {Clock, Phone, Mail, Building2, Upload} from "lucide-react";
 import {toast} from "sonner";
 import {useRouter} from "@/i18n/navigation";
 import {useTranslations} from "next-intl";
-import {getCuisines} from "@/services/cuisine.service";
-import {Cuisine} from "@/types/food";
+import {Cuisine, getCuisines} from "@/services/cuisine.service";
 
 const CreateRestaurant = () => {
     const t = useTranslations("restaurant.register");
@@ -30,15 +29,11 @@ const CreateRestaurant = () => {
     const [cuisines, setCuisines] = useState<Cuisine[]>();
 
     useEffect(() => {
-        const fetchCuisines = async () => {
-            try {
-                setCuisines( await getCuisines());
-            } catch (error) {
-                toast.error(t("fetchError"));
-            }
-        };
-
-        fetchCuisines().then();
+        getCuisines().then(fetchCuisines => {
+            setCuisines(fetchCuisines);
+        }).catch((error: Error) => {
+            toast.error(error.message);
+        });
     }, [])
 
 
@@ -59,7 +54,9 @@ const CreateRestaurant = () => {
             toast.info("Your restaurant is being registered. You will receive a confirmation email once approved.");
             router.push("/restaurant");
         } catch (error) {
-            toast.error("An error occurred while registering your restaurant. Please try again later.");
+            toast.error("An error occurred while registering your restaurant. Please try again later.", {
+                description: error instanceof Error ? error.message : String(error),
+            });
         } finally {
             setIsSubmitting(false);
         }

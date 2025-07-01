@@ -1,7 +1,7 @@
 import {Suspense} from "react";
-import {DiscoveryFilter, FoodCard} from "@/app/[locale]/discovery/components";
-import {getDish} from "@/services/dish.service";
+import {DiscoveryFilter} from "@/app/[locale]/discovery/components";
 import {getTranslations, setRequestLocale} from "next-intl/server";
+import {ItemList} from "@/app/[locale]/discovery/server-components";
 
 interface PageProps {
     searchParams: Promise<Record<string, string | string[] | number | number[]>>;
@@ -24,12 +24,3 @@ export default async function DiscoveryPage({searchParams, params}: Readonly<Pag
     );
 };
 
-const ItemList = async (
-    {searchParams, t}: { searchParams: Promise<Record<string, string | string[] | number | number[]>>, t: any }) => {
-    const {search = "", cuisineId = 0, minPrice = 0, maxPrice = 9999999} =await searchParams;
-    const dishes = await getDish({search, cuisineId, minPrice, maxPrice});
-    if (dishes.length === 0) {
-        return <div>{t('no-results')}</div>;
-    }
-    return dishes.map(dish => <FoodCard dish={dish} key={dish.id}/>)
-}

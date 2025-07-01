@@ -1,7 +1,26 @@
 "use server"
 
-export const getDish = async ( {search, cuisineId, minPrice, maxPrice} : any) => {
+export interface ShortDishProps {
+    id: number;
+    name: string;
+    restaurant: string;
+    price: string;
+    cuisine: number;
+    rating: number;
+    image: string;
+    description?: string;
+}
+
+export interface SearchDishFilterProps {
+    search?: string;
+    cuisineId?: number;
+    minPrice?: number;
+    maxPrice?: number;
+}
+
+export const getDish = async ( {search, cuisineId, minPrice, maxPrice} : SearchDishFilterProps): Promise<ShortDishProps[]> => {
     await new Promise(resolve => setTimeout(resolve, 500));
+    console.log("Searching for dishes with params:", {search, cuisineId, minPrice, maxPrice});
     return  [
         {
             id: 1,
@@ -42,17 +61,6 @@ export const getRecommendations = async () => {
     return  [
         {
             id: 1,
-            type: "restaurant",
-            title: "New Italian spot based on your love for pasta",
-            restaurant: "Nonna's Kitchen",
-            image: "https://images.unsplash.com/photo-1514933651103-005eec06c04b",
-            rating: 4.6,
-            reason: "Similar to Bella Nonna which you rated 5★",
-            distance: "0.8 miles away"
-        },
-        {
-            id: 2,
-            type: "dish",
             title: "Try this popular ramen everyone's talking about",
             restaurant: "Tokyo Bowl",
             dish: "Tonkotsu Ramen",
@@ -60,38 +68,45 @@ export const getRecommendations = async () => {
             rating: 4.8,
             reason: "Trending in your area",
             price: "$$"
-        },
-        {
-            id: 3,
-            type: "reviewer",
-            title: "Follow Sarah - she has similar taste to you",
-            reviewer: {
-                name: "Sarah Chen",
-                avatar: "https://images.unsplash.com/photo-1494790108755-2616b812b6ab",
-                reviews: 127,
-                similarity: "89% taste match"
-            },
-            reason: "Both love Italian and Japanese cuisine"
         }
     ];
 }
 
-export const getTrendingNearYou = async () => {
+export interface DishDetails {
+    id: number | string;
+    name: string;
+    restaurant: {
+        name: string;
+        avatar: string;
+        username: string;
+    };
+    price: string;
+    rating: number;
+    reviewCount: number;
+    cuisine: string;
+    description: string;
+    images: string[];
+}
+
+export const getDetails = async () : Promise<DishDetails> => {
     await new Promise(resolve => setTimeout(resolve, 500));
-    return [
-        {
-            id: 1,
-            name: "Spicy Tuna Bowl",
-            restaurant: "Poke Paradise",
-            trending: "+25% orders this week",
-            image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c"
+    return {
+        id: "1",
+        name: "Truffle Carbonara",
+        restaurant: {
+            name: "Bella Nonna Ristorante",
+            avatar: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400",
+            username: "1"
         },
-        {
-            id: 2,
-            name: "Truffle Pizza",
-            restaurant: "Artisan Slice",
-            trending: "+18% orders this week",
-            image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b"
-        }
-    ];
+        price: "$28",
+        rating: 4.8,
+        reviewCount: 127,
+        cuisine: "Italian",
+        description: "Our signature truffle carbonara features house-made pasta tossed in a rich cream sauce with Italian black truffles, crispy pancetta, and aged Parmigiano-Reggiano. This indulgent dish represents the perfect marriage of traditional Roman cooking techniques with premium ingredients sourced directly from Italy.",
+        images: [
+            "https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5?w=800",
+            "https://images.unsplash.com/photo-1573225342350-16731dd9bf3d?w=800",
+            "https://images.unsplash.com/photo-1563379091339-03246963d96c?w=800"
+        ]
+    };
 }

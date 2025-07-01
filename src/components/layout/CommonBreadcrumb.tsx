@@ -13,7 +13,7 @@ export interface BreadcrumbItemProps {
     isCurrent?: boolean;
 }
 
-export default function CommonBreadcrumb({items}: { items: BreadcrumbItemProps[] }) {
+export default function CommonBreadcrumb({items}: Readonly<{ items: BreadcrumbItemProps[] }>) {
     return (
         <Breadcrumb className="mb-6">
             <BreadcrumbList>

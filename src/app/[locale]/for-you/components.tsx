@@ -1,12 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {Card, CardContent, CardHeader} from "@/components/ui/card";
 import Image from "next/image";
-import {Star, Users} from "lucide-react";
+import {Star} from "lucide-react";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import {getTranslations} from "next-intl/server";
 import {getCurrentUserInfo} from "@/services/auth.service";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
-import EditProfileModal from "@/components/EditProfileModal";
+import {getRecommendations} from "@/services/dish.service";
 
 export const RecommendItemCard = ({rec}: { rec: any }) => {
     return (
@@ -42,27 +43,6 @@ export const RecommendItemCard = ({rec}: { rec: any }) => {
                 </div>
             </CardContent>
         </Card>
-    )
-}
-
-export const TrendingNearYouCard = ({item}: { item: any }) => {
-    return (
-        <div key={item.id} className="flex items-center space-x-3 group cursor-pointer">
-            <Image
-                src={item.image}
-                alt={item.name}
-                width={64}
-                height={64}
-                className="w-12 h-12 rounded-lg object-cover group-hover:scale-105 transition-transform"
-            />
-            <div className="flex-1">
-                <h4 className="font-medium text-gray-900 group-hover:text-orange-600 transition-colors">
-                    {item.name}
-                </h4>
-                <p className="text-sm text-gray-600">{item.restaurant}</p>
-                <p className="text-xs text-green-600 font-medium">{item.trending}</p>
-            </div>
-        </div>
     )
 }
 
@@ -102,4 +82,9 @@ export const UserStatsCard = async () => {
             </CardContent>
         </Card>
     )
+}
+
+export const RecommendationList = async () => {
+    const recommendations = await getRecommendations();
+    return recommendations.map((rec: any) => <RecommendItemCard rec={rec} key={rec.id}/>)
 }
