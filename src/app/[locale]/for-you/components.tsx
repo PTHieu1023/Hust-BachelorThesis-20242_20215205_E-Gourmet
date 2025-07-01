@@ -55,8 +55,8 @@ export const UserStatsCard = async () => {
             <CardHeader className={"flex items-center space-x-4 justify-center"}>
                 <h3 className="font-semibold text-gray-900 mb-2 text-xl">{t("title")}</h3>
                 <Avatar className="size-32">
-                    <AvatarImage src={profile.avatar} alt={profile.name}/>
-                    <AvatarFallback>{profile.name}</AvatarFallback>
+                    <AvatarImage src={profile.avatarUrl} alt={profile.username}/>
+                    <AvatarFallback>{profile.displayName}</AvatarFallback>
                 </Avatar>
             </CardHeader>
             <CardContent className="p-6 text-center text-sm space-y-4">
@@ -64,19 +64,19 @@ export const UserStatsCard = async () => {
                     <div className="flex justify-between">
                         <span>{t("fav-cuisine")}:</span>
                         <span className="font-medium">
-                                {profile.favCuisines.map(cuisine => cuisine.name).join(", ")}
+                                {profile.favCuisines?.map(cuisine => cuisine.name).join(", ")}
                             </span>
                     </div>
                     <div className="flex justify-between">
                         <span>{t("avg-rating")}:</span>
                         <span className="font-medium flex items-center gap-2">
-                            <span>{profile.avgRating}</span>
+                            <span>{profile.averageRating}</span>
                             <Star className="w-4 h-4 text-yellow-400 fill-yellow-400"/>
                         </span>
                     </div>
                     <div className="flex justify-between">
                         <span>{t("total-review")}:</span>
-                        <span className="font-medium">{profile.totalReviews}</span>
+                        <span className="font-medium">{profile.reviewCount}</span>
                     </div>
                 </div>
             </CardContent>

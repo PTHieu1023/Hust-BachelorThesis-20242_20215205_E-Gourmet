@@ -4,11 +4,10 @@ import {Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
-import {Textarea} from "@/components/ui/textarea";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {Badge} from "@/components/ui/badge";
-import {Camera, MapPin, X, Plus, Edit} from "lucide-react";
+import {Camera, X, Plus, Edit} from "lucide-react";
 import {toast} from "sonner";
 import {Cuisine} from "@/services/cuisine.service";
 import {UserInfo} from "@/services/auth.service";
@@ -25,26 +24,26 @@ const EditProfileModal = ({userProfile, cuisines}: EditProfileModalProps) => {
 
     const [formData, setFormData] = useState<UserInfo>(userProfile);
 
-    const [newPreference, setNewPreference] = useState("");
+    const [newPreference, setNewPreference] = useState<string>("");
 
     const handleInputChange = (field: string, value: string) => {
         setFormData(prev => ({...prev, [field]: value}));
     };
 
     const handleAddPreference = () => {
-        if (newPreference && !formData.favCuisines.map(cuisine => cuisine.urlName).includes(newPreference)) {
+        if (newPreference && !formData.favCuisines?.map(cuisine => `${cuisine.id}`).includes(newPreference)) {
             setFormData(prev => ({
                 ...prev,
-                preferences: [...prev.favCuisines, newPreference]
+                favCuisines: [...(prev.favCuisines ?? []), newPreference]
             }));
             setNewPreference("");
         }
     };
 
-    const handleRemovePreference = (preference: string) => {
+    const handleRemovePreference = (preference: number) => {
         setFormData(prev => ({
             ...prev,
-            preferences: prev.favCuisines.filter(p => p.urlName !== preference)
+            preferences: prev.favCuisines?.filter(p => p.id !== preference)
         }));
     };
 
@@ -55,7 +54,7 @@ const EditProfileModal = ({userProfile, cuisines}: EditProfileModalProps) => {
 
     const handleAvatarChange = () => {
         const mockAvatarUrl = `https://images.unsplash.com/photo-${Date.now()}?w=400`;
-        setFormData(prev => ({...prev, avatar: mockAvatarUrl}));
+        setFormData(prev => ({...prev, imageUrl: mockAvatarUrl}));
     };
 
     const handleSave = () => {
@@ -83,8 +82,8 @@ const EditProfileModal = ({userProfile, cuisines}: EditProfileModalProps) => {
                         {/* Avatar Section */}
                         <div className="flex items-center space-x-4">
                             <Avatar className="w-20 h-20">
-                                <AvatarImage src={formData.avatar} alt={formData.name}/>
-                                <AvatarFallback>{formData.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                                <AvatarImage src={formData.avatarUrl ?? "/logo.svg"} alt={formData.username}/>
+                                <AvatarFallback>{formData.username}</AvatarFallback>
                             </Avatar>
                             <div>
                                 <Button onClick={handleAvatarChange} variant="outline" size="sm">
@@ -101,14 +100,14 @@ const EditProfileModal = ({userProfile, cuisines}: EditProfileModalProps) => {
                                 <Label htmlFor="name">Full Name</Label>
                                 <Input
                                     id="name"
-                                    value={formData.name}
+                                    value={formData.displayName}
                                     onChange={(e) => handleInputChange("name", e.target.value)}
                                     placeholder="Enter your full name"
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="email">Email Address</Label>
+                                <Label htmlFor="email">Email</Label>
                                 <Input
                                     id="email"
                                     type="email"
@@ -120,28 +119,13 @@ const EditProfileModal = ({userProfile, cuisines}: EditProfileModalProps) => {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="location">Location</Label>
-                            <div className="relative">
-                                <MapPin
-                                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4"/>
-                                <Input
-                                    id="location"
-                                    value={formData.address}
-                                    onChange={(e) => handleInputChange("location", e.target.value)}
-                                    placeholder="City, State"
-                                    className="pl-10"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <Label htmlFor="bio">Bio</Label>
-                            <Textarea
-                                id="bio"
-                                value={formData.bio}
-                                onChange={(e) => handleInputChange("bio", e.target.value)}
-                                placeholder="Tell us about yourself and your food preferences..."
-                                rows={3}
+                            <Label htmlFor="bio">Budget</Label>
+                            <Input
+                                id="budget"
+                                type="number"
+                                value={formData.budget}
+                                onChange={(e) => handleInputChange("budget", e.target.value)}
+                                placeholder="Enter your budget"
                             />
                         </div>
 
