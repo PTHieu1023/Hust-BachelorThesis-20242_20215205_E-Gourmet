@@ -34,7 +34,7 @@ const EditProfileModal = ({userProfile, cuisines}: EditProfileModalProps) => {
         if (newPreference && !formData.favCuisines?.map(cuisine => `${cuisine.id}`).includes(newPreference)) {
             setFormData(prev => ({
                 ...prev,
-                favCuisines: [...(prev.favCuisines ?? []), newPreference]
+                favCuisines: [...(prev.favCuisines ?? []), cuisines.filter(c => c.id === parseInt(newPreference))[0]],
             }));
             setNewPreference("");
         }
@@ -43,7 +43,7 @@ const EditProfileModal = ({userProfile, cuisines}: EditProfileModalProps) => {
     const handleRemovePreference = (preference: number) => {
         setFormData(prev => ({
             ...prev,
-            preferences: prev.favCuisines?.filter(p => p.id !== preference)
+            favCuisines: prev.favCuisines?.filter(p => p.id !== preference)
         }));
     };
 
@@ -138,12 +138,9 @@ const EditProfileModal = ({userProfile, cuisines}: EditProfileModalProps) => {
                                     </SelectTrigger>
                                     <SelectContent>
                                         {cuisines
-                                            .filter(cuisine => !formData.favCuisines
-                                                .map(cuisine => cuisine.urlName)
-                                                .includes(cuisine.urlName))
-                                            .map(
-                                                (cuisine) => (
-                                                    <SelectItem key={cuisine.id} value={cuisine.urlName}>
+                                            .filter(cuisine => !formData.favCuisines?.map(c => c.id).includes(cuisine.id))
+                                            .map((cuisine) => (
+                                                    <SelectItem key={cuisine.id} value={`${cuisine.id}`}>
                                                         {cuisine.name}
                                                     </SelectItem>
                                                 )
@@ -155,14 +152,14 @@ const EditProfileModal = ({userProfile, cuisines}: EditProfileModalProps) => {
                                     <Plus className="w-4 h-4"/>
                                 </Button>
                             </div>
-                            {formData.favCuisines.length > 0 && (
+                            {formData.favCuisines && formData.favCuisines.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mt-2">
-                                    {formData.favCuisines.map((preference) => (
-                                        <Badge key={preference.urlName} variant="outline"
+                                    {formData.favCuisines?.map((preference) => (
+                                        <Badge key={preference.id} variant="outline"
                                                className="flex items-center space-x-1">
                                             <span>{preference.name}</span>
                                             <button
-                                                onClick={() => handleRemovePreference(preference.urlName)}
+                                                onClick={() => handleRemovePreference(preference.id)}
                                                 className="ml-1 hover:text-red-500"
                                             >
                                                 <X className="w-3 h-3"/>

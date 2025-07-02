@@ -52,8 +52,8 @@ export const UserProfileCard = async () => {
                     className="flex flex-col md:flex-row items-start md:items-center space-y-6 md:space-y-0 md:space-x-6">
                     <div className="flex flex-col space-y-4 items-center justify-center mb-4">
                         <Avatar className="w-32 h-32">
-                            <AvatarImage src={profile.avatar} alt={profile.name}/>
-                            <AvatarFallback>{profile.name}</AvatarFallback>
+                            <AvatarImage src={profile.avatarUrl} alt={profile.username}/>
+                            <AvatarFallback>{profile.username}</AvatarFallback>
                         </Avatar>
                         <EditProfileModal
                             userProfile={profile}
@@ -62,16 +62,10 @@ export const UserProfileCard = async () => {
                     </div>
 
                     <div className="flex-1">
-                        <h1 className="text-3xl font-bold text-gray-900 mb-2">{profile.name}</h1>
-                        <p className="text-gray-600 mb-3">{profile.bio}</p>
-
-                        <div className="flex items-center space-x-4 text-sm text-gray-600 mb-4">
-                            <MapPin className="w-4 h-4"/>
-                            <span>{profile.address}</span>
-                        </div>
+                        <h1 className="text-3xl font-bold text-gray-900 mb-2">{profile.displayName}</h1>
 
                         <div className="space-y-2 mb-4">
-                            {profile.favCuisines.length > 0 && (
+                            {profile.favCuisines && profile.favCuisines.length > 0 && (
                                 <div className="flex items-center space-x-2">
                                     <span className="text-sm text-gray-600">Loves:</span>
                                     <div className="flex flex-wrap gap-1">
@@ -87,22 +81,12 @@ export const UserProfileCard = async () => {
 
                         <div className="grid grid-cols-4 gap-4 max-w-md">
                             <div className="text-center">
-                                <div className="text-2xl font-bold text-gray-900">{profile.reviews}</div>
+                                <div className="text-2xl font-bold text-gray-900">{profile.reviewCount}</div>
                                 <div className="text-sm text-gray-600">Reviews</div>
                             </div>
                             <div className="text-center">
-                                <div
-                                    className="text-2xl font-bold text-gray-900">{profile.followers}</div>
-                                <div className="text-sm text-gray-600">Followers</div>
-                            </div>
-                            <div className="text-center">
-                                <div className="text-2xl font-bold text-gray-900">{profile.following}</div>
-                                <div className="text-sm text-gray-600">Following</div>
-                            </div>
-                            <div className="text-center">
-                                <div
-                                    className="text-2xl font-bold text-gray-900">{profile.likes}</div>
-                                <div className="text-sm text-gray-600">Likes</div>
+                                <div className="text-2xl font-bold text-gray-900">{profile.averageRating}</div>
+                                <div className="text-sm text-gray-600">Average rating</div>
                             </div>
                         </div>
                     </div>

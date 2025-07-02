@@ -1,6 +1,6 @@
 "use server"
 
-import httpClient from "@/configs/http.config";
+import httpClient, {getUrl} from "@/configs/http.config";
 import {Cuisine} from "@/services/cuisine.service";
 
 export const refreshToken = async (refreshToken: string) => {
@@ -42,6 +42,6 @@ export interface UserInfo{
 }
 
 export const getCurrentUserInfo = async (): Promise<UserInfo> => {
-    const response = await httpClient.get("/api/v1/user/me");
+    const response = await httpClient.get(getUrl("/api/user/me"));
     return response.data as UserInfo;
 }

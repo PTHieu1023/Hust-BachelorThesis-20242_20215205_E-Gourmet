@@ -1,6 +1,6 @@
 "use server"
 
-import httpClient from "@/configs/http.config";
+import httpClient, {getUrl} from "@/configs/http.config";
 
 export interface Cuisine{
     id: number;
@@ -10,7 +10,7 @@ export interface Cuisine{
 
 
 export const getCuisines = async (): Promise<Cuisine[]> => {
-    const response =await httpClient.get("/api/v1/cuisine");
+    const response =await httpClient.get(getUrl("/api/cuisine"));
     if (!response.data) {
         throw new Error("Failed to fetch cuisines");
     }

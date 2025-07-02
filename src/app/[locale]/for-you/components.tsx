@@ -55,7 +55,7 @@ export const UserStatsCard = async () => {
             <CardHeader className={"flex items-center space-x-4 justify-center"}>
                 <h3 className="font-semibold text-gray-900 mb-2 text-xl">{t("title")}</h3>
                 <Avatar className="size-32">
-                    <AvatarImage src={profile.avatarUrl} alt={profile.username}/>
+                    <AvatarImage src={profile.avatarUrl ?? "/logo.svg"} alt={profile.username}/>
                     <AvatarFallback>{profile.displayName}</AvatarFallback>
                 </Avatar>
             </CardHeader>
@@ -64,8 +64,9 @@ export const UserStatsCard = async () => {
                     <div className="flex justify-between">
                         <span>{t("fav-cuisine")}:</span>
                         <span className="font-medium">
-                                {profile.favCuisines?.map(cuisine => cuisine.name).join(", ")}
-                            </span>
+                            {profile.favCuisines?.splice(0, 1).map(cuisine => cuisine.name).join(', ')}
+                            {profile.favCuisines?.length && profile.favCuisines?.length  - 1 > 0 && `...+${profile.favCuisines?.length - 1} more`}
+                        </span>
                     </div>
                     <div className="flex justify-between">
                         <span>{t("avg-rating")}:</span>

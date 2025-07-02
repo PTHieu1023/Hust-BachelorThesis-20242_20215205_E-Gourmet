@@ -2,7 +2,6 @@ import axios from "axios";
 import { getAuthSession } from "@/configs/auth.config";
 
 const httpClient = axios.create({
-    baseURL: process.env.SERVICES_API_URL,
     withCredentials: true,
 });
 
@@ -20,5 +19,8 @@ httpClient.interceptors.request.use(
     (error: Error) => Promise.reject(error)
 );
 
-export default httpClient;
+export function getUrl(path: string): string {
+    return `${process.env.SERVICES_API_URL}${path}`;
+}
 
+export default httpClient;

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
@@ -7,7 +8,6 @@ import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/c
 import * as React from "react";
 import {ChangeEventHandler, useEffect, useState} from "react";
 import {useTranslations} from "next-intl";
-import {Slider} from "@/components/ui/slider";
 import {cn} from "@/lib/utils";
 import {useRouter, useSearchParams} from "next/navigation";
 import Image from "next/image";
@@ -25,16 +25,10 @@ interface FilterProps {
 }
 
 export const DiscoveryFilter = () => {
-    const max = 9999999;
     const [cuisines, setCuisines] = useState<Cuisine[]>([]);
     useEffect(() => {
-        const fetchCuisines = async () => {
-            setCuisines(await getCuisines());
-        };
-
-        fetchCuisines().then();
+        getCuisines().then(fetchCuisines => setCuisines(fetchCuisines));
     }, []);
-
 
     const t = useTranslations("discovery.filter");
     const router = useRouter();
@@ -47,30 +41,14 @@ export const DiscoveryFilter = () => {
     const [filters, setFilters] = useState<FilterProps>({
         search: initialSearch,
         cuisine: initialCuisine,
-        maxPrice: max
     });
 
-    // Debounce filter changes
-    const [debouncedFilters, setDebouncedFilters] = useState(filters);
-    React.useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedFilters(filters);
-        }, 400);
-        return () => clearTimeout(handler);
-    }, [filters]);
-
-    // Update URL query params when debounced filters change
-    React.useEffect(() => {
-        const params = new URLSearchParams();
-        if (debouncedFilters.search) params.set("search", debouncedFilters.search);
-        if (debouncedFilters.cuisine !== undefined) params.set("cuisine", String(debouncedFilters.cuisine));
-        if (debouncedFilters.priceRange) {
-            params.set("minPrice", String(debouncedFilters.priceRange[0]));
-            params.set("maxPrice", String(debouncedFilters.priceRange[1]));
-        }
-        router.replace(`?${params.toString()}`);
-    }, [debouncedFilters, router]);
-
+    const onClickSearch = () => {
+        const params: Record<string, any> = {};
+        if (filters.search) params.search = filters.search;
+        if (filters.cuisine && filters.cuisine !== "all") params.cuisine = filters.cuisine;
+        router.replace(`/discovery?${new URLSearchParams(params).toString()}`);
+    }
 
     return (
         <Card className="border-gray-100 mb-6">
@@ -91,11 +69,13 @@ export const DiscoveryFilter = () => {
                         selected={filters.cuisine}
                         onValueChange={(value) => setFilters({...filters, cuisine: value || "all"})}
                     />
-                    <PriceRangeFilter
-                        priceRange={filters.priceRange}
-                        max={max}
-                        step={5000}
-                        onValueChange={value => setFilters({...filters, priceRange: value})}/>
+                    <Button
+                        className={"bg-orange-500 hover:bg-orange-600 rounded-xl"}
+                        onClick={onClickSearch}
+                    >
+                        <Search className="w-4 h-4"/>
+                        {t("search")}
+                    </Button>
                 </div>
             </CardContent>
         </Card>
@@ -139,36 +119,10 @@ function CuisineFilter({cuisines, selected, onValueChange, className}: Readonly<
                 </SelectTrigger>
                 <SelectContent>
                     {cuisines.map((cuisine) => (
-                        <SelectItem key={cuisine.id} value={cuisine.urlName}>{cuisine.name}</SelectItem>
+                        <SelectItem key={cuisine.id} value={`${cuisine.id}`}>{cuisine.name}</SelectItem>
                     ))}
                 </SelectContent>
             </Select>
-        </div>
-    );
-}
-
-interface PriceRangeFilterProps {
-    className?: string;
-    max: number;
-    priceRange?: [number, number];
-    step?: number;
-    onValueChange?: (value: [number, number]) => void;
-}
-
-const PriceRangeFilter = (
-    {className, max, priceRange, onValueChange, step = 1}: PriceRangeFilterProps) => {
-    const t = useTranslations("discovery.filter");
-
-    return (
-        <div className={cn("w-full justify-center items-center", className)}>
-            <div className="w-full flex items-center justify-between gap-2">
-                <span className="text-sm text-muted-foreground">0</span>
-                <Slider value={priceRange || [0, max]} onValueChange={onValueChange} max={max} step={step}/>
-                <span className="text-sm text-muted-foreground">{max}</span>
-            </div>
-            <p className="mt-2 text-center text-sm text-muted-foreground">
-                {t("price-range")}: {priceRange ? priceRange[0] : 0} - {priceRange ? priceRange[1] : max}
-            </p>
         </div>
     );
 }
@@ -179,19 +133,19 @@ export const FoodCard = ({dish}:{dish: ShortDishProps}) => {
             <Card className="border-gray-100 hover:shadow-lg transition-shadow cursor-pointer">
                 <div className="relative">
                     <Image
-                        src={dish.image}
+                        src={dish.images?.[0] ?? "/logo.svg"}
                         alt={dish.name}
                         className="w-full h-48 object-cover rounded-t-lg"
                         width={32} height={32}
                     />
-                    <Badge className="absolute top-2 right-2 bg-white text-gray-800">
-                        {dish.price}
-                    </Badge>
                 </div>
 
                 <CardContent className="p-4">
-                    <h3 className="font-semibold text-lg mb-1">{dish.name}</h3>
-                    <p className="text-sm text-gray-600 mb-2 line-clamp-2">{dish.description}</p>
+                    <span className={"flex items-center justify-between"}>
+                        <h3 className="font-semibold text-lg mb-1">{dish.name}</h3>
+                        <Badge variant="outline">{dish.cuisine}</Badge>
+                    </span>
+                    <h4>{dish.price}</h4>
 
                     <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center space-x-1">
@@ -200,18 +154,8 @@ export const FoodCard = ({dish}:{dish: ShortDishProps}) => {
                         </div>
                         <div className="flex items-center space-x-1">
                             <Star className="w-4 h-4 text-yellow-400 fill-yellow-400"/>
-                            <span className="text-sm font-medium">{dish.rating}</span>
+                            <span className="text-sm font-medium">{dish.rating.toFixed(1)}</span>
                         </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                        <Badge variant="outline">{dish.cuisine}</Badge>
-                        <Button
-                            size="sm"
-                            className="bg-orange-500 hover:bg-orange-600"
-                        >
-                            View Details
-                        </Button>
                     </div>
                 </CardContent>
             </Card>
