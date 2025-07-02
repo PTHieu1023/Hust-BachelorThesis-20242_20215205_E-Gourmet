@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
+    getRestaurantByUsername,
     getRestaurantMenuHighlights,
     getRestaurantProfile,
     getRestaurantRecentReviews
@@ -11,92 +11,123 @@ import {Clock, Globe, Heart, MapPin, Phone, Star} from "lucide-react";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {RatingStar} from "@/components/ui/rating-star";
 
-export const RestaurantInfo = async ({t}: any) => {
-    const restaurant = await getRestaurantProfile();
+interface RestaurantInfoProps {
+    t: (key: string) => string;
+    username: string;
+}
+
+interface MenuHighlightsProps {
+    t: (key: string) => string;
+    username: string;
+}
+
+interface RecentReviewsProps {
+    t: (key: string) => string;
+    username: string;
+}
+
+export const RestaurantInfo = async ({t, username}: RestaurantInfoProps) => {
+    // Get restaurant by username and then get the profile using the ID
+    const restaurant = await getRestaurantByUsername(username);
+    const restaurantProfile = await getRestaurantProfile(restaurant.id);
+    
+    // Provide default values for missing properties
+    const displayData = {
+        ...restaurantProfile,
+        coverImage: restaurant.avatarUrl ?? 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=1980',
+        hours: '9:00 AM - 10:00 PM',
+        website: 'www.restaurant.com',
+        followers: 1250,
+        posts: restaurantProfile.postCount ?? 0
+    };
     return (
         <Card className="border-gray-100 mb-6">
-            <CardTitle>
+            <CardContent className="p-0">
                 <div className="relative h-64 md:h-80 rounded-xl overflow-hidden mb-6">
-                    <Image src={restaurant.coverImage} alt={restaurant.name} width={1980} height={720}
-                           className="w-full h-full object-cover"/>
+                    <Image 
+                        src={displayData.coverImage} 
+                        alt={displayData.name} 
+                        width={1980} 
+                        height={720}
+                        className="w-full h-full object-cover"
+                    />
                     <div className="absolute bottom-6 left-6 text-white">
-                        <h1 className="text-3xl md:text-4xl font-bold mb-2">{restaurant.name}</h1>
-                        <Button className="w-full bg-orange-500 hover:bg-orange-600">
+                        <h1 className="text-3xl md:text-4xl font-bold mb-2">{displayData.name}</h1>
+                        <Button className="bg-orange-500 hover:bg-orange-600">
                             <Heart className="w-4 h-4 mr-2"/>
                             {t('details.follow')}
                         </Button>
                     </div>
                 </div>
-            </CardTitle>
-            <CardContent className="p-6">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                            <div className="flex items-center space-x-2">
-                                <MapPin className="w-4 h-4 text-gray-500"/>
-                                <span>{restaurant.address}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Phone className="w-4 h-4 text-gray-500"/>
-                                <span>{restaurant.phone}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Clock className="w-4 h-4 text-gray-500"/>
-                                <span>{restaurant.hours}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Globe className="w-4 h-4 text-gray-500"/>
-                                <span>{restaurant.website}</span>
-                            </div>
+                
+                <div className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                            <RatingStar rating={displayData.averageRating} />
+                            <span className="text-sm text-gray-600">
+                                {displayData.averageRating} ({displayData.reviewCount} {t('common.reviews')})
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                            <span>{displayData.followers} {t('common.followers')}</span>
+                            <span>{displayData.posts} {t('common.posts')}</span>
                         </div>
                     </div>
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4 text-center">
-                            <div>
-                                <div
-                                    className="text-2xl font-bold text-gray-900">{restaurant.followers.toLocaleString()}</div>
-                                <div className="text-sm text-gray-600">{t('details.followers')}</div>
-                            </div>
-                            <div>
-                                <div className="text-2xl font-bold text-gray-900">{restaurant.posts}</div>
-                                <div className="text-sm text-gray-600">{t('details.posts')}</div>
-                            </div>
+                    
+                    <p className="text-gray-700 mb-4">{displayData.description}</p>
+                    
+                    <div className="grid md:grid-cols-2 gap-4 text-sm">
+                        <div className="flex items-center gap-2">
+                            <MapPin className="w-4 h-4 text-gray-500"/>
+                            <span>{displayData.address}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Phone className="w-4 h-4 text-gray-500"/>
+                            <span>{displayData.phone}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Clock className="w-4 h-4 text-gray-500"/>
+                            <span>{displayData.hours}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Globe className="w-4 h-4 text-gray-500"/>
+                            <span>{displayData.website}</span>
                         </div>
                     </div>
                 </div>
             </CardContent>
         </Card>
     );
-}
-export const MenuTab = async ({t}: any) => {
-    const menuHighlights = await getRestaurantMenuHighlights();
+};
+
+export const MenuHighlights = async ({t, username}: MenuHighlightsProps) => {
+    const restaurant = await getRestaurantByUsername(username);
+    const highlights = await getRestaurantMenuHighlights(restaurant.id);
+
     return (
         <Card className="border-gray-100">
             <CardHeader>
-                <CardTitle>{t('menu.highlights')}</CardTitle>
+                <CardTitle className="text-xl font-semibold">{t('menu.highlights')}</CardTitle>
             </CardHeader>
             <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {menuHighlights.map((item: any) => (
-                        <div key={item.id} className="group cursor-pointer">
-                            <div className="relative aspect-square rounded-lg overflow-hidden mb-3">
-                                <Image
-                                    src={item.image}
-                                    alt={item.name}
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {highlights.map((dish) => (
+                        <div key={dish.id} className="group cursor-pointer">
+                            <div className="aspect-square relative mb-3 rounded-lg overflow-hidden">
+                                <Image 
+                                    src={dish.images?.[0] ?? '/placeholder-dish.jpg'} 
+                                    alt={dish.name}
+                                    width={300}
+                                    height={300}
                                     className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                                    width={1920}
-                                    height={1920}
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="font-semibold text-gray-900">{item.name}</h3>
-                                    <span className="font-bold text-orange-600">{item.price}</span>
-                                </div>
-                                <p className="text-sm text-gray-600">{item.description}</p>
-                                <div className="flex items-center space-x-1">
-                                    <Star className="w-4 h-4 text-yellow-400 fill-yellow-400"/>
-                                    <span className="text-sm font-medium">{item.rating}</span>
+                            <h3 className="font-medium mb-1">{dish.name}</h3>
+                            <div className="flex items-center justify-between">
+                                <span className="text-orange-600 font-semibold">${dish.price}</span>
+                                <div className="flex items-center gap-1">
+                                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400"/>
+                                    <span className="text-sm text-gray-600">{dish.rating}</span>
                                 </div>
                             </div>
                         </div>
@@ -104,9 +135,51 @@ export const MenuTab = async ({t}: any) => {
                 </div>
             </CardContent>
         </Card>
-    )
-}
-export const PostTab = async ({t}: any) => {
+    );
+};
+
+export const RecentReviews = async ({t, username}: RecentReviewsProps) => {
+    const restaurant = await getRestaurantByUsername(username);
+    const reviews = await getRestaurantRecentReviews(restaurant.id);
+
+    return (
+        <Card className="border-gray-100">
+            <CardHeader>
+                <CardTitle className="text-xl font-semibold">{t('reviews.recent')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-6">
+                    {reviews.map((review) => (
+                        <div key={review.id} className="border-b border-gray-100 last:border-0 pb-6 last:pb-0">
+                            <div className="flex items-start gap-4">
+                                <Avatar className="w-10 h-10">
+                                    <AvatarImage src={review.avatarUrl ?? undefined} />
+                                    <AvatarFallback>{review.displayName[0]}</AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <div>
+                                            <h4 className="font-medium">{review.displayName}</h4>
+                                            <div className="flex items-center gap-1">
+                                                <RatingStar rating={review.rating} />
+                                            </div>
+                                        </div>
+                                        <span className="text-sm text-gray-500">
+                                            {new Date(review.createdAt).toLocaleDateString()}
+                                        </span>
+                                    </div>
+                                    <p className="text-gray-700">{review.comment}</p>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+        </Card>
+    );
+};
+
+export const PostTab = async ({t}: {t: (key: string) => string}) => {
     return (
         <Card className="border-gray-100">
             <CardContent className="p-12 text-center">
@@ -117,37 +190,5 @@ export const PostTab = async ({t}: any) => {
                 <p className="text-gray-600">{t('posts.coming-soon-desc')}</p>
             </CardContent>
         </Card>
-    )
-}
-export const ReviewTab = async ({t}: any) => {
-    const recentReviews = await getRestaurantRecentReviews();
-    return (
-        <div className="space-y-6">
-            {recentReviews.map((review: any) => (
-                <Card key={review.id} className="border-gray-100">
-                    <CardContent className="p-6">
-                        <div className="flex items-start space-x-4">
-                            <Avatar className="w-12 h-12">
-                                <AvatarImage src={review.avatar} alt={review.author}/>
-                                <AvatarFallback>{review.author.slice(0, 2).toUpperCase()}</AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1">
-                                <div className="flex items-center justify-between mb-2">
-                                    <h4 className="font-semibold text-gray-900">{review.author}</h4>
-                                    <div className="flex items-center space-x-1">
-                                        <RatingStar rating={review.rating}/>
-                                    </div>
-                                </div>
-                                <p className="text-gray-700 mb-2">{review.review}</p>
-                                <div className="flex items-center justify-between text-sm text-gray-500">
-                                    <span>{t('reviews.ordered', {default: 'Ordered'})}: {review.dish}</span>
-                                    <span>{review.date}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            ))}
-        </div>
-    )
-}
+    );
+};

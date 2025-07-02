@@ -145,13 +145,13 @@ const ReviewCard = ({review}: { review: Review }) => {
     return (<Card key={review.id} className="border-gray-100">
             <CardContent className="p-6">
                 <div>
-                    <h3 className="font-semibold text-gray-900">{review.dish.restaurant.name}</h3>
-                    <p className="text-sm text-gray-600">{review.dish.name}</p>
+                    <h3 className="font-semibold text-gray-900">{review.dish?.restaurant?.name}</h3>
+                    <p className="text-sm text-gray-600">{review.dish?.name}</p>
                 </div>
                 <RatingStar rating={review.rating} />
 
                 <p className="text-gray-700 mb-4">{review.review}</p>
-                <span>{review.createdAt.toLocaleDateString()}</span>
+                {/*<span>{review?.createdAt?.toLocaleDateString()}</span>*/}
             </CardContent>
         </Card>
     )

@@ -76,7 +76,33 @@
     },
     "reviews": {
       "ordered": "Ordered",
-      "write-review": "Write a Review"
+      "write-review": "Write a Review",
+      "modal": {
+        "title": "Write a Review",
+        "at": "at",
+        "rating-label": "Your Rating *",
+        "review-label": "Your Review *",
+        "placeholder": "Share your experience with this dish. What did you like or dislike about it?",
+        "characters": "characters",
+        "ratings": {
+          "poor": "Poor",
+          "fair": "Fair",
+          "good": "Good",
+          "very-good": "Very Good",
+          "excellent": "Excellent"
+        },
+        "buttons": {
+          "cancel": "Cancel",
+          "submit": "Submit Review",
+          "submitting": "Submitting"
+        },
+        "errors": {
+          "rating-required": "Please select a rating before submitting your review.",
+          "content-required": "Your review must be at least 10 characters long.",
+          "submit-failed": "Failed to submit review. Please try again later."
+        },
+        "success": "Review submitted successfully!"
+      }
     },
     "register": {
       "title": "Register Your Restaurant",
@@ -195,6 +221,11 @@
       "discovery": "Discovery",
       "restaurant": "Restaurant"
     }
+  },
+  "post": {
+    "media-alt": "Post media",
+    "likes": "likes",
+    "comments": "comments"
   },
   "common": {
     "error": {

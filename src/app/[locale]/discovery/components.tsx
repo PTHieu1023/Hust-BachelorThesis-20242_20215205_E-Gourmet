@@ -128,12 +128,14 @@ function CuisineFilter({cuisines, selected, onValueChange, className}: Readonly<
 }
 
 export const FoodCard = ({dish}:{dish: ShortDishProps}) => {
+    console.log(dish)
     return (
         <Link key={dish.id} href={`/restaurant/1/${dish.id}`}>
             <Card className="border-gray-100 hover:shadow-lg transition-shadow cursor-pointer">
                 <div className="relative">
                     <Image
-                        src={dish.images?.[0] ?? "/logo.svg"}
+                        // src={dish.images?.[0] ?? "/logo.svg"}
+                        src={"/logo.svg"}
                         alt={dish.name}
                         className="w-full h-48 object-cover rounded-t-lg"
                         width={32} height={32}

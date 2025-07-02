@@ -76,7 +76,33 @@
     },
     "reviews": {
       "ordered": "Đã đặt",
-      "write-review": "Viết đánh giá"
+      "write-review": "Viết đánh giá",
+      "modal": {
+        "title": "Viết đánh giá",
+        "at": "tại",
+        "rating-label": "Đánh giá của bạn *",
+        "review-label": "Nhận xét của bạn *",
+        "placeholder": "Chia sẻ trải nghiệm của bạn với món ăn này. Bạn thích hoặc không thích điều gì về nó?",
+        "characters": "ký tự",
+        "ratings": {
+          "poor": "Tệ",
+          "fair": "Tạm được",
+          "good": "Tốt",
+          "very-good": "Rất tốt",
+          "excellent": "Xuất sắc"
+        },
+        "buttons": {
+          "cancel": "Hủy",
+          "submit": "Gửi đánh giá",
+          "submitting": "Đang gửi"
+        },
+        "errors": {
+          "rating-required": "Vui lòng chọn đánh giá trước khi gửi nhận xét.",
+          "content-required": "Nhận xét của bạn phải có ít nhất 10 ký tự.",
+          "submit-failed": "Không thể gửi đánh giá. Vui lòng thử lại sau."
+        },
+        "success": "Đánh giá đã được gửi thành công!"
+      }
     },
     "register": {
       "title": "Đăng ký nhà hàng",
@@ -192,9 +218,14 @@
       "restaurant": "Nhà hàng"
     }
   },
+  "post": {
+    "media-alt": "Hình ảnh bài viết",
+    "likes": "lượt thích",
+    "comments": "bình luận"
+  },
   "common": {
     "error": {
-      "not-found": "Không tìm thấy",
+      "not-found": "Không tìm thấy trang",
       "server-error": "Lỗi máy chủ, vui lòng thử lại sau",
       "unauthorized": "Truy cập không được phép"
     },

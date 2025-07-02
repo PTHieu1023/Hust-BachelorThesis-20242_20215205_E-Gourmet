@@ -5,12 +5,14 @@ import {Card, CardContent, CardHeader} from "@/components/ui/card";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {Heart, MessageCircle} from "lucide-react";
 import {Link} from "@/i18n/navigation";
+import {useTranslations} from "next-intl";
 import Image from "next/image";
 import {Post} from "@/services/post.service";
 
 const PostCard = ({post}: { post: Post }) => {
     const [isLiked, setIsLiked] = useState(false);
-    const [likes, setLikes] = useState(post.engagement.likes);
+    const [likes, setLikes] = useState(post.likeCount);
+    const t = useTranslations('post');
 
     const handleLike = () => {
         setIsLiked(!isLiked);
@@ -21,24 +23,24 @@ const PostCard = ({post}: { post: Post }) => {
         <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 border-gray-100">
             <CardHeader className="pb-3">
                 <div className="flex items-center space-x-3">
-                    <Link href={`/restaurant/${post.author.restaurantId}`}>
+                    <Link href={`/restaurant/${post.restaurantId}`}>
                         <Avatar
                             className="w-12 h-12 cursor-pointer hover:ring-2 hover:ring-orange-200 transition-all">
-                            <AvatarImage src={post.author.avatar} alt={post.author.name}/>
-                            <AvatarFallback>{post.author.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+                            <AvatarImage src={post.restaurantAvatar} alt={post.restaurantName}/>
+                            <AvatarFallback>{post.restaurantName.slice(0, 2).toUpperCase()}</AvatarFallback>
                         </Avatar>
                     </Link>
 
                     <div>
                         <div className="flex items-center space-x-2">
-                            <Link href={`/restaurant/${post.author.restaurantId}`}>
+                            <Link href={`/restaurant/${post.restaurantId}`}>
                                 <h3 className="font-semibold text-gray-900 hover:text-orange-600 transition-colors cursor-pointer">
-                                    {post.author.name}
+                                    {post.restaurantName}
                                 </h3>
                             </Link>
                         </div>
                         <div className="flex items-center space-x-2 text-sm text-gray-500">
-                            <span>{post.timestamp}</span>
+                            <span>{new Date(post.createdAt).toLocaleDateString()}</span>
                         </div>
                     </div>
                 </div>
@@ -46,46 +48,32 @@ const PostCard = ({post}: { post: Post }) => {
 
             <CardContent className="space-y-4">
                 <div>
-                    <h4 className="text-lg font-semibold text-gray-900">{post.content.title}</h4>
-                    <p className="text-gray-700 leading-relaxed">{post.content.description}</p>
+                    <h4 className="text-lg font-semibold text-gray-900">{post.caption}</h4>
+                    {post.media && post.media.length > 0 && (
+                        <div className="grid grid-cols-2 gap-2">
+                            {post.media.map((image) => (
+                                <Image
+                                    key={image}
+                                    src={image}
+                                    alt={t('media-alt')}
+                                    width={300}
+                                    height={300}
+                                    className="rounded-lg object-cover"
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
 
-                {/* Images */}
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {post.content?.images
-                        .map((image, index) =>
-                            <Image
-                                className={"w-full h-60 md:h-80 lg:h-100  rounded-lg"}
-                                key={"post-image-" + index}
-                                src={image}
-                                alt={image}
-                                width={1920}
-                                height={1920}
-                            />
-                        )
-                    }
-                </div>
-
-                {/* Engagement */}
-                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                    <div className="flex items-center space-x-4">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={handleLike}
-                            className={`space-x-2 transition-colors ${
-                                isLiked ? "text-red-500 hover:text-red-600" : "text-gray-600 hover:text-red-500"
-                            }`}
-                        >
-                            <Heart className={`w-4 h-4 ${isLiked ? "fill-current" : ""}`}/>
-                            <span>{likes}</span>
-                        </Button>
-
-                        <Button variant="ghost" size="sm" className="space-x-2 text-gray-600 hover:text-blue-500">
-                            <MessageCircle className="w-4 h-4"/>
-                            <span>{post.engagement.comments}</span>
-                        </Button>
-                    </div>
+                <div className="flex items-center justify-between">
+                    <Button variant="ghost" size="sm" onClick={handleLike}>
+                        <Heart className={`w-5 h-5 ${isLiked ? 'text-red-500 fill-red-500' : 'text-gray-500'}`}/>
+                        <span className="ml-2 text-sm text-gray-600">{likes} {t('likes')}</span>
+                    </Button>
+                    <Button variant="ghost" size="sm">
+                        <MessageCircle className="w-5 h-5 text-gray-500"/>
+                        <span className="ml-2 text-sm text-gray-600">{post.commentCount} {t('comments')}</span>
+                    </Button>
                 </div>
             </CardContent>
         </Card>

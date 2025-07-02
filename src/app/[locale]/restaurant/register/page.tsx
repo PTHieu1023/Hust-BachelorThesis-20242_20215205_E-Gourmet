@@ -107,7 +107,7 @@ const CreateRestaurant = () => {
                                         </SelectTrigger>
                                         <SelectContent>
                                             {cuisines?.map((cuisine) => (
-                                                <SelectItem key={cuisine.id} value={cuisine.urlName}>
+                                                <SelectItem key={cuisine.id} value={cuisine.id.toString()}>
                                                     {cuisine.name}
                                                 </SelectItem>
                                             ))}

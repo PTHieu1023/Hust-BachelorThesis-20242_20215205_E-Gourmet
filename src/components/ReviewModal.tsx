@@ -9,6 +9,7 @@ import {toast} from "sonner";
 import {DishDetails} from "@/services/dish.service";
 import {createReview, ReviewFormProps} from "@/services/review.service";
 import {useRouter} from "@/i18n/navigation";
+import {useTranslations} from "next-intl";
 
 interface ReviewModalProps {
     isOpen: boolean;
@@ -23,29 +24,30 @@ export default function ReviewModal({isOpen, setIsOpenAction, dish}: Readonly<Re
     const [review, setReview] = useState<ReviewFormProps>(initState);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const router = useRouter();
+    const t = useTranslations("restaurant.reviews.modal");
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
 
         if (review.rating < 1 || review.rating > 5) {
-            toast.error("Please select a rating before submitting your review.");
+            toast.error(t("errors.rating-required"));
             return;
         }
 
         if (review.content.trim().length < 1) {
-            toast.warning("Your review must be at least 10 characters long.");
+            toast.warning(t("errors.content-required"));
             return;
         }
 
         setIsSubmitting(true);
         createReview(Number(dish.id), review).then(() => {
-            toast.info("Review submitted successfully!");
+            toast.info(t("success"));
             setReview(initState);
             setIsOpenAction(false);
             setIsSubmitting(false);
             router.refresh()
         }).catch((error: Error) => {
-            toast.error("Failed to submit review. Please try again later.", {
+            toast.error(t("errors.submit-failed"), {
                 description: error.message
             })
         })
@@ -62,16 +64,16 @@ export default function ReviewModal({isOpen, setIsOpenAction, dish}: Readonly<Re
         <Dialog open={isOpen} onOpenChange={handleClose}>
             <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle className="text-xl">Write a Review</DialogTitle>
+                    <DialogTitle className="text-xl">{t("title")}</DialogTitle>
                     <div className="text-sm text-gray-600">
                         <p className="font-medium">{dish.name}</p>
-                        <p>at {dish.restaurant.name}</p>
+                        <p>{t("at")} {dish.restaurant}</p>
                     </div>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="space-y-2">
-                        <Label className="text-base font-medium">Your Rating *</Label>
+                        <Label className="text-base font-medium">{t("rating-label")}</Label>
                         <div className="flex items-center space-x-1">
                             {[1, 2, 3, 4, 5].map((star) => (
                                 <button
@@ -93,11 +95,11 @@ export default function ReviewModal({isOpen, setIsOpenAction, dish}: Readonly<Re
                             ))}
                             {review.rating > 0 && (
                                 <span className="ml-3 text-sm text-gray-600">
-                                    {review.rating === 1 && "Poor"}
-                                    {review.rating === 2 && "Fair"}
-                                    {review.rating === 3 && "Good"}
-                                    {review.rating === 4 && "Very Good"}
-                                    {review.rating === 5 && "Excellent"}
+                                    {review.rating === 1 && t("ratings.poor")}
+                                    {review.rating === 2 && t("ratings.fair")}
+                                    {review.rating === 3 && t("ratings.good")}
+                                    {review.rating === 4 && t("ratings.very-good")}
+                                    {review.rating === 5 && t("ratings.excellent")}
                                 </span>
                             )}
                         </div>
@@ -105,18 +107,18 @@ export default function ReviewModal({isOpen, setIsOpenAction, dish}: Readonly<Re
 
                     <div className="space-y-2">
                         <Label htmlFor="review" className="text-base font-medium">
-                            Your Review *
+                            {t("review-label")}
                         </Label>
                         <Textarea
                             id="review"
-                            placeholder="Share your experience with this dish. What did you like or dislike about it?"
+                            placeholder={t("placeholder")}
                             value={review.content}
                             onChange={(e) => setReview({...review, content: e.target.value})}
                             className="min-h-[120px] resize-none"
                             maxLength={500}
                         />
                         <div className="text-xs text-gray-500 text-right">
-                            {review.content.length}/500 characters
+                            {review.content.length}/500 {t("characters")}
                         </div>
                     </div>
 
@@ -129,7 +131,7 @@ export default function ReviewModal({isOpen, setIsOpenAction, dish}: Readonly<Re
                             onClick={handleClose}
                             disabled={isSubmitting}
                         >
-                            Cancel
+                            {t("buttons.cancel")}
                         </Button>
                         <Button
                             type="submit"
@@ -139,10 +141,10 @@ export default function ReviewModal({isOpen, setIsOpenAction, dish}: Readonly<Re
                             {isSubmitting ? (
                                 <div className="flex items-center space-x-2">
                                     <Loader2Icon className="w-4 h-4 text-white animate-spin"/>
-                                    <span>Submitting</span>
+                                    <span>{t("buttons.submitting")}</span>
                                 </div>
                             ) : (
-                                "Submit Review"
+                                t("buttons.submit")
                             )}
                         </Button>
                     </div>

@@ -10,7 +10,7 @@ export interface Cuisine{
 
 
 export const getCuisines = async (): Promise<Cuisine[]> => {
-    const response =await httpClient.get(getUrl("/api/cuisine"));
+    const response = await httpClient.get(getUrl("/api/cuisine"));
     if (!response.data) {
         throw new Error("Failed to fetch cuisines");
     }

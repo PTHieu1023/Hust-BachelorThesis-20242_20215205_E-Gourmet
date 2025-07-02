@@ -1,121 +1,141 @@
 "use server"
 
-export const getFollowingRestaurants = async () => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return [
-        {
-            id: "2",
-            name: "Bella Nonna Ristorante",
-            type: "restaurant",
-            avatar: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=400",
-            bio: "Authentic Italian cuisine in the heart of SF",
-            location: "North Beach, SF",
-            cuisine: "Italian",
-            rating: 4.8,
-            followers: 5234,
-            isFollowing: true,
-            lastPost: "3 hours ago"
-        },
-        {
-            id: "4",
-            name: "Sakura Sushi Bar",
-            type: "restaurant",
-            avatar: "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400",
-            bio: "Traditional Japanese sushi experience",
-            location: "Japantown, SF",
-            cuisine: "Japanese",
-            rating: 4.9,
-            followers: 3891,
-            isFollowing: true,
-            lastPost: "1 day ago"
-        },
-        {
-            id: "6",
-            name: "Green Garden Cafe",
-            type: "restaurant",
-            avatar: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400",
-            bio: "Plant-based dining with locally sourced ingredients",
-            location: "Mission District, SF",
-            cuisine: "Vegan",
-            rating: 4.7,
-            followers: 2156,
-            isFollowing: true,
-            lastPost: "6 hours ago"
-        }
-    ];
-};
+import httpClient, {getUrl} from "@/configs/http.config";
+import { AxiosError } from "axios";
 
-export const getRestaurantProfile = async () => {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    return {
-        id: "1",
-        name: "Bella Nonna Ristorante",
-        category: "Italian",
-        rating: 4.8,
-        reviewCount: 247,
-        priceRange: "$$",
-        image: "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=800",
-        coverImage: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1200",
-        description: "Authentic Italian cuisine in the heart of the city. Family recipes passed down through generations.",
-        address: "123 Main Street, San Francisco, CA",
-        phone: "(555) 123-4567",
-        website: "www.bellanonna.com",
-        hours: "Mon-Sun: 5:00 PM - 10:00 PM",
-        followers: 2847,
-        posts: 156
-    };
-};
+export interface Restaurant {
+    menu: any;
+    posts: any;
+    id: number;
+    name: string;
+    description?: string;
+    avatarUrl?: string;
+    username: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    lat?: number;
+    lng?: number;
+    createdAt: Date;
+    updatedAt: Date;
+    isApproved?: boolean;
+}
 
-export const getRestaurantMenuHighlights = async () => {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    return [
-        {
-            id: "1",
-            name: "Truffle Carbonara",
-            price: "$28",
-            description: "House-made pasta with truffle cream sauce and pancetta",
-            image: "https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5?w=400",
-            rating: 4.9
-        },
-        {
-            id: "2",
-            name: "Margherita Pizza",
-            price: "$22",
-            description: "San Marzano tomatoes, fresh mozzarella, basil",
-            image: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400",
-            rating: 4.7
-        },
-        {
-            id: "3",
-            name: "Tiramisu",
-            price: "$12",
-            description: "Classic Italian dessert with espresso and mascarpone",
-            image: "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400",
-            rating: 4.8
-        }
-    ];
-};
+export interface RestaurantProfile extends Restaurant {
+    dishCount: number;
+    reviewCount: number;
+    averageRating: number;
+    postCount: number;
+}
 
-export const getRestaurantRecentReviews = async () => {
-    await new Promise(resolve => setTimeout(resolve, 200));
-    return [
-        {
-            id: "1",
-            author: "Sarah Chen",
-            avatar: "https://images.unsplash.com/photo-1494790108755-2616b812b6ab?w=400",
-            rating: 5,
-            review: "Outstanding service and the carbonara was perfection! The atmosphere is cozy and romantic.",
-            date: "2024-01-15",
-            dish: "Truffle Carbonara"
-        },
-        {
-            id: "2",
-            author: "Marco Rodriguez",
-            avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400",
-            rating: 4,
-            review: "Great authentic Italian food. The pizza dough was perfectly crispy and the ingredients were fresh.",
-            date: "2024-01-12",
-            dish: "Margherita Pizza"
+export interface RestaurantMenuHighlight {
+    id: number;
+    name: string;
+    description?: string;
+    price: number;
+    images?: string[];
+    rating: number;
+    reviewCount: number;
+}
+
+export interface RestaurantRecentReview {
+    id: number;
+    rating: number;
+    comment: string;
+    createdAt: Date;
+    username: string;
+    displayName: string;
+    avatarUrl?: string;
+    dishName: string;
+}
+
+export interface RestaurantListParams {
+    page?: number;
+    limit?: number;
+}
+
+export interface CreateRestaurantParams {
+    name: string;
+    description?: string;
+    avatarUrl?: string;
+    username: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    lat?: number;
+    lng?: number;
+}
+
+export interface RestaurantWithPosts extends Restaurant {
+    posts: Array<{
+        id: number;
+        title: string;
+        content: string;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
+}
+
+export const getRestaurants = async (params?: RestaurantListParams): Promise<Restaurant[]> => {
+    const response = await httpClient.get(getUrl("/api/restaurant"), { params });
+    return response.data as Restaurant[];
+}
+
+export const getRestaurantById = async (id: number): Promise<Restaurant> => {
+    const response = await httpClient.get(getUrl(`/api/restaurant/${id}`));
+    return response.data as Restaurant;
+}
+
+export const getRestaurantByUsername = async (username: string): Promise<Restaurant> => {
+    const response = await httpClient.get(getUrl(`/api/restaurant/username/${username}`));
+    return response.data as Restaurant;
+}
+
+export const getRestaurantProfile = async (id: number): Promise<RestaurantProfile> => {
+    const response = await httpClient.get(getUrl(`/api/restaurant/${id}/profile`));
+    return response.data as RestaurantProfile;
+}
+
+export const getRestaurantMenuHighlights = async (id: number): Promise<RestaurantMenuHighlight[]> => {
+    const response = await httpClient.get(getUrl(`/api/restaurant/${id}/highlights`));
+    return response.data as RestaurantMenuHighlight[];
+}
+
+export const getRestaurantRecentReviews = async (id: number): Promise<RestaurantRecentReview[]> => {
+    const response = await httpClient.get(getUrl(`/api/restaurant/${id}/reviews`));
+    return response.data as RestaurantRecentReview[];
+}
+
+export const createRestaurant = async (params: CreateRestaurantParams): Promise<Restaurant> => {
+    const response = await httpClient.post(getUrl("/api/restaurant"), params);
+    return response.data as Restaurant;
+}
+
+export const updateRestaurant = async (id: number, params: Partial<CreateRestaurantParams>): Promise<Restaurant> => {
+    const response = await httpClient.put(getUrl(`/api/restaurant/${id}`), params);
+    return response.data as Restaurant;
+}
+
+export const deleteRestaurant = async (id: number): Promise<void> => {
+    await httpClient.delete(getUrl(`/api/restaurant/${id}`));
+}
+
+// Placeholder function for following restaurants (not implemented in backend yet)
+export const getFollowingRestaurants = async (): Promise<Restaurant[]> => {
+    // This functionality requires implementing user following system in backend
+    // For now, return empty array to prevent build errors
+    return [];
+}
+
+export const fetchUserRestaurant = async (): Promise<Restaurant | null> => {
+    try {
+        const response = await httpClient.get(getUrl("/api/restaurant/user"));
+        return response.data as Restaurant;
+    } catch (error) {
+        const axiosError = error as AxiosError;
+        if (axiosError.response?.status === 404) {
+            return null; // No restaurant found for the user
         }
-    ];
+        throw error;
+    }
 };

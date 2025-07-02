@@ -9,8 +9,12 @@ interface PageProps {
 
 export default async function Profile({params}: Readonly<PageProps>) {
     const {locale} = await params;
-    setRequestLocale(locale)
-    const t = await getTranslations("profile");
+
+    const [, t] = await Promise.all([
+        setRequestLocale(locale),
+        getTranslations("profile")
+    ]);
+
     return (
         <div className="container mx-auto px-4 py-6">
             <UserProfileCard/>

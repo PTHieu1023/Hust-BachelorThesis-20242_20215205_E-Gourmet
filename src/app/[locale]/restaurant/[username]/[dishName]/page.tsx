@@ -19,11 +19,16 @@ interface PageProps {
 
 export default async function DetailDishPage({params}: Readonly<PageProps>) {
 
-    const {locale} = await params;
+    const {locale, username, dishName} = await params;
     setRequestLocale(locale);
     const t = await getTranslations("dish");
-    const dish = await getDetails();
-    const reviews = await getReviews();
+    
+    // Extract dish ID from dishName parameter (assuming format like "dish-name-123")
+    const dishIdMatch = /(\d+)$/.exec(dishName);
+    const dishId = dishIdMatch ? parseInt(dishIdMatch[1], 10) : 1; // Default to 1 if no ID found
+    
+    const dish = await getDetails(dishId);
+    const reviews = await getReviews({dishId: dishId});
 
 
     const breadCrumbs: BreadcrumbItemProps[] = [
@@ -36,11 +41,11 @@ export default async function DetailDishPage({params}: Readonly<PageProps>) {
             label: t('breadcrumb.discovery')
         },
         {
-            href: `/${dish.restaurant.username}`,
-            label: dish.restaurant.name
+            href: `/${username}`,
+            label: dish.restaurant
         },
         {
-            href: `/${dish.restaurant.username}/${dish.id}`,
+            href: `/${username}/${dishName}`,
             label: dish.name
         }
     ]
@@ -50,19 +55,19 @@ export default async function DetailDishPage({params}: Readonly<PageProps>) {
             <CommonBreadcrumb items={breadCrumbs}/>
             <BackButton/>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <ImageView images={dish.images}/>
+                <ImageView images={dish.images || []}/>
                 <div className="space-y-2">
-                    <Link href={`/restaurant/${dish.restaurant.username}`} className="flex items-center space-x-4">
+                    <Link href={`/restaurant/${dish.restaurantUsername}`} className="flex items-center space-x-4">
                         <Avatar className="w-8 h-8">
-                            <AvatarImage src={dish.restaurant.avatar} alt={dish.restaurant.name}/>
-                            <AvatarFallback>{dish.restaurant.avatar}</AvatarFallback>
+                            <AvatarImage src={dish.restaurantAvatar} alt={dish.restaurant}/>
+                            <AvatarFallback>{dish.restaurant.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <h3 className="text-xl font-semibold text-gray-900 hover:text-orange-600 transition-colors">
-                            {dish.restaurant.name}
+                            {dish.restaurant}
                         </h3>
                     </Link>
                     <h1 className="text-3xl font-bold text-gray-900">{dish.name}</h1>
-                    <span className="text-2xl font-bold text-orange-600">{dish.price}</span>
+                    <span className="text-2xl font-bold text-orange-600">${dish.price}</span>
                     <div className="flex items-center space-x-4 mb-4">
                         <div className="flex items-center space-x-1">
                             <Star className="w-5 h-5 text-yellow-400 fill-yellow-400"/>
