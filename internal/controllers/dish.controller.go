@@ -59,10 +59,13 @@ func (c *Controller) GetDishes(ctx *fiber.Ctx) error {
 		return err
 	}
 	params := new(database.GetDishesParams)
+	cuisineId := int16(ctx.QueryInt("cuisine"))
+	params.CuisineID = &cuisineId
 	params.Offset = int32((pageFilter.Page - 1) * pageFilter.Size)
 	params.Limit = int32(pageFilter.Size)
-
-	if err := ctx.QueryParser(params); err != nil {
+	q := ctx.Query("search")
+	params.Search = &q
+	if err = ctx.QueryParser(params); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid query parameters.")
 	}
 

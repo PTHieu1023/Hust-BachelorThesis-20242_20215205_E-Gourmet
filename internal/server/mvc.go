@@ -92,7 +92,7 @@ func New() *Server {
 	server.services = services.New(server.dbtx, server.kc)
 	server.controllers = controllers.New(server.services)
 
-	routerV1 := server.app.Group("/api/v1")
+	routerV1 := server.app.Group("/api")
 	routerV1.Group("/cuisine").
 		Get("/", server.controllers.GetCuisineRecursionById).
 		Post("/", server.controllers.AddCuisine).

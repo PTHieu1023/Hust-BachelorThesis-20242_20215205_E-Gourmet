@@ -13,32 +13,27 @@ import (
 
 const createDish = `-- name: CreateDish :one
 WITH inserted_dish AS (
-    INSERT INTO dishes (restaurant_id, name, description, price, cuisine_id)
-    VALUES(
-        $1::int,
-        $2::varchar(255),
-        $3::text,
-        $4::bigint,
-        $5::smallint)
-    RETURNING id, name, description, price, cuisine_id, restaurant_id, created_at, updated_at
-)
-SELECT
-    d.id,
-    d.name,
-    d.description,
-    d.price,
-    d.restaurant_id,
-    r.name AS restaurant,
-    r.address,
-    r.lat,
-    r.lng,
-    d.cuisine_id,
-    c.name AS cuisine,
-    d.created_at,
-    d.updated_at
+    INSERT
+        INTO dishes (restaurant_id, name, description, price, cuisine_id)
+            VALUES ($1:: int, $2:: varchar(255), $3::text,
+                    $4::bigint, $5:: smallint)
+            RETURNING id, name, description, price, cuisine_id, restaurant_id, created_at, updated_at)
+SELECT d.id,
+       d.name,
+       d.description,
+       d.price,
+       d.restaurant_id,
+       r.name AS restaurant,
+       r.address,
+       r.lat,
+       r.lng,
+       d.cuisine_id,
+       c.name AS cuisine,
+       d.created_at,
+       d.updated_at
 FROM inserted_dish d
-LEFT JOIN restaurants r ON r.id = d.restaurant_id
-LEFT JOIN cuisines    c ON c.id = d.cuisine_id
+         LEFT JOIN restaurants r ON r.id = d.restaurant_id
+         LEFT JOIN cuisines c ON c.id = d.cuisine_id
 `
 
 type CreateDishParams struct {
@@ -93,7 +88,9 @@ func (q *Queries) CreateDish(ctx context.Context, db DBTX, arg *CreateDishParams
 }
 
 const deleteDish = `-- name: DeleteDish :exec
-DELETE FROM dishes WHERE id = $1
+DELETE
+FROM dishes
+WHERE id = $1
 `
 
 func (q *Queries) DeleteDish(ctx context.Context, db DBTX, id int32) error {
@@ -102,23 +99,22 @@ func (q *Queries) DeleteDish(ctx context.Context, db DBTX, id int32) error {
 }
 
 const getDishByID = `-- name: GetDishByID :one
-SELECT
-    d.id,
-    d.name,
-    d.description,
-    d.price,
-    d.restaurant_id,
-    r.name as restaurant,
-    r.address,
-    r.lat,
-    r.lng,
-    d.cuisine_id,
-    c.name as cuisine,
-    d.created_at,
-    d.updated_at
+SELECT d.id,
+       d.name,
+       d.description,
+       d.price,
+       d.restaurant_id,
+       r.name as restaurant,
+       r.address,
+       r.lat,
+       r.lng,
+       d.cuisine_id,
+       c.name as cuisine,
+       d.created_at,
+       d.updated_at
 FROM dishes d
-LEFT JOIN restaurants r ON r.id = d.restaurant_id
-LEFT JOIN cuisines c ON c.id = d.cuisine_id
+         LEFT JOIN restaurants r ON r.id = d.restaurant_id
+         LEFT JOIN cuisines c ON c.id = d.cuisine_id
 WHERE d.id = $1
 `
 
@@ -160,52 +156,59 @@ func (q *Queries) GetDishByID(ctx context.Context, db DBTX, id int32) (*GetDishB
 }
 
 const getDishes = `-- name: GetDishes :many
-SELECT
-    d.id,
-    d.name,
-    d.description,
-    d.price,
-    d.restaurant_id,
-    r.name as restaurant,
-    r.address,
-    r.lat,
-    r.lng,
-    d.cuisine_id,
-    c.name as cuisine,
-    d.created_at,
-    d.updated_at
+SELECT d.id,
+       d.name,
+       d.description,
+       d.price,
+       d.restaurant_id,
+       r.name                      as restaurant,
+       r.username                  as restaurant_name,
+       r.address,
+       r.lat,
+       r.lng,
+       d.cuisine_id,
+       c.name                      as cuisine,
+       d.created_at,
+       d.updated_at,
+       coalesce(avg(rv.rating), 0) as rating
 FROM dishes d
-LEFT JOIN restaurants r ON r.id = d.restaurant_id
-LEFT JOIN cuisines c ON c.id = d.cuisine_id
-WHERE
-    ($3::int is null or d.restaurant_id = $3::int)
-  and
-    d.cuisine_id in (select id from get_cuisine_recursion_by_id($4::smallint))
+         LEFT JOIN restaurants r ON r.id = d.restaurant_id
+         LEFT JOIN cuisines c ON c.id = d.cuisine_id
+         LEFT JOIN reviews rv on rv.dish_id = d.id
+WHERE ($3::int is null or d.restaurant_id = $3::int)
+  AND d.cuisine_id in (select id from get_cuisine_recursion_by_id($4::smallint))
+  AND concat(d.name, r.name) like '%' || $5 || '%'
+GROUP BY d.id, d.name, d.description, d.price, d.restaurant_id, r.name, r.address,
+         r.lat, r.lng, d.cuisine_id, c.name, r.username,
+         d.created_at, d.updated_at
 ORDER BY d.updated_at DESC
 LIMIT $1 OFFSET $2
 `
 
 type GetDishesParams struct {
-	Limit        int32  `json:"limit"`
-	Offset       int32  `json:"offset"`
-	RestaurantID *int32 `json:"restaurantId"`
-	CuisineID    *int16 `json:"cuisineId"`
+	Limit        int32   `json:"limit"`
+	Offset       int32   `json:"offset"`
+	RestaurantID *int32  `json:"restaurantId"`
+	CuisineID    *int16  `json:"cuisineId"`
+	Search       *string `json:"search"`
 }
 
 type GetDishesRow struct {
-	ID           int32              `json:"id"`
-	Name         string             `json:"name"`
-	Description  *string            `json:"description"`
-	Price        int64              `json:"price"`
-	RestaurantID int32              `json:"restaurantId"`
-	Restaurant   *string            `json:"restaurant"`
-	Address      *string            `json:"address"`
-	Lat          *float64           `json:"lat"`
-	Lng          *float64           `json:"lng"`
-	CuisineID    int16              `json:"cuisineId"`
-	Cuisine      *string            `json:"cuisine"`
-	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
-	UpdatedAt    pgtype.Timestamptz `json:"updatedAt"`
+	ID             int32              `json:"id"`
+	Name           string             `json:"name"`
+	Description    *string            `json:"description"`
+	Price          int64              `json:"price"`
+	RestaurantID   int32              `json:"restaurantId"`
+	Restaurant     *string            `json:"restaurant"`
+	RestaurantName *string            `json:"restaurantName"`
+	Address        *string            `json:"address"`
+	Lat            *float64           `json:"lat"`
+	Lng            *float64           `json:"lng"`
+	CuisineID      int16              `json:"cuisineId"`
+	Cuisine        *string            `json:"cuisine"`
+	CreatedAt      pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt      pgtype.Timestamptz `json:"updatedAt"`
+	Rating         interface{}        `json:"rating"`
 }
 
 func (q *Queries) GetDishes(ctx context.Context, db DBTX, arg *GetDishesParams) ([]*GetDishesRow, error) {
@@ -214,6 +217,7 @@ func (q *Queries) GetDishes(ctx context.Context, db DBTX, arg *GetDishesParams) 
 		arg.Offset,
 		arg.RestaurantID,
 		arg.CuisineID,
+		arg.Search,
 	)
 	if err != nil {
 		return nil, err
@@ -229,6 +233,7 @@ func (q *Queries) GetDishes(ctx context.Context, db DBTX, arg *GetDishesParams) 
 			&i.Price,
 			&i.RestaurantID,
 			&i.Restaurant,
+			&i.RestaurantName,
 			&i.Address,
 			&i.Lat,
 			&i.Lng,
@@ -236,6 +241,7 @@ func (q *Queries) GetDishes(ctx context.Context, db DBTX, arg *GetDishesParams) 
 			&i.Cuisine,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Rating,
 		); err != nil {
 			return nil, err
 		}
