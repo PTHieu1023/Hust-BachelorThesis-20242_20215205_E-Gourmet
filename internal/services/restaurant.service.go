@@ -12,10 +12,6 @@ func (s *Service) GetRestaurants(ctx context.Context, params *database.GetRestau
 	return s.querier.GetRestaurants(ctx, s.dbtx, params)
 }
 
-func (s *Service) GetRestaurantById(ctx context.Context, id int32) (*database.GetRestaurantByIDRow, error) {
-	return s.querier.GetRestaurantByID(ctx, s.dbtx, id)
-}
-
 func (s *Service) CreateRestaurant(ctx context.Context, params *database.CreateRestaurantParams) (*database.Restaurant, error) {
 	tx, err := s.dbtx.Begin(ctx)
 	if err != nil {

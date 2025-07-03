@@ -15,8 +15,8 @@ VALUES ($1, $2)
 `
 
 type AddInteractionParams struct {
-	UserID interface{} `json:"userId"`
-	DishID int32       `json:"dishId"`
+	UserID *string `json:"userId"`
+	DishID int32   `json:"dishId"`
 }
 
 func (q *Queries) AddInteraction(ctx context.Context, db DBTX, arg *AddInteractionParams) error {

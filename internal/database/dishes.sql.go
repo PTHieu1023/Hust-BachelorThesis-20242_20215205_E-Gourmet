@@ -17,7 +17,7 @@ WITH inserted_dish AS (
         INTO dishes (restaurant_id, name, description, price, cuisine_id)
             VALUES ($1:: int, $2:: varchar(255), $3::text,
                     $4::bigint, $5:: smallint)
-            RETURNING id, name, description, price, cuisine_id, restaurant_id, category_id, created_at, updated_at)
+            RETURNING id, name, description, price, cuisine_id, restaurant_id, created_at, updated_at, images)
 SELECT d.id,
        d.name,
        d.description,
@@ -161,8 +161,8 @@ SELECT d.id,
        d.description,
        d.price,
        d.restaurant_id,
-       r.name                      as restaurant,
-       r.username                  as restaurant_name,
+       r.name                      as restaurant_name,
+       r.username                  as restaurant_username,
        r.address,
        r.lat,
        r.lng,
@@ -176,11 +176,13 @@ FROM dishes d
          LEFT JOIN cuisines c ON c.id = d.cuisine_id
          LEFT JOIN reviews rv on rv.dish_id = d.id
 WHERE ($3::int is null or d.restaurant_id = $3::int)
-  AND ($4::smallint is null or d.cuisine_id in (select id from get_cuisine_recursion_by_id($4::smallint)))
-  AND ($5::text is null or $5::text = '' or concat(d.name, ' ', r.name) ilike '%' || $5::text || '%')
-GROUP BY d.id, d.name, d.description, d.price, d.restaurant_id, r.name, r.address,
-         r.lat, r.lng, d.cuisine_id, c.name, r.username,
-         d.created_at, d.updated_at
+  AND ($4::smallint is null or
+       d.cuisine_id in (select id from get_cuisine_recursion_by_id($4::smallint)))
+  AND ($5::text is null or $5::text = '' or
+       concat(d.name, ' ', r.name) ilike '%' || $5::text || '%')
+GROUP BY d.id, d.name, d.description, d.price, d.restaurant_id,
+         r.name, r.username, r.address, r.lat, r.lng,
+         d.cuisine_id, c.name, d.created_at, d.updated_at
 ORDER BY d.updated_at DESC
 LIMIT $1 OFFSET $2
 `
@@ -194,21 +196,21 @@ type GetDishesParams struct {
 }
 
 type GetDishesRow struct {
-	ID             int32              `json:"id"`
-	Name           string             `json:"name"`
-	Description    *string            `json:"description"`
-	Price          int64              `json:"price"`
-	RestaurantID   int32              `json:"restaurantId"`
-	Restaurant     *string            `json:"restaurant"`
-	RestaurantName *string            `json:"restaurantName"`
-	Address        *string            `json:"address"`
-	Lat            *float64           `json:"lat"`
-	Lng            *float64           `json:"lng"`
-	CuisineID      int16              `json:"cuisineId"`
-	Cuisine        *string            `json:"cuisine"`
-	CreatedAt      pgtype.Timestamptz `json:"createdAt"`
-	UpdatedAt      pgtype.Timestamptz `json:"updatedAt"`
-	Rating         interface{}        `json:"rating"`
+	ID                 int32              `json:"id"`
+	Name               string             `json:"name"`
+	Description        *string            `json:"description"`
+	Price              int64              `json:"price"`
+	RestaurantID       int32              `json:"restaurantId"`
+	RestaurantName     *string            `json:"restaurantName"`
+	RestaurantUsername *string            `json:"restaurantUsername"`
+	Address            *string            `json:"address"`
+	Lat                *float64           `json:"lat"`
+	Lng                *float64           `json:"lng"`
+	CuisineID          int16              `json:"cuisineId"`
+	Cuisine            *string            `json:"cuisine"`
+	CreatedAt          pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt          pgtype.Timestamptz `json:"updatedAt"`
+	Rating             interface{}        `json:"rating"`
 }
 
 func (q *Queries) GetDishes(ctx context.Context, db DBTX, arg *GetDishesParams) ([]*GetDishesRow, error) {
@@ -232,8 +234,8 @@ func (q *Queries) GetDishes(ctx context.Context, db DBTX, arg *GetDishesParams) 
 			&i.Description,
 			&i.Price,
 			&i.RestaurantID,
-			&i.Restaurant,
 			&i.RestaurantName,
+			&i.RestaurantUsername,
 			&i.Address,
 			&i.Lat,
 			&i.Lng,
@@ -251,27 +253,4 @@ func (q *Queries) GetDishes(ctx context.Context, db DBTX, arg *GetDishesParams) 
 		return nil, err
 	}
 	return items, nil
-}
-
-const getDishesCount = `-- name: GetDishesCount :one
-SELECT COUNT(DISTINCT d.id)
-FROM dishes d
-         LEFT JOIN restaurants r ON r.id = d.restaurant_id
-         LEFT JOIN cuisines c ON c.id = d.cuisine_id
-WHERE ($1::int is null or d.restaurant_id = $1::int)
-  AND ($2::smallint is null or d.cuisine_id in (select id from get_cuisine_recursion_by_id($2::smallint)))
-  AND ($3::text is null or $3::text = '' or concat(d.name, ' ', r.name) ilike '%' || $3::text || '%')
-`
-
-type GetDishesCountParams struct {
-	RestaurantID *int32  `json:"restaurantId"`
-	CuisineID    *int16  `json:"cuisineId"`
-	Search       *string `json:"search"`
-}
-
-func (q *Queries) GetDishesCount(ctx context.Context, db DBTX, arg *GetDishesCountParams) (int64, error) {
-	row := db.QueryRow(ctx, getDishesCount, arg.RestaurantID, arg.CuisineID, arg.Search)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
 }

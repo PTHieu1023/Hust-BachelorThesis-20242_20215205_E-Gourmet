@@ -9,7 +9,7 @@ import (
 )
 
 type Cuisine struct {
-	ID        int16              `json:"id"`
+	ID        int32              `json:"id"`
 	Name      string             `json:"name"`
 	ParentID  *int16             `json:"parentId"`
 	ImageUrl  *string            `json:"imageUrl"`
@@ -24,21 +24,13 @@ type Dish struct {
 	Price        int64              `json:"price"`
 	CuisineID    int16              `json:"cuisineId"`
 	RestaurantID int32              `json:"restaurantId"`
-	CategoryID   *int32             `json:"categoryId"`
 	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt    pgtype.Timestamptz `json:"updatedAt"`
-}
-
-type MenuCategory struct {
-	ID           int32              `json:"id"`
-	Name         string             `json:"name"`
-	RestaurantID int32              `json:"restaurantId"`
-	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
-	UpdatedAt    pgtype.Timestamptz `json:"updatedAt"`
+	Images       []byte             `json:"images"`
 }
 
 type Post struct {
-	ID           int64              `json:"id"`
+	ID           int32              `json:"id"`
 	Caption      *string            `json:"caption"`
 	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt    pgtype.Timestamptz `json:"updatedAt"`
@@ -49,17 +41,17 @@ type Post struct {
 
 type PostLike struct {
 	PostID    int64              `json:"postId"`
-	UserID    interface{}        `json:"userId"`
+	UserID    string             `json:"userId"`
 	CreatedAt pgtype.Timestamptz `json:"createdAt"`
 }
 
 type PostsComment struct {
-	ID        int64       `json:"id"`
-	PostID    int64       `json:"postId"`
-	UserID    interface{} `json:"userId"`
-	ReplyToID *int64      `json:"replyToId"`
-	Content   *string     `json:"content"`
-	Media     []byte      `json:"media"`
+	ID        int32   `json:"id"`
+	PostID    int64   `json:"postId"`
+	UserID    string  `json:"userId"`
+	ReplyToID *int64  `json:"replyToId"`
+	Content   *string `json:"content"`
+	Media     []byte  `json:"media"`
 }
 
 type Restaurant struct {
@@ -77,10 +69,13 @@ type Restaurant struct {
 	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt   pgtype.Timestamptz `json:"updatedAt"`
 	IsApproved  *bool              `json:"isApproved"`
+	OpenHour    *string            `json:"openHour"`
+	Website     *string            `json:"website"`
+	CoverUrl    *string            `json:"coverUrl"`
 }
 
 type RestaurantManager struct {
-	UserID       interface{}        `json:"userId"`
+	UserID       string             `json:"userId"`
 	RestaurantID int32              `json:"restaurantId"`
 	IsOwner      *bool              `json:"isOwner"`
 	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
@@ -88,11 +83,11 @@ type RestaurantManager struct {
 }
 
 type Review struct {
-	ID        int64              `json:"id"`
+	ID        int32              `json:"id"`
 	Rating    int16              `json:"rating"`
 	Comment   string             `json:"comment"`
 	CreatedAt pgtype.Timestamptz `json:"createdAt"`
-	UserID    interface{}        `json:"userId"`
+	UserID    string             `json:"userId"`
 	DishID    int32              `json:"dishId"`
 	UpdatedAt pgtype.Timestamptz `json:"updatedAt"`
 }
@@ -109,11 +104,10 @@ type User struct {
 	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt   pgtype.Timestamptz `json:"updatedAt"`
 	Enable      bool               `json:"enable"`
-	Status      string             `json:"status"`
 }
 
 type UserCuisine struct {
-	UserID    interface{}        `json:"userId"`
+	UserID    string             `json:"userId"`
 	CuisineID int16              `json:"cuisineId"`
 	CreatedAt pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt pgtype.Timestamptz `json:"updatedAt"`
@@ -121,16 +115,22 @@ type UserCuisine struct {
 
 type UserInteraction struct {
 	ID               int32              `json:"id"`
-	UserID           interface{}        `json:"userId"`
+	UserID           *string            `json:"userId"`
 	DishID           int32              `json:"dishId"`
 	InteractionScore *int16             `json:"interactionScore"`
 	CreatedAt        pgtype.Timestamptz `json:"createdAt"`
 }
 
 type UserRecommendation struct {
-	ID        int64              `json:"id"`
-	UserID    interface{}        `json:"userId"`
+	ID        int32              `json:"id"`
+	UserID    *string            `json:"userId"`
 	DishID    int32              `json:"dishId"`
 	Score     float64            `json:"score"`
 	CreatedAt pgtype.Timestamptz `json:"createdAt"`
+}
+
+type UserRestaurantFollow struct {
+	UserID       string             `json:"userId"`
+	RestaurantID int32              `json:"restaurantId"`
+	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
 }

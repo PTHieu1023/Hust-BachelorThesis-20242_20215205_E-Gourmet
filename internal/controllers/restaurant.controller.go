@@ -33,42 +33,24 @@ func (c *Controller) CreateRestaurant(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{"data": restaurant})
 }
 
-func (c *Controller) GetRestaurantById(ctx *fiber.Ctx) error {
-	id, err := ctx.ParamsInt("id")
-	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, errInvalidID)
-	}
-
-	restaurant, err := c.service.GetRestaurantById(ctx.UserContext(), int32(id))
-
-	if errors.Is(err, sql.ErrNoRows) {
-		return fiber.NewError(fiber.StatusNotFound, errResourceNotFound)
-	}
-
-	if err != nil {
-		return err
-	}
-
-	return ctx.JSON(fiber.Map{"data": restaurant})
-}
-
 func (c *Controller) GetRestaurants(ctx *fiber.Ctx) error {
+	params := new(database.GetRestaurantsParams)
+	if err := ctx.QueryParser(params); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid request body")
+	}
 	pageFilter, err := pagination.GetPageFilter(ctx)
 	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, "Invalid pagination parameters.")
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid pagination parameters")
 	}
-
-	params := &database.GetRestaurantsParams{
-		Offset: int32((pageFilter.Page - 1) * pageFilter.Size),
-		Limit:  int32(pageFilter.Size),
-	}
+	params.Limit = int32(pageFilter.Size)
+	params.Offset = int32((pageFilter.Page - 1) * pageFilter.Size)
 
 	restaurants, err := c.service.GetRestaurants(ctx.UserContext(), params)
 	if err != nil {
 		return err
 	}
 
-	return ctx.JSON(fiber.Map{"data": restaurants})
+	return ctx.JSON(restaurants)
 }
 
 func (c *Controller) UpdateRestaurant(ctx *fiber.Ctx) error {

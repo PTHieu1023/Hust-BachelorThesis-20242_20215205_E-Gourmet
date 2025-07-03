@@ -10,7 +10,7 @@ func (s *Service) GetPosts(ctx context.Context, params *database.GetPostsParams)
 }
 
 func (s *Service) GetPostById(ctx context.Context, id int64) (*database.GetPostByIDRow, error) {
-	return s.querier.GetPostByID(ctx, s.dbtx, id)
+	return s.querier.GetPostByID(ctx, s.dbtx, int32(id))
 }
 
 func (s *Service) GetPostsByRestaurant(ctx context.Context, params *database.GetPostsByRestaurantParams) ([]*database.GetPostsByRestaurantRow, error) {
@@ -26,7 +26,7 @@ func (s *Service) UpdatePost(ctx context.Context, params *database.UpdatePostPar
 }
 
 func (s *Service) DeletePost(ctx context.Context, id int64) error {
-	return s.querier.DeletePost(ctx, s.dbtx, id)
+	return s.querier.DeletePost(ctx, s.dbtx, int32(id))
 }
 
 func (s *Service) CreateComment(ctx context.Context, params *database.CreateCommentParams) (*database.PostsComment, error) {

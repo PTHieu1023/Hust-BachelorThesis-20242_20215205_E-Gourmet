@@ -114,10 +114,6 @@ func New() *Server {
 		Group("/:id").
 		Delete("/", server.controllers.DeleteReview)
 
-	// Review endpoints for current user and profile
-	routerV1.Get("/review/current/:dishId", server.controllers.GetCurrentUserReview)
-	routerV1.Get("/user/:userId/reviews", server.controllers.GetUserProfileReviews)
-
 	routerV1.Group("/user").
 		Get("/me", server.controllers.GetCurrentUser).
 		Get("/:username", server.controllers.GetUserByUsername).
@@ -128,15 +124,8 @@ func New() *Server {
 		Get("/me", server.controllers.GetCurrentUserRestaurant).
 		Post("/", server.controllers.CreateRestaurant).
 		Group("/:id").
-		Get("/", server.controllers.GetRestaurantById).
 		Put("/", server.controllers.UpdateRestaurant).
 		Delete("/", server.controllers.DeleteRestaurantById)
-
-	// New restaurant endpoints
-	routerV1.Get("/restaurant/username/:username", server.controllers.GetRestaurantByUsername)
-	routerV1.Get("/restaurant/:id/profile", server.controllers.GetRestaurantProfile)
-	routerV1.Get("/restaurant/:id/highlights", server.controllers.GetRestaurantHighlights)
-	routerV1.Get("/restaurant/:id/reviews", server.controllers.GetRestaurantRecentReviews)
 
 	routerV1.Group("/post").
 		Get("/", server.controllers.GetPosts).
@@ -154,20 +143,6 @@ func New() *Server {
 		Post("/", server.controllers.CreateComment)
 
 	routerV1.Delete("/comments/:commentId", server.controllers.DeleteComment)
-
-	// Restaurant posts
-	routerV1.Group("/restaurant/:restaurantId/posts").
-		Get("/", server.controllers.GetPostsByRestaurant)
-
-	// Admin routes
-	//adminRouter := routerV1.Group("/admin")
-	//adminRouter.Get("/check", server.controllers.IsAdmin)
-	//adminRouter.Get("/restaurants", server.controllers.GetAllRestaurants)
-	//adminRouter.Post("/restaurants/:restaurantId/approve", server.controllers.ApproveRestaurant)
-	//adminRouter.Post("/restaurants/:restaurantId/reject", server.controllers.RejectRestaurant)
-	//adminRouter.Get("/users", server.controllers.GetAllUsers)
-	//adminRouter.Post("/users/:userId/disable", server.controllers.DisableUser)
-	//adminRouter.Post("/users/:userId/enable", server.controllers.EnableUser)
 
 	routerV1.Get("/recommendations", server.controllers.GetRecommendations)
 

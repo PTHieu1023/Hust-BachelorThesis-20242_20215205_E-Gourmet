@@ -40,7 +40,7 @@ DELETE FROM cuisines
 WHERE id = $1
 `
 
-func (q *Queries) DeleteCuisine(ctx context.Context, db DBTX, id int16) error {
+func (q *Queries) DeleteCuisine(ctx context.Context, db DBTX, id int32) error {
 	_, err := db.Exec(ctx, deleteCuisine, id)
 	return err
 }
@@ -72,7 +72,7 @@ order by level desc, w, id
 `
 
 type GetCuisineRecursionByIdRow struct {
-	ID       int16   `json:"id"`
+	ID       int32   `json:"id"`
 	Name     string  `json:"name"`
 	ImageUrl *string `json:"imageUrl"`
 	ParentID *int16  `json:"parentId"`
@@ -80,7 +80,7 @@ type GetCuisineRecursionByIdRow struct {
 	W        float64 `json:"w"`
 }
 
-func (q *Queries) GetCuisineRecursionById(ctx context.Context, db DBTX, id int16) ([]*GetCuisineRecursionByIdRow, error) {
+func (q *Queries) GetCuisineRecursionById(ctx context.Context, db DBTX, id int32) ([]*GetCuisineRecursionByIdRow, error) {
 	rows, err := db.Query(ctx, getCuisineRecursionById, id)
 	if err != nil {
 		return nil, err
@@ -118,7 +118,7 @@ RETURNING id, name, parent_id, image_url, created_at, updated_at
 `
 
 type UpdateCuisineParams struct {
-	ID       int16   `json:"id"`
+	ID       int32   `json:"id"`
 	Name     string  `json:"name"`
 	ParentID *int16  `json:"parentId"`
 	ImageUrl *string `json:"imageUrl"`

@@ -45,8 +45,7 @@ SELECT
     u.display_name,
     u.avatar_url,
     u.created_at,
-    u.updated_at,
-    u.status
+    u.updated_at
 FROM users u
 ORDER BY u.created_at DESC
 LIMIT $1 OFFSET $2
@@ -65,7 +64,6 @@ type GetAllUsersRow struct {
 	AvatarUrl   *string            `json:"avatarUrl"`
 	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt   pgtype.Timestamptz `json:"updatedAt"`
-	Status      string             `json:"status"`
 }
 
 func (q *Queries) GetAllUsers(ctx context.Context, db DBTX, arg *GetAllUsersParams) ([]*GetAllUsersRow, error) {
@@ -85,7 +83,6 @@ func (q *Queries) GetAllUsers(ctx context.Context, db DBTX, arg *GetAllUsersPara
 			&i.AvatarUrl,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.Status,
 		); err != nil {
 			return nil, err
 		}

@@ -38,8 +38,7 @@ SELECT
     u.display_name,
     u.avatar_url,
     u.created_at,
-    u.updated_at,
-    u.status
+    u.updated_at
 FROM users u
 ORDER BY u.created_at DESC
 LIMIT $1 OFFSET $2;

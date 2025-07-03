@@ -29,8 +29,7 @@ func (q *Queries) AddRestaurantManager(ctx context.Context, db DBTX, arg *AddRes
 
 const createRestaurant = `-- name: CreateRestaurant :one
 INSERT INTO restaurants (name, description, avatar_url, username, email, phone, address, lat, lng, document)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-RETURNING id, name, description, avatar_url, username, email, phone, address, lat, lng, document, created_at, updated_at, is_approved
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id, name, description, avatar_url, username, email, phone, address, lat, lng, document, created_at, updated_at, is_approved, open_hour, website, cover_url
 `
 
 type CreateRestaurantParams struct {
@@ -75,12 +74,17 @@ func (q *Queries) CreateRestaurant(ctx context.Context, db DBTX, arg *CreateRest
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.IsApproved,
+		&i.OpenHour,
+		&i.Website,
+		&i.CoverUrl,
 	)
 	return &i, err
 }
 
 const deleteRestaurant = `-- name: DeleteRestaurant :exec
-DELETE FROM restaurants WHERE id = $1
+DELETE
+FROM restaurants
+WHERE id = $1
 `
 
 func (q *Queries) DeleteRestaurant(ctx context.Context, db DBTX, id int32) error {
@@ -89,9 +93,9 @@ func (q *Queries) DeleteRestaurant(ctx context.Context, db DBTX, id int32) error
 }
 
 const getManagingRestaurantByUser = `-- name: GetManagingRestaurantByUser :many
-SELECT r.id, r.name, r.description, r.avatar_url, r.username, r.email, r.phone, r.address, r.lat, r.lng, r.document, r.created_at, r.updated_at, r.is_approved, rm.is_owner
+SELECT r.id, r.name, r.description, r.avatar_url, r.username, r.email, r.phone, r.address, r.lat, r.lng, r.document, r.created_at, r.updated_at, r.is_approved, r.open_hour, r.website, r.cover_url, rm.is_owner
 FROM restaurant_manager rm
-JOIN restaurants r ON rm.restaurant_id = r.id
+         JOIN restaurants r ON rm.restaurant_id = r.id
 WHERE rm.user_id = $1
 `
 
@@ -110,10 +114,13 @@ type GetManagingRestaurantByUserRow struct {
 	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt   pgtype.Timestamptz `json:"updatedAt"`
 	IsApproved  *bool              `json:"isApproved"`
+	OpenHour    *string            `json:"openHour"`
+	Website     *string            `json:"website"`
+	CoverUrl    *string            `json:"coverUrl"`
 	IsOwner     *bool              `json:"isOwner"`
 }
 
-func (q *Queries) GetManagingRestaurantByUser(ctx context.Context, db DBTX, userID interface{}) ([]*GetManagingRestaurantByUserRow, error) {
+func (q *Queries) GetManagingRestaurantByUser(ctx context.Context, db DBTX, userID string) ([]*GetManagingRestaurantByUserRow, error) {
 	rows, err := db.Query(ctx, getManagingRestaurantByUser, userID)
 	if err != nil {
 		return nil, err
@@ -137,6 +144,9 @@ func (q *Queries) GetManagingRestaurantByUser(ctx context.Context, db DBTX, user
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.IsApproved,
+			&i.OpenHour,
+			&i.Website,
+			&i.CoverUrl,
 			&i.IsOwner,
 		); err != nil {
 			return nil, err
@@ -149,78 +159,24 @@ func (q *Queries) GetManagingRestaurantByUser(ctx context.Context, db DBTX, user
 	return items, nil
 }
 
-const getRestaurantByID = `-- name: GetRestaurantByID :one
-SELECT
-    r.id,
-    r.name,
-    r.description,
-    r.avatar_url,
-    r.username,
-    r.email,
-    r.phone,
-    r.address,
-    r.lat,
-    r.lng,
-    r.created_at,
-    r.updated_at
-FROM restaurants r
-WHERE id = $1
-`
-
-type GetRestaurantByIDRow struct {
-	ID          int32              `json:"id"`
-	Name        string             `json:"name"`
-	Description *string            `json:"description"`
-	AvatarUrl   *string            `json:"avatarUrl"`
-	Username    string             `json:"username"`
-	Email       *string            `json:"email"`
-	Phone       *string            `json:"phone"`
-	Address     *string            `json:"address"`
-	Lat         *float64           `json:"lat"`
-	Lng         *float64           `json:"lng"`
-	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
-	UpdatedAt   pgtype.Timestamptz `json:"updatedAt"`
-}
-
-func (q *Queries) GetRestaurantByID(ctx context.Context, db DBTX, id int32) (*GetRestaurantByIDRow, error) {
-	row := db.QueryRow(ctx, getRestaurantByID, id)
-	var i GetRestaurantByIDRow
-	err := row.Scan(
-		&i.ID,
-		&i.Name,
-		&i.Description,
-		&i.AvatarUrl,
-		&i.Username,
-		&i.Email,
-		&i.Phone,
-		&i.Address,
-		&i.Lat,
-		&i.Lng,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return &i, err
-}
-
 const getRestaurantByOwnerId = `-- name: GetRestaurantByOwnerId :one
-SELECT
-    r.id,
-    r.name,
-    r.description,
-    r.avatar_url,
-    r.username,
-    r.email,
-    r.phone,
-    r.address,
-    r.lat,
-    r.lng,
-    r.created_at,
-    r.updated_at,
-    r.is_approved
+SELECT r.id,
+       r.name,
+       r.description,
+       r.avatar_url,
+       r.username,
+       r.email,
+       r.phone,
+       r.address,
+       r.lat,
+       r.lng,
+       r.created_at,
+       r.updated_at,
+       r.is_approved
 FROM restaurants r
-JOIN restaurant_manager rm ON r.id = rm.restaurant_id
-WHERE rm.user_id = $1 AND rm.is_owner = true
-LIMIT 1
+         JOIN restaurant_manager rm ON r.id = rm.restaurant_id
+WHERE rm.user_id = $1
+  AND rm.is_owner = true LIMIT 1
 `
 
 type GetRestaurantByOwnerIdRow struct {
@@ -239,7 +195,7 @@ type GetRestaurantByOwnerIdRow struct {
 	IsApproved  *bool              `json:"isApproved"`
 }
 
-func (q *Queries) GetRestaurantByOwnerId(ctx context.Context, db DBTX, userID interface{}) (*GetRestaurantByOwnerIdRow, error) {
+func (q *Queries) GetRestaurantByOwnerId(ctx context.Context, db DBTX, userID string) (*GetRestaurantByOwnerIdRow, error) {
 	row := db.QueryRow(ctx, getRestaurantByOwnerId, userID)
 	var i GetRestaurantByOwnerIdRow
 	err := row.Scan(
@@ -261,20 +217,19 @@ func (q *Queries) GetRestaurantByOwnerId(ctx context.Context, db DBTX, userID in
 }
 
 const getRestaurantByUsername = `-- name: GetRestaurantByUsername :one
-SELECT
-    r.id,
-    r.name,
-    r.description,
-    r.avatar_url,
-    r.username,
-    r.email,
-    r.phone,
-    r.address,
-    r.lat,
-    r.lng,
-    r.created_at,
-    r.updated_at,
-    r.is_approved
+SELECT r.id,
+       r.name,
+       r.description,
+       r.avatar_url,
+       r.username,
+       r.email,
+       r.phone,
+       r.address,
+       r.lat,
+       r.lng,
+       r.created_at,
+       r.updated_at,
+       r.is_approved
 FROM restaurants r
 WHERE r.username = $1
 `
@@ -317,19 +272,17 @@ func (q *Queries) GetRestaurantByUsername(ctx context.Context, db DBTX, username
 }
 
 const getRestaurantHighlights = `-- name: GetRestaurantHighlights :many
-SELECT
-    d.id,
-    d.name,
-    d.description,
-    d.price,
-    COALESCE(AVG(rev.rating), 0) as rating,
-    COUNT(rev.id) as review_count
+SELECT d.id,
+       d.name,
+       d.description,
+       d.price,
+       COALESCE(AVG(rev.rating), 0) as rating,
+       COUNT(rev.id)                as review_count
 FROM dishes d
-LEFT JOIN reviews rev ON d.id = rev.dish_id
+         LEFT JOIN reviews rev ON d.id = rev.dish_id
 WHERE d.restaurant_id = $1
 GROUP BY d.id, d.name, d.description, d.price
-ORDER BY rating DESC, review_count DESC
-LIMIT 6
+ORDER BY rating DESC, review_count DESC LIMIT 6
 `
 
 type GetRestaurantHighlightsRow struct {
@@ -369,16 +322,15 @@ func (q *Queries) GetRestaurantHighlights(ctx context.Context, db DBTX, restaura
 }
 
 const getRestaurantManagers = `-- name: GetRestaurantManagers :many
-SELECT
-    u.id,
-    u.username,
-    u.display_name,
-    u.email,
-    u.avatar_url,
-    rm.restaurant_id,
-    rm.is_owner
+SELECT u.id,
+       u.username,
+       u.display_name,
+       u.email,
+       u.avatar_url,
+       rm.restaurant_id,
+       rm.is_owner
 FROM restaurant_manager rm
-JOIN users u ON rm.user_id = u.id
+         JOIN users u ON rm.user_id = u.id
 WHERE rm.restaurant_id = $1
 `
 
@@ -421,30 +373,30 @@ func (q *Queries) GetRestaurantManagers(ctx context.Context, db DBTX, restaurant
 }
 
 const getRestaurantProfile = `-- name: GetRestaurantProfile :one
-SELECT
-    r.id,
-    r.name,
-    r.description,
-    r.avatar_url,
-    r.username,
-    r.email,
-    r.phone,
-    r.address,
-    r.lat,
-    r.lng,
-    r.created_at,
-    r.updated_at,
-    r.is_approved,
-    COUNT(DISTINCT d.id) as dish_count,
-    COUNT(DISTINCT rev.id) as review_count,
-    COALESCE(AVG(rev.rating), 0) as average_rating,
-    COUNT(DISTINCT p.id) as post_count
+SELECT r.id,
+       r.name,
+       r.description,
+       r.avatar_url,
+       r.username,
+       r.email,
+       r.phone,
+       r.address,
+       r.lat,
+       r.lng,
+       r.created_at,
+       r.updated_at,
+       r.is_approved,
+       COUNT(DISTINCT d.id)         as dish_count,
+       COUNT(DISTINCT rev.id)       as review_count,
+       COALESCE(AVG(rev.rating), 0) as average_rating,
+       COUNT(DISTINCT p.id)         as post_count
 FROM restaurants r
-LEFT JOIN dishes d ON r.id = d.restaurant_id
-LEFT JOIN reviews rev ON d.id = rev.dish_id
-LEFT JOIN posts p ON r.id = p.restaurant_id
+         LEFT JOIN dishes d ON r.id = d.restaurant_id
+         LEFT JOIN reviews rev ON d.id = rev.dish_id
+         LEFT JOIN posts p ON r.id = p.restaurant_id
 WHERE r.id = $1
-GROUP BY r.id, r.name, r.description, r.avatar_url, r.username, r.email, r.phone, r.address, r.lat, r.lng, r.created_at, r.updated_at, r.is_approved
+GROUP BY r.id, r.name, r.description, r.avatar_url, r.username, r.email, r.phone, r.address, r.lat, r.lng, r.created_at,
+         r.updated_at, r.is_approved
 `
 
 type GetRestaurantProfileRow struct {
@@ -493,25 +445,23 @@ func (q *Queries) GetRestaurantProfile(ctx context.Context, db DBTX, id int32) (
 }
 
 const getRestaurantRecentReviews = `-- name: GetRestaurantRecentReviews :many
-SELECT
-    rev.id,
-    rev.rating,
-    rev.comment,
-    rev.created_at,
-    u.username,
-    u.display_name,
-    u.avatar_url,
-    d.name as dish_name
+SELECT rev.id,
+       rev.rating,
+       rev.comment,
+       rev.created_at,
+       u.username,
+       u.display_name,
+       u.avatar_url,
+       d.name as dish_name
 FROM reviews rev
-JOIN users u ON rev.user_id = u.id
-JOIN dishes d ON rev.dish_id = d.id
+         JOIN users u ON rev.user_id = u.id
+         JOIN dishes d ON rev.dish_id = d.id
 WHERE d.restaurant_id = $1
-ORDER BY rev.created_at DESC
-LIMIT 10
+ORDER BY rev.created_at DESC LIMIT 10
 `
 
 type GetRestaurantRecentReviewsRow struct {
-	ID          int64              `json:"id"`
+	ID          int32              `json:"id"`
 	Rating      int16              `json:"rating"`
 	Comment     string             `json:"comment"`
 	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
@@ -551,47 +501,96 @@ func (q *Queries) GetRestaurantRecentReviews(ctx context.Context, db DBTX, resta
 }
 
 const getRestaurants = `-- name: GetRestaurants :many
-SELECT
-    r.id,
-    r.name,
-    r.description,
-    r.avatar_url,
-    r.username,
-    r.email,
-    r.phone,
-    r.address,
-    r.lat,
-    r.lng,
-    r.created_at,
-    r.updated_at,
-    r.is_approved
+SELECT r.id,
+       r.name,
+       r.description,
+       r.avatar_url,
+       r.username,
+       r.email,
+       r.phone,
+       r.address,
+       r.open_hour,
+       r.lat,
+       r.lng,
+       r.website,
+       r.cover_url,
+       r.created_at,
+       r.updated_at,
+       r.is_approved,
+       coalesce(avg(rv.rating), 0) as average_rating,
+       count(DISTINCT d.id) as dish_count,
+       count(DISTINCT rv.id) as review_count,
+       (SELECT count(*) FROM posts p where p.restaurant_id = r.id) as post_count,
+       (SELECT count(*) FROM user_restaurant_follow urf2 WHERE urf2.restaurant_id = r.id) as follower_count
 FROM restaurants r
+         LEFT JOIN user_restaurant_follow urf on r.id = urf.restaurant_id
+         LEFT JOIN restaurant_manager rm on rm.restaurant_id = r.id
+         LEFT JOIN dishes d on d.restaurant_id = r.id
+         LEFT JOIN reviews rv on rv.dish_id = d.id
+WHERE ($3::varchar(64) = '' or urf.user_id = $3)
+  AND ($4::varchar(64) = '' or rm.user_id = $4)
+  AND ($5::varchar(64) = '' or r.id::text = $5 or r.username = $5)
+GROUP BY r.id,
+         r.name,
+         r.description,
+         r.avatar_url,
+         r.username,
+         r.email,
+         r.phone,
+         r.address,
+         r.open_hour,
+         r.lat,
+         r.lng,
+         r.website,
+         r.cover_url,
+         r.created_at,
+         r.updated_at,
+         r.is_approved,
+         post_count,
+         follower_count
 LIMIT $1 OFFSET $2
 `
 
 type GetRestaurantsParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
+	Limit        int32  `json:"limit"`
+	Offset       int32  `json:"offset"`
+	FollowBy     string `json:"followBy"`
+	ManagedBy    string `json:"managedBy"`
+	RestaurantID string `json:"restaurantId"`
 }
 
 type GetRestaurantsRow struct {
-	ID          int32              `json:"id"`
-	Name        string             `json:"name"`
-	Description *string            `json:"description"`
-	AvatarUrl   *string            `json:"avatarUrl"`
-	Username    string             `json:"username"`
-	Email       *string            `json:"email"`
-	Phone       *string            `json:"phone"`
-	Address     *string            `json:"address"`
-	Lat         *float64           `json:"lat"`
-	Lng         *float64           `json:"lng"`
-	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
-	UpdatedAt   pgtype.Timestamptz `json:"updatedAt"`
-	IsApproved  *bool              `json:"isApproved"`
+	ID            int32              `json:"id"`
+	Name          string             `json:"name"`
+	Description   *string            `json:"description"`
+	AvatarUrl     *string            `json:"avatarUrl"`
+	Username      string             `json:"username"`
+	Email         *string            `json:"email"`
+	Phone         *string            `json:"phone"`
+	Address       *string            `json:"address"`
+	OpenHour      *string            `json:"openHour"`
+	Lat           *float64           `json:"lat"`
+	Lng           *float64           `json:"lng"`
+	Website       *string            `json:"website"`
+	CoverUrl      *string            `json:"coverUrl"`
+	CreatedAt     pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt     pgtype.Timestamptz `json:"updatedAt"`
+	IsApproved    *bool              `json:"isApproved"`
+	AverageRating interface{}        `json:"averageRating"`
+	DishCount     int64              `json:"dishCount"`
+	ReviewCount   int64              `json:"reviewCount"`
+	PostCount     int64              `json:"postCount"`
+	FollowerCount int64              `json:"followerCount"`
 }
 
 func (q *Queries) GetRestaurants(ctx context.Context, db DBTX, arg *GetRestaurantsParams) ([]*GetRestaurantsRow, error) {
-	rows, err := db.Query(ctx, getRestaurants, arg.Limit, arg.Offset)
+	rows, err := db.Query(ctx, getRestaurants,
+		arg.Limit,
+		arg.Offset,
+		arg.FollowBy,
+		arg.ManagedBy,
+		arg.RestaurantID,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -608,11 +607,19 @@ func (q *Queries) GetRestaurants(ctx context.Context, db DBTX, arg *GetRestauran
 			&i.Email,
 			&i.Phone,
 			&i.Address,
+			&i.OpenHour,
 			&i.Lat,
 			&i.Lng,
+			&i.Website,
+			&i.CoverUrl,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.IsApproved,
+			&i.AverageRating,
+			&i.DishCount,
+			&i.ReviewCount,
+			&i.PostCount,
+			&i.FollowerCount,
 		); err != nil {
 			return nil, err
 		}
@@ -625,13 +632,15 @@ func (q *Queries) GetRestaurants(ctx context.Context, db DBTX, arg *GetRestauran
 }
 
 const removeRestaurantManager = `-- name: RemoveRestaurantManager :exec
-DELETE FROM restaurant_manager
-WHERE restaurant_id = $1 AND user_id = $2
+DELETE
+FROM restaurant_manager
+WHERE restaurant_id = $1
+  AND user_id = $2
 `
 
 type RemoveRestaurantManagerParams struct {
-	RestaurantID int32       `json:"restaurantId"`
-	UserID       interface{} `json:"userId"`
+	RestaurantID int32  `json:"restaurantId"`
+	UserID       string `json:"userId"`
 }
 
 func (q *Queries) RemoveRestaurantManager(ctx context.Context, db DBTX, arg *RemoveRestaurantManagerParams) error {
@@ -641,20 +650,18 @@ func (q *Queries) RemoveRestaurantManager(ctx context.Context, db DBTX, arg *Rem
 
 const updateRestaurant = `-- name: UpdateRestaurant :one
 UPDATE restaurants
-SET
-    name = coalesce($1, name),
+SET name        = coalesce($1, name),
     description = coalesce($2, description),
-    avatar_url = coalesce($3, avatar_url),
-    username = coalesce($4, username),
-    email = coalesce($5, email),
-    phone = coalesce(sqlc('phone'), phone),
-    address = coalesce($6, address),
-    lat = coalesce($7, lat),
-    lng = coalesce($8, lng),
+    avatar_url  = coalesce($3, avatar_url),
+    username    = coalesce($4, username),
+    email       = coalesce($5, email),
+    phone       = coalesce(sqlc('phone'), phone),
+    address     = coalesce($6, address),
+    lat         = coalesce($7, lat),
+    lng         = coalesce($8, lng),
     is_approved = coalesce($9, is_approved),
-    updated_at = now()
-WHERE id = $10
-RETURNING id, name, description, avatar_url, username, email, phone, address, lat, lng, document, created_at, updated_at, is_approved
+    updated_at  = now()
+WHERE id = $10 RETURNING id, name, description, avatar_url, username, email, phone, address, lat, lng, document, created_at, updated_at, is_approved, open_hour, website, cover_url
 `
 
 type UpdateRestaurantParams struct {
@@ -699,6 +706,9 @@ func (q *Queries) UpdateRestaurant(ctx context.Context, db DBTX, arg *UpdateRest
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.IsApproved,
+		&i.OpenHour,
+		&i.Website,
+		&i.CoverUrl,
 	)
 	return &i, err
 }

@@ -18,8 +18,6 @@ type IController interface {
 
 	CreateReview(ctx *fiber.Ctx) error
 	GetReviews(ctx *fiber.Ctx) error
-	GetCurrentUserReview(ctx *fiber.Ctx) error
-	GetUserProfileReviews(ctx *fiber.Ctx) error
 	DeleteReview(ctx *fiber.Ctx) error
 
 	GetCurrentUser(ctx *fiber.Ctx) error
@@ -27,7 +25,6 @@ type IController interface {
 	UpdateCurrentUser(ctx *fiber.Ctx) error
 
 	CreateRestaurant(ctx *fiber.Ctx) error
-	GetRestaurantById(ctx *fiber.Ctx) error
 	GetRestaurants(ctx *fiber.Ctx) error
 	UpdateRestaurant(ctx *fiber.Ctx) error
 	DeleteRestaurantById(ctx *fiber.Ctx) error
@@ -40,7 +37,6 @@ type IController interface {
 
 	GetPosts(ctx *fiber.Ctx) error
 	GetPostById(ctx *fiber.Ctx) error
-	GetPostsByRestaurant(ctx *fiber.Ctx) error
 	CreatePost(ctx *fiber.Ctx) error
 	UpdatePost(ctx *fiber.Ctx) error
 	DeletePost(ctx *fiber.Ctx) error

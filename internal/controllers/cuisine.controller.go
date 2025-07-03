@@ -36,7 +36,7 @@ func (c *Controller) GetCuisines(ctx *fiber.Ctx) error {
 
 	tree := make(map[int16]*services.Cuisine)
 	for _, row := range cuisines {
-		tree[row.ID] = services.NewCuisine(row.ID, row.Name, row.ParentID, row.ImageUrl)
+		tree[int16(row.ID)] = services.NewCuisine(int16(row.ID), row.Name, row.ParentID, row.ImageUrl)
 	}
 	for _, cuisine := range tree {
 		if cuisine.ParentId == nil {

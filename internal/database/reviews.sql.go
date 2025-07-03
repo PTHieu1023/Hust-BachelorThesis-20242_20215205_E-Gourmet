@@ -14,24 +14,21 @@ import (
 const createReview = `-- name: CreateReview :one
 WITH inserted_review as (
     INSERT INTO reviews (rating, comment, user_id, dish_id)
-    VALUES (
-        $1::smallint,
-        $2::text,
-        $3::varchar(63),
-        $4::int)
-    RETURNING id, rating, comment, created_at, user_id, dish_id, updated_at
-)
-SELECT
-    r.id,
-    r.comment,
-    r.rating,
-    r.dish_id,
-    u.username,
-    u.display_name as user_display_name,
-    d.name as dish_name
+        VALUES ($1::smallint,
+                $2::text,
+                $3::varchar(63),
+                $4::int)
+        RETURNING id, rating, comment, created_at, user_id, dish_id, updated_at)
+SELECT r.id,
+       r.comment,
+       r.rating,
+       r.dish_id,
+       u.username,
+       u.display_name as user_display_name,
+       d.name         as dish_name
 FROM inserted_review r
-LEFT JOIN  users u on u.id = r.user_id
-LEFT JOIN  dishes d on d.id = r.dish_id
+         LEFT JOIN users u on u.id = r.user_id
+         LEFT JOIN dishes d on d.id = r.dish_id
 `
 
 type CreateReviewParams struct {
@@ -42,7 +39,7 @@ type CreateReviewParams struct {
 }
 
 type CreateReviewRow struct {
-	ID              int64   `json:"id"`
+	ID              int32   `json:"id"`
 	Comment         string  `json:"comment"`
 	Rating          int16   `json:"rating"`
 	DishID          int32   `json:"dishId"`
@@ -72,109 +69,66 @@ func (q *Queries) CreateReview(ctx context.Context, db DBTX, arg *CreateReviewPa
 }
 
 const deleteReview = `-- name: DeleteReview :exec
-DELETE FROM reviews WHERE id = $1
+DELETE
+FROM reviews
+WHERE id = $1
 `
 
-func (q *Queries) DeleteReview(ctx context.Context, db DBTX, id int64) error {
+func (q *Queries) DeleteReview(ctx context.Context, db DBTX, id int32) error {
 	_, err := db.Exec(ctx, deleteReview, id)
 	return err
 }
 
-const getCurrentUserReview = `-- name: GetCurrentUserReview :one
-SELECT
-    r.id,
-    r.comment,
-    r.rating,
-    r.dish_id,
-    d.name as dish_name,
-    r.user_id,
-    u.username,
-    u.display_name,
-    r.created_at,
-    r.updated_at
-FROM reviews r
-LEFT JOIN dishes d on d.id = r.dish_id
-LEFT JOIN users u on r.user_id = u.id
-WHERE r.dish_id = $1 AND r.user_id = $2
-LIMIT 1
-`
-
-type GetCurrentUserReviewParams struct {
-	DishID int32       `json:"dishId"`
-	UserID interface{} `json:"userId"`
-}
-
-type GetCurrentUserReviewRow struct {
-	ID          int64              `json:"id"`
-	Comment     string             `json:"comment"`
-	Rating      int16              `json:"rating"`
-	DishID      int32              `json:"dishId"`
-	DishName    *string            `json:"dishName"`
-	UserID      interface{}        `json:"userId"`
-	Username    *string            `json:"username"`
-	DisplayName *string            `json:"displayName"`
-	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
-	UpdatedAt   pgtype.Timestamptz `json:"updatedAt"`
-}
-
-func (q *Queries) GetCurrentUserReview(ctx context.Context, db DBTX, arg *GetCurrentUserReviewParams) (*GetCurrentUserReviewRow, error) {
-	row := db.QueryRow(ctx, getCurrentUserReview, arg.DishID, arg.UserID)
-	var i GetCurrentUserReviewRow
-	err := row.Scan(
-		&i.ID,
-		&i.Comment,
-		&i.Rating,
-		&i.DishID,
-		&i.DishName,
-		&i.UserID,
-		&i.Username,
-		&i.DisplayName,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-	)
-	return &i, err
-}
-
 const getReviews = `-- name: GetReviews :many
-SELECT
-    r.id,
-    r.comment,
-    r.rating,
-    r.dish_id,
-    d.name,
-    r.user_id,
-    u.username,
-    u.display_name,
-    r.created_at,
-    r.updated_at
+SELECT r.id,
+       r.comment,
+       r.rating,
+       r.dish_id,
+       d.name         as dish_name,
+       d.images -> 0  as dish_image,
+       r.user_id,
+       u.username,
+       u.avatar_url   as user_image,
+       u.display_name as user_display_name,
+       res.id as restaurant_id,
+       res.username as restaurant_username,
+       res.name as restaurant_name,
+       r.created_at,
+       r.updated_at
 FROM reviews r
-LEFT JOIN dishes d on d.id = r.dish_id
-LEFT JOIN users u on r.user_id = u.id
-WHERE
-    ($3::bigint is null or r.dish_id = $3::bigint)
-  and
-    ($4::varchar(64) is null or u.username = $4::varchar(64))
+         LEFT JOIN dishes d on d.id = r.dish_id
+         LEFT JOIN users u on r.user_id = u.id
+         LEFT JOIN restaurants res on res.id = d.restaurant_id
+WHERE ($3::bigint is null or r.dish_id = $3::bigint)
+  and ($4::varchar(64) is null or r.user_id = $4::varchar(64))
+  and ($5::int is null or d.restaurant_id = $5::int)
 OFFSET $1 LIMIT $2
 `
 
 type GetReviewsParams struct {
-	Offset   int32   `json:"offset"`
-	Limit    int32   `json:"limit"`
-	DishID   *int64  `json:"dishId"`
-	Username *string `json:"username"`
+	Offset       int32   `json:"offset"`
+	Limit        int32   `json:"limit"`
+	DishID       *int64  `json:"dishId"`
+	UserID       *string `json:"userId"`
+	RestaurantID *int32  `json:"restaurantId"`
 }
 
 type GetReviewsRow struct {
-	ID          int64              `json:"id"`
-	Comment     string             `json:"comment"`
-	Rating      int16              `json:"rating"`
-	DishID      int32              `json:"dishId"`
-	Name        *string            `json:"name"`
-	UserID      interface{}        `json:"userId"`
-	Username    *string            `json:"username"`
-	DisplayName *string            `json:"displayName"`
-	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
-	UpdatedAt   pgtype.Timestamptz `json:"updatedAt"`
+	ID                 int32              `json:"id"`
+	Comment            string             `json:"comment"`
+	Rating             int16              `json:"rating"`
+	DishID             int32              `json:"dishId"`
+	DishName           *string            `json:"dishName"`
+	DishImage          interface{}        `json:"dishImage"`
+	UserID             string             `json:"userId"`
+	Username           *string            `json:"username"`
+	UserImage          *string            `json:"userImage"`
+	UserDisplayName    *string            `json:"userDisplayName"`
+	RestaurantID       *int32             `json:"restaurantId"`
+	RestaurantUsername *string            `json:"restaurantUsername"`
+	RestaurantName     *string            `json:"restaurantName"`
+	CreatedAt          pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt          pgtype.Timestamptz `json:"updatedAt"`
 }
 
 func (q *Queries) GetReviews(ctx context.Context, db DBTX, arg *GetReviewsParams) ([]*GetReviewsRow, error) {
@@ -182,7 +136,8 @@ func (q *Queries) GetReviews(ctx context.Context, db DBTX, arg *GetReviewsParams
 		arg.Offset,
 		arg.Limit,
 		arg.DishID,
-		arg.Username,
+		arg.UserID,
+		arg.RestaurantID,
 	)
 	if err != nil {
 		return nil, err
@@ -196,110 +151,17 @@ func (q *Queries) GetReviews(ctx context.Context, db DBTX, arg *GetReviewsParams
 			&i.Comment,
 			&i.Rating,
 			&i.DishID,
-			&i.Name,
-			&i.UserID,
-			&i.Username,
-			&i.DisplayName,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, &i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getReviewsCount = `-- name: GetReviewsCount :one
-SELECT count(*) FROM reviews r
-LEFT JOIN users u on r.user_id = u.id
-WHERE
-    ($1::bigint is null or r.dish_id = $1::bigint)
-  and
-    ($2::varchar(64) is null or u.username = $2::varchar(64))
-`
-
-type GetReviewsCountParams struct {
-	DishID   *int64  `json:"dishId"`
-	Username *string `json:"username"`
-}
-
-func (q *Queries) GetReviewsCount(ctx context.Context, db DBTX, arg *GetReviewsCountParams) (int64, error) {
-	row := db.QueryRow(ctx, getReviewsCount, arg.DishID, arg.Username)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
-}
-
-const getUserProfileReviews = `-- name: GetUserProfileReviews :many
-SELECT
-    r.id,
-    r.comment,
-    r.rating,
-    r.dish_id,
-    d.name as dish_name,
-    r.user_id,
-    u.username,
-    u.display_name,
-    r.created_at,
-    r.updated_at,
-    rest.name as restaurant_name,
-    rest.username as restaurant_username
-FROM reviews r
-LEFT JOIN dishes d on d.id = r.dish_id
-LEFT JOIN users u on r.user_id = u.id
-LEFT JOIN restaurants rest on d.restaurant_id = rest.id
-WHERE r.user_id = $1
-ORDER BY r.created_at DESC
-OFFSET $2 LIMIT $3
-`
-
-type GetUserProfileReviewsParams struct {
-	UserID interface{} `json:"userId"`
-	Offset int32       `json:"offset"`
-	Limit  int32       `json:"limit"`
-}
-
-type GetUserProfileReviewsRow struct {
-	ID                 int64              `json:"id"`
-	Comment            string             `json:"comment"`
-	Rating             int16              `json:"rating"`
-	DishID             int32              `json:"dishId"`
-	DishName           *string            `json:"dishName"`
-	UserID             interface{}        `json:"userId"`
-	Username           *string            `json:"username"`
-	DisplayName        *string            `json:"displayName"`
-	CreatedAt          pgtype.Timestamptz `json:"createdAt"`
-	UpdatedAt          pgtype.Timestamptz `json:"updatedAt"`
-	RestaurantName     *string            `json:"restaurantName"`
-	RestaurantUsername *string            `json:"restaurantUsername"`
-}
-
-func (q *Queries) GetUserProfileReviews(ctx context.Context, db DBTX, arg *GetUserProfileReviewsParams) ([]*GetUserProfileReviewsRow, error) {
-	rows, err := db.Query(ctx, getUserProfileReviews, arg.UserID, arg.Offset, arg.Limit)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []*GetUserProfileReviewsRow{}
-	for rows.Next() {
-		var i GetUserProfileReviewsRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.Comment,
-			&i.Rating,
-			&i.DishID,
 			&i.DishName,
+			&i.DishImage,
 			&i.UserID,
 			&i.Username,
-			&i.DisplayName,
+			&i.UserImage,
+			&i.UserDisplayName,
+			&i.RestaurantID,
+			&i.RestaurantUsername,
+			&i.RestaurantName,
 			&i.CreatedAt,
 			&i.UpdatedAt,
-			&i.RestaurantName,
-			&i.RestaurantUsername,
 		); err != nil {
 			return nil, err
 		}

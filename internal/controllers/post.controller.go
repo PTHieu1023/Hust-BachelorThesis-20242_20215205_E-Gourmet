@@ -10,21 +10,23 @@ import (
 )
 
 func (c *Controller) GetPosts(ctx *fiber.Ctx) error {
+	params := new(database.GetPostsParams)
+	if err := ctx.QueryParser(params); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid request body")
+	}
 	pageFilter, err := pagination.GetPageFilter(ctx)
 	if err != nil {
-		return err
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid pagination parameters")
 	}
+	params.Limit = int32(pageFilter.Size)
+	params.Offset = int32((pageFilter.Page - 1) * pageFilter.Size)
 
-	offset := (pageFilter.Page - 1) * pageFilter.Size
-	posts, err := c.service.GetPosts(ctx.UserContext(), &database.GetPostsParams{
-		Limit:  int32(pageFilter.Size),
-		Offset: int32(offset),
-	})
+	posts, err := c.service.GetPosts(ctx.UserContext(), params)
 	if err != nil {
 		return err
 	}
 
-	return ctx.JSON(fiber.Map{"data": posts})
+	return ctx.JSON(posts)
 }
 
 func (c *Controller) GetPostById(ctx *fiber.Ctx) error {
@@ -43,33 +45,6 @@ func (c *Controller) GetPostById(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.JSON(fiber.Map{"data": post})
-}
-
-func (c *Controller) GetPostsByRestaurant(ctx *fiber.Ctx) error {
-	restaurantId, err := ctx.ParamsInt("restaurantId")
-	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, errInvalidID)
-	}
-
-	filter, err := pagination.GetPageFilter(ctx)
-	if err != nil {
-		return err
-	}
-
-	// Calculate limit and offset from page filter
-	limit := filter.Size
-	offset := (filter.Page - 1) * filter.Size
-
-	posts, err := c.service.GetPostsByRestaurant(ctx.UserContext(), &database.GetPostsByRestaurantParams{
-		RestaurantID: &[]int32{int32(restaurantId)}[0],
-		Limit:        int32(limit),
-		Offset:       int32(offset),
-	})
-	if err != nil {
-		return err
-	}
-
-	return ctx.JSON(fiber.Map{"data": posts})
 }
 
 func (c *Controller) CreatePost(ctx *fiber.Ctx) error {
@@ -103,7 +78,7 @@ func (c *Controller) UpdatePost(ctx *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, errInvalidID)
 	}
 
-	params.PostID = int64(id)
+	params.PostID = int32(id)
 
 	post, err := c.service.UpdatePost(ctx.UserContext(), params)
 	if err != nil {
@@ -224,7 +199,7 @@ func (c *Controller) DeleteComment(ctx *fiber.Ctx) error {
 	}
 
 	err = c.service.DeleteComment(ctx.UserContext(), &database.DeleteCommentParams{
-		ID:     int64(commentId),
+		ID:     int32(commentId),
 		UserID: userID,
 	})
 	if err != nil {

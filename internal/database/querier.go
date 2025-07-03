@@ -16,35 +16,27 @@ type Querier interface {
 	CheckPostLike(ctx context.Context, db DBTX, arg *CheckPostLikeParams) (bool, error)
 	CreateComment(ctx context.Context, db DBTX, arg *CreateCommentParams) (*PostsComment, error)
 	CreateDish(ctx context.Context, db DBTX, arg *CreateDishParams) (*CreateDishRow, error)
-	CreateMenuCategory(ctx context.Context, db DBTX, arg *CreateMenuCategoryParams) (*MenuCategory, error)
 	CreatePost(ctx context.Context, db DBTX, arg *CreatePostParams) (*Post, error)
 	CreateRestaurant(ctx context.Context, db DBTX, arg *CreateRestaurantParams) (*Restaurant, error)
 	CreateReview(ctx context.Context, db DBTX, arg *CreateReviewParams) (*CreateReviewRow, error)
 	CreateUser(ctx context.Context, db DBTX, arg *CreateUserParams) (*User, error)
 	DeleteComment(ctx context.Context, db DBTX, arg *DeleteCommentParams) error
-	DeleteCuisine(ctx context.Context, db DBTX, id int16) error
+	DeleteCuisine(ctx context.Context, db DBTX, id int32) error
 	DeleteDish(ctx context.Context, db DBTX, id int32) error
-	DeleteMenuCategoryById(ctx context.Context, db DBTX, id int32) error
-	DeletePost(ctx context.Context, db DBTX, id int64) error
+	DeletePost(ctx context.Context, db DBTX, id int32) error
 	DeleteRestaurant(ctx context.Context, db DBTX, id int32) error
-	DeleteReview(ctx context.Context, db DBTX, id int64) error
+	DeleteReview(ctx context.Context, db DBTX, id int32) error
 	GetAllUsers(ctx context.Context, db DBTX, arg *GetAllUsersParams) ([]*GetAllUsersRow, error)
-	GetCommentByID(ctx context.Context, db DBTX, id int64) (*GetCommentByIDRow, error)
+	GetCommentByID(ctx context.Context, db DBTX, id int32) (*GetCommentByIDRow, error)
 	GetCommentsByPost(ctx context.Context, db DBTX, postID int64) ([]*GetCommentsByPostRow, error)
-	GetCuisineRecursionById(ctx context.Context, db DBTX, id int16) ([]*GetCuisineRecursionByIdRow, error)
-	GetCurrentUserReview(ctx context.Context, db DBTX, arg *GetCurrentUserReviewParams) (*GetCurrentUserReviewRow, error)
+	GetCuisineRecursionById(ctx context.Context, db DBTX, id int32) ([]*GetCuisineRecursionByIdRow, error)
 	GetDishByID(ctx context.Context, db DBTX, id int32) (*GetDishByIDRow, error)
 	GetDishes(ctx context.Context, db DBTX, arg *GetDishesParams) ([]*GetDishesRow, error)
-	GetDishesByRestaurant(ctx context.Context, db DBTX, restaurantID int32) ([]*GetDishesByRestaurantRow, error)
-	GetDishesCount(ctx context.Context, db DBTX, arg *GetDishesCountParams) (int64, error)
-	GetManagingRestaurantByUser(ctx context.Context, db DBTX, userID interface{}) ([]*GetManagingRestaurantByUserRow, error)
-	GetMenuCategoriesByRestaurantId(ctx context.Context, db DBTX, restaurantID int32) ([]*MenuCategory, error)
-	GetMenuCategoryById(ctx context.Context, db DBTX, id int32) (*MenuCategory, error)
-	GetPostByID(ctx context.Context, db DBTX, id int64) (*GetPostByIDRow, error)
+	GetManagingRestaurantByUser(ctx context.Context, db DBTX, userID string) ([]*GetManagingRestaurantByUserRow, error)
+	GetPostByID(ctx context.Context, db DBTX, id int32) (*GetPostByIDRow, error)
 	GetPosts(ctx context.Context, db DBTX, arg *GetPostsParams) ([]*GetPostsRow, error)
 	GetPostsByRestaurant(ctx context.Context, db DBTX, arg *GetPostsByRestaurantParams) ([]*GetPostsByRestaurantRow, error)
-	GetRestaurantByID(ctx context.Context, db DBTX, id int32) (*GetRestaurantByIDRow, error)
-	GetRestaurantByOwnerId(ctx context.Context, db DBTX, userID interface{}) (*GetRestaurantByOwnerIdRow, error)
+	GetRestaurantByOwnerId(ctx context.Context, db DBTX, userID string) (*GetRestaurantByOwnerIdRow, error)
 	GetRestaurantByUsername(ctx context.Context, db DBTX, username string) (*GetRestaurantByUsernameRow, error)
 	GetRestaurantHighlights(ctx context.Context, db DBTX, restaurantID int32) ([]*GetRestaurantHighlightsRow, error)
 	GetRestaurantManagers(ctx context.Context, db DBTX, restaurantID int32) ([]*GetRestaurantManagersRow, error)
@@ -53,17 +45,14 @@ type Querier interface {
 	GetRestaurants(ctx context.Context, db DBTX, arg *GetRestaurantsParams) ([]*GetRestaurantsRow, error)
 	GetRestaurantsAdmin(ctx context.Context, db DBTX, arg *GetRestaurantsAdminParams) ([]*GetRestaurantsAdminRow, error)
 	GetReviews(ctx context.Context, db DBTX, arg *GetReviewsParams) ([]*GetReviewsRow, error)
-	GetReviewsCount(ctx context.Context, db DBTX, arg *GetReviewsCountParams) (int64, error)
 	GetTopRatedDishes(ctx context.Context, db DBTX, limit int32) ([]*GetTopRatedDishesRow, error)
 	GetUserById(ctx context.Context, db DBTX, id string) (*GetUserByIdRow, error)
 	GetUserByUsername(ctx context.Context, db DBTX, username string) (*GetUserByUsernameRow, error)
-	GetUserProfileReviews(ctx context.Context, db DBTX, arg *GetUserProfileReviewsParams) ([]*GetUserProfileReviewsRow, error)
 	LikePost(ctx context.Context, db DBTX, arg *LikePostParams) error
 	RemoveRestaurantManager(ctx context.Context, db DBTX, arg *RemoveRestaurantManagerParams) error
 	SetUserStatus(ctx context.Context, db DBTX, arg *SetUserStatusParams) error
 	UnlikePost(ctx context.Context, db DBTX, arg *UnlikePostParams) error
 	UpdateCuisine(ctx context.Context, db DBTX, arg *UpdateCuisineParams) (*Cuisine, error)
-	UpdateDish(ctx context.Context, db DBTX, arg *UpdateDishParams) (*UpdateDishRow, error)
 	UpdatePost(ctx context.Context, db DBTX, arg *UpdatePostParams) (*Post, error)
 	UpdateRestaurant(ctx context.Context, db DBTX, arg *UpdateRestaurantParams) (*Restaurant, error)
 	UpdateUser(ctx context.Context, db DBTX, arg *UpdateUserParams) (*UpdateUserRow, error)

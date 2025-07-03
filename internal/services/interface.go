@@ -21,10 +21,7 @@ type IService interface {
 
 	CreateReview(ctx context.Context, params *database.CreateReviewParams) (*database.CreateReviewRow, error)
 	GetReviews(ctx context.Context, params *database.GetReviewsParams) ([]*database.GetReviewsRow, error)
-	GetReviewsCount(ctx context.Context, params *database.GetReviewsCountParams) (int64, error)
 	DeleteReview(ctx context.Context, dishId int64) error
-	GetCurrentUserReview(ctx context.Context, dishId int32, userId string) (*database.GetCurrentUserReviewRow, error)
-	GetUserProfileReviews(ctx context.Context, params *database.GetUserProfileReviewsParams) ([]*database.GetUserProfileReviewsRow, error)
 
 	CreateUser(ctx context.Context, params *database.CreateUserParams) (*database.User, error)
 	GetUserByUsername(ctx context.Context, username string) (*database.GetUserByUsernameRow, error)
@@ -32,7 +29,6 @@ type IService interface {
 	UpdateUser(ctx context.Context, params *database.UpdateUserParams) (*database.UpdateUserRow, error)
 
 	GetRestaurants(ctx context.Context, params *database.GetRestaurantsParams) ([]*database.GetRestaurantsRow, error)
-	GetRestaurantById(ctx context.Context, id int32) (*database.GetRestaurantByIDRow, error)
 	CreateRestaurant(ctx context.Context, params *database.CreateRestaurantParams) (*database.Restaurant, error)
 	UpdateRestaurant(ctx context.Context, params *database.UpdateRestaurantParams) (*database.Restaurant, error)
 	DeleteRestaurantById(ctx context.Context, id int32) error

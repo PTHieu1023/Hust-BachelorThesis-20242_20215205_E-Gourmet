@@ -48,6 +48,7 @@ SELECT
 FROM posts p
 JOIN restaurants r ON p.restaurant_id = r.id
 LEFT JOIN post_like pl ON p.id = pl.post_id
+WHERE (@restaurant_id::varchar(64) = '' or r.id::text = @restaurant_id or r.username = @restaurant_id)
 GROUP BY p.id, p.caption, p.media, p.created_at, p.updated_at, p.restaurant_id, r.name, r.username, r.avatar_url
 ORDER BY p.created_at DESC
 LIMIT $1 OFFSET $2;
