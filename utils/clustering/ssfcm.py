@@ -1,6 +1,7 @@
 import numpy as np
 from numpy import ndarray
 from scipy.spatial.distance import cdist
+from sklearn.metrics import silhouette_score, davies_bouldin_score
 
 """
 Symbol for Supervised Fuzzy C-Means (SSFCM) clustering algorithm.
@@ -55,3 +56,27 @@ def ssfcm(x: ndarray, c: int, m: float = 2, max_iter: int = 10000, eps: float = 
         if delta < eps:
             return u, v
     return u, v
+
+def evaluate_clustering(data, labels):
+    try:
+        if len(np.unique(labels)) < 2:
+            return {
+                "silhouette": None,
+                "davies_bouldin": None
+            }
+            
+        silhouette = silhouette_score(data, labels)
+      
+        db_index = davies_bouldin_score(data, labels)
+  
+        
+        return {
+            "silhouette": silhouette,
+            "davies_bouldin": db_index
+        }
+    except Exception as e:
+        print(f"Error computing cluster evaluation metrics: {e}")
+        return {
+            "silhouette": None,
+            "davies_bouldin": None
+        }
