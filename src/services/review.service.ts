@@ -13,6 +13,7 @@ export interface Review {
     userId: string;
     username: string;
     userDisplayName: string;
+    userAvatarUrl?: string;
     restaurantId: string;
     restaurantName: string;
     restaurantUsername: string;
@@ -29,7 +30,7 @@ export interface ReviewFormProps {
 export const getReviews = async (params?: {
     dishId?: number,
     userId?: string,
-    restaurantId?: string,
+    restaurantId?: string | number,
     page?: number,
     size?: number
 }): Promise<Review[]> => {

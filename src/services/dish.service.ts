@@ -5,6 +5,7 @@ import httpClient, {getUrl} from "@/configs/http.config";
 export interface ShortDishProps {
     id: number,
     name: string,
+    urlName?: string,
     description: string,
     price: number,
     restaurantId: number,
@@ -24,14 +25,16 @@ export interface ShortDishProps {
 export interface SearchDishFilterProps {
     search?: string;
     cuisineId?: number;
+    restaurantId?: number | string;
     minPrice?: number;
     maxPrice?: number;
     page?: number;
-    limit?: number;
+    size?: number;
 }
 
-export const getDish = async (params: SearchDishFilterProps): Promise<ShortDishProps[]> => {
-    const response = await httpClient.get(getUrl("/api/dish"), { params });
+
+export async function getDish (params: SearchDishFilterProps): Promise<ShortDishProps[]> {
+    const response = await httpClient.get(getUrl("/api/dish"), {params});
     return response.data as ShortDishProps[];
 }
 
@@ -56,26 +59,39 @@ export interface DishDetails {
     reviewCount: number;
 }
 
-export const getDishDetails = async (dishId: number): Promise<DishDetails> => {
-    const response = await httpClient.get(getUrl(`/api/dish/${dishId}`));
-    return response.data as DishDetails;
+export const getDishDetails = async (dishId: number): Promise<DishDetails | null> => {
+    try {
+        const response = await httpClient.get(getUrl(`/api/dish/${dishId}`));
+        return response.data as DishDetails;
+    } catch (error) {
+        console.error(`Error fetching dish details for ID ${dishId}:`, error);
+        return null;
+    }
 }
 
-// Legacy function name for backward compatibility
 export const getDetails = getDishDetails;
 
-export const getRecommendations = async () => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return  [
-        {
-            id: 1,
-            title: "Try this popular ramen everyone's talking about",
-            restaurant: "Tokyo Bowl",
-            dish: "Tonkotsu Ramen",
-            image: "https://images.unsplash.com/photo-1569718212165-3a8278d5f624",
-            rating: 4.8,
-            reason: "Trending in your area",
-            price: "$$"
-        }
-    ];
+export interface Recommendation {
+    id: number;
+    title: string;
+    restaurant: string;
+    dish: string;
+    urlName: string;
+    restaurantUsername: string;
+    image?: string;
+    rating: number;
+    reviewCount: number;
+    price: string;
+    reason: string;
+}
+
+export interface DishListParams {
+    page?: number;
+    size?: number;
+}
+
+
+export const getRecommendations = async (params?: DishListParams): Promise<Recommendation[]> => {
+    const response = await httpClient.get(getUrl("/api/recommendations"), {params});
+    return response.data ?? [];
 }

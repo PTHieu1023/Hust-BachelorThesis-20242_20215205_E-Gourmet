@@ -60,10 +60,12 @@ export const authOptions: NextAuthOptions = {
                 session.access_token = token.access_token;
                 session.id_token = token.id_token;
                 session.user = {
+                    id: tokenDecoded.sub,
                     name: `${tokenDecoded.name}`,
                     username: tokenDecoded.preferred_username,
                     email: tokenDecoded.email,
                     imageUrl: tokenDecoded.image_url,
+                    clientRoles: tokenDecoded.resource_access?.[`${process.env.OAUTH_CLIENT_ID}`]?.roles ?? [],
                     realmRoles: tokenDecoded.realm_access.roles,
                     locale: tokenDecoded?.locale ?? 'en'
                 }
@@ -78,10 +80,12 @@ export interface KCSession extends Session{
     access_token?: string
     id_token?: string
     user?: {
+        id: string
         name?: string
         username?: string
         email?: string
         imageUrl?: string
+        clientRoles?: string[]
         realmRoles?: string[]
         locale?: string
     }
