@@ -22,10 +22,12 @@
       "title": "Discover Dishes",
       "search": "Search",
       "cuisines": "Cuisines",
+      "all-cuisines": "All Cuisines",
       "price-range": "Price Range"
     },
     "loading": "Loading...",
-    "no-results": "No results found."
+    "no-results": "No results found.",
+    "error-loading": "Error loading dishes. Please try again later."
   },
   "for-you": {
     "title": "Personalized For You",
@@ -39,6 +41,25 @@
     }
   },
   "restaurant": {
+    "title": "Restaurant Manager",
+    "subtitle": "Manage your restaurant's profile, posts, and reviews.",
+    "manage-posts": "Manage Posts",
+    "create-post": "Add New Post",
+    "view-public-profile": "Public Profile",
+    "edit-profile": "Edit Profile",
+    "menu-item": {
+      "view": "View Detail",
+      "edit": "Edit Item",
+      "delete": "Delete Item"
+    },
+    "common": {
+      "reviews": "Reviews",
+      "followers": "Followers",
+      "posts": "Posts"
+    },
+    "menu": {
+      "highlights": "Menu"
+    },
     "details": {
       "title": "Restaurant Details",
       "description": "Description",
@@ -63,9 +84,6 @@
       "reviews": "Reviews",
       "photos": "Photos"
     },
-    "menu": {
-      "highlights": "Menu Highlights"
-    },
     "posts": {
       "coming-soon-title": "Restaurant Posts Coming Soon",
       "coming-soon-desc": "See all posts from this restaurant here."
@@ -75,6 +93,7 @@
       "coming-soon-desc": "Browse all photos from this restaurant here."
     },
     "reviews": {
+      "recent": "Recent Reviews",
       "ordered": "Ordered",
       "write-review": "Write a Review",
       "modal": {
@@ -243,5 +262,8 @@
     "back": "Back",
     "next": "Next",
     "previous": "Previous"
+  },
+  "error": {
+    "title": "Something went wrong!"
   }
 }

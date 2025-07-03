@@ -22,10 +22,12 @@
       "title": "Khám phá món ăn",
       "search": "Tìm kiếm",
       "cuisines": "Ẩm thực",
+      "all-cuisines": "Tất cả ẩm thực",
       "price-range": "Khoảng giá"
     },
     "loading": "Đang tải...",
-    "no-results": "Không tìm thấy kết quả."
+    "no-results": "Không tìm thấy kết quả.",
+    "error-loading": "Lỗi khi tải món ăn. Vui lòng thử lại sau."
   },
   "for-you": {
     "title": "Được cá nhân hóa cho bạn",
@@ -39,6 +41,25 @@
     }
   },
   "restaurant": {
+    "title": "Quản lý nhà hàng",
+    "subtitle": "Quản lý hồ sơ, bài viết và đánh giá của nhà hàng bạn.",
+    "manage-posts": "Quản lý bài viết",
+    "create-post": "Thêm bài viết mới",
+    "view-public-profile": "Xem hồ sơ công khai",
+    "edit-profile": "Chỉnh sửa hồ sơ",
+    "menu-item": {
+      "view": "Xem chi tiết",
+      "edit": "Chỉnh sửa món ăn",
+      "delete": "Xóa món ăn"
+    },
+    "common": {
+      "reviews": "Đánh giá",
+      "followers": "Người theo dõi",
+      "posts": "Bài viết"
+    },
+    "menu": {
+      "highlights": "Món ăn"
+    },
     "details": {
       "title": "Chi tiết nhà hàng",
       "description": "Mô tả",
@@ -63,9 +84,6 @@
       "reviews": "Đánh giá",
       "photos": "Hình ảnh"
     },
-    "menu": {
-      "highlights": "Món nổi bật"
-    },
     "posts": {
       "coming-soon-title": "Bài viết nhà hàng sắp ra mắt",
       "coming-soon-desc": "Xem tất cả bài viết từ nhà hàng này tại đây."
@@ -75,6 +93,7 @@
       "coming-soon-desc": "Duyệt tất cả hình ảnh từ nhà hàng này tại đây."
     },
     "reviews": {
+      "recent": "Đánh giá của khách hàng",
       "ordered": "Đã đặt",
       "write-review": "Viết đánh giá",
       "modal": {
@@ -239,5 +258,8 @@
     "back": "Quay lại",
     "next": "Tiếp theo",
     "previous": "Trước đó"
+  },
+  "error": {
+    "title": "Đã xảy ra lỗi"
   }
 }
