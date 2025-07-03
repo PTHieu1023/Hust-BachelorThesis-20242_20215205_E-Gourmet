@@ -2,25 +2,22 @@
 
 import httpClient, {getUrl} from "@/configs/http.config";
 
-export interface Review{
-    id: string;
-    dish: {
-        id: string;
-        name: string;
-        restaurant: {
-            name: string;
-            avatar: string;
-            username: string;
-        }
-    };
+export interface Review {
+    id: number;
+    comment: string;
     rating: number;
-    author?: {
-        username?: string;
-        name?: string;
-        avatar?: string;
-    };
-    review: string;
-    createdAt?: Date;
+    dishId: number;
+    dishName: string;
+    dishUrlName?: string;
+    dishImage?: string;
+    userId: string;
+    username: string;
+    userDisplayName: string;
+    restaurantId: string;
+    restaurantName: string;
+    restaurantUsername: string;
+    createdAt: Date | string;
+    updatedAt: Date | string;
 }
 
 export interface ReviewFormProps {
@@ -28,15 +25,15 @@ export interface ReviewFormProps {
     rating: number;
 }
 
-export const getReviews = async (params?: {dishId?: number, page?: number, limit?: number}): Promise<Review[]> => {
-    const response = await httpClient.get(getUrl("/api/review"), { params });
-    return response.data as Review[];
-}
 
-export const getReviewsByDishId = async (dishId: number, page: number = 1, limit: number = 10): Promise<Review[]> => {
-    const response = await httpClient.get(getUrl(`/api/review/dish/${dishId}`), { 
-        params: { page, limit } 
-    });
+export const getReviews = async (params?: {
+    dishId?: number,
+    userId?: string,
+    restaurantId?: string,
+    page?: number,
+    size?: number
+}): Promise<Review[]> => {
+    const response = await httpClient.get(getUrl("/api/review"), {params});
     return response.data as Review[];
 }
 

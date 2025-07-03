@@ -3,6 +3,7 @@ import {Heart} from "lucide-react";
 import {getTranslations, setRequestLocale} from "next-intl/server";
 import {Suspense} from "react";
 import {RecommendationList, UserStatsCard} from "@/app/[locale]/for-you/components";
+import Loading from "@/components/loading";
 
 interface PageProps {
     params: Promise<{ locale: string }>;
@@ -26,7 +27,7 @@ export default async function ForYouPage({params}: Readonly<PageProps>) {
                         </CardHeader>
                     </Card>
                     <div className="space-y-4">
-                        <Suspense fallback={"loading recommendations..."}>
+                        <Suspense fallback={<Loading/>}>
                             <RecommendationList/>
                         </Suspense>
                     </div>
