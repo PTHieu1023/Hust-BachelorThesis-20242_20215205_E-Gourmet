@@ -35,6 +35,16 @@ func (q *Queries) AddCuisine(ctx context.Context, db DBTX, arg *AddCuisineParams
 	return &i, err
 }
 
+const deleteCuisine = `-- name: DeleteCuisine :exec
+DELETE FROM cuisines
+WHERE id = $1
+`
+
+func (q *Queries) DeleteCuisine(ctx context.Context, db DBTX, id int16) error {
+	_, err := db.Exec(ctx, deleteCuisine, id)
+	return err
+}
+
 const getCuisineRecursionById = `-- name: GetCuisineRecursionById :many
 WITH RECURSIVE cuisine_tree AS (
     SELECT
@@ -95,4 +105,40 @@ func (q *Queries) GetCuisineRecursionById(ctx context.Context, db DBTX, id int16
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateCuisine = `-- name: UpdateCuisine :one
+UPDATE cuisines
+SET name = $2,
+    parent_id = $3,
+    image_url = $4,
+    updated_at = NOW()
+WHERE id = $1
+RETURNING id, name, parent_id, image_url, created_at, updated_at
+`
+
+type UpdateCuisineParams struct {
+	ID       int16   `json:"id"`
+	Name     string  `json:"name"`
+	ParentID *int16  `json:"parentId"`
+	ImageUrl *string `json:"imageUrl"`
+}
+
+func (q *Queries) UpdateCuisine(ctx context.Context, db DBTX, arg *UpdateCuisineParams) (*Cuisine, error) {
+	row := db.QueryRow(ctx, updateCuisine,
+		arg.ID,
+		arg.Name,
+		arg.ParentID,
+		arg.ImageUrl,
+	)
+	var i Cuisine
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.ParentID,
+		&i.ImageUrl,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return &i, err
 }

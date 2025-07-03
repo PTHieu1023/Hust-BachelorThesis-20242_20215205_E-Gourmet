@@ -3,8 +3,6 @@ package services
 import (
 	"context"
 	"e-gourmet/core/internal/database"
-	"github.com/gofiber/fiber/v2"
-	"strings"
 )
 
 func (s *Service) GetCuisineRecursionById(ctx context.Context, id int16) ([]*database.GetCuisineRecursionByIdRow, error) {
@@ -12,12 +10,6 @@ func (s *Service) GetCuisineRecursionById(ctx context.Context, id int16) ([]*dat
 }
 
 func (s *Service) AddCuisine(ctx context.Context, params *database.AddCuisineParams) (*Cuisine, error) {
-	params.Name = strings.TrimSpace(params.Name)
-	if params.Name == "" {
-		return nil, fiber.NewError(
-			fiber.StatusBadRequest,
-			"Cuisine name is required")
-	}
 	if params.ParentID == nil {
 		params.ParentID = new(int16)
 		*params.ParentID = 0
@@ -28,4 +20,16 @@ func (s *Service) AddCuisine(ctx context.Context, params *database.AddCuisinePar
 		return nil, err
 	}
 	return NewCuisine(cuisine.ID, cuisine.Name, cuisine.ParentID, cuisine.ImageUrl), nil
+}
+
+func (s *Service) UpdateCuisine(ctx context.Context, params *database.UpdateCuisineParams) (*Cuisine, error) {
+	cuisine, err := s.querier.UpdateCuisine(ctx, s.dbtx, params)
+	if err != nil {
+		return nil, err
+	}
+	return NewCuisine(cuisine.ID, cuisine.Name, cuisine.ParentID, cuisine.ImageUrl), nil
+}
+
+func (s *Service) DeleteCuisine(ctx context.Context, id int16) error {
+	return s.querier.DeleteCuisine(ctx, s.dbtx, id)
 }

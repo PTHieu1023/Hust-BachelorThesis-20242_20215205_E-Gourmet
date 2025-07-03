@@ -28,3 +28,16 @@ order by level desc, w, id;
 INSERT INTO cuisines (name, parent_id, image_url)
 VALUES ($1,$2,$3)
 RETURNING *;
+
+-- name: UpdateCuisine :one
+UPDATE cuisines
+SET name = $2,
+    parent_id = $3,
+    image_url = $4,
+    updated_at = NOW()
+WHERE id = $1
+RETURNING *;
+
+-- name: DeleteCuisine :exec
+DELETE FROM cuisines
+WHERE id = $1;
