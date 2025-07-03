@@ -68,10 +68,19 @@ FROM dishes d
          LEFT JOIN cuisines c ON c.id = d.cuisine_id
          LEFT JOIN reviews rv on rv.dish_id = d.id
 WHERE (sqlc.narg(restaurant_id)::int is null or d.restaurant_id = sqlc.narg(restaurant_id)::int)
-  AND d.cuisine_id in (select id from get_cuisine_recursion_by_id(sqlc.narg(cuisine_id)::smallint))
-  AND concat(d.name, r.name) like '%' || @search || '%'
+  AND (sqlc.narg(cuisine_id)::smallint is null or d.cuisine_id in (select id from get_cuisine_recursion_by_id(sqlc.narg(cuisine_id)::smallint)))
+  AND (sqlc.narg(search)::text is null or sqlc.narg(search)::text = '' or concat(d.name, ' ', r.name) ilike '%' || sqlc.narg(search)::text || '%')
 GROUP BY d.id, d.name, d.description, d.price, d.restaurant_id, r.name, r.address,
          r.lat, r.lng, d.cuisine_id, c.name, r.username,
          d.created_at, d.updated_at
 ORDER BY d.updated_at DESC
 LIMIT $1 OFFSET $2;
+
+-- name: GetDishesCount :one
+SELECT COUNT(DISTINCT d.id)
+FROM dishes d
+         LEFT JOIN restaurants r ON r.id = d.restaurant_id
+         LEFT JOIN cuisines c ON c.id = d.cuisine_id
+WHERE (sqlc.narg(restaurant_id)::int is null or d.restaurant_id = sqlc.narg(restaurant_id)::int)
+  AND (sqlc.narg(cuisine_id)::smallint is null or d.cuisine_id in (select id from get_cuisine_recursion_by_id(sqlc.narg(cuisine_id)::smallint)))
+  AND (sqlc.narg(search)::text is null or sqlc.narg(search)::text = '' or concat(d.name, ' ', r.name) ilike '%' || sqlc.narg(search)::text || '%');

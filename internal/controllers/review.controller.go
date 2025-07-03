@@ -17,7 +17,7 @@ func (c *Controller) CreateReview(ctx *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	return ctx.Status(fiber.StatusCreated).JSON(review)
+	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{"data": review})
 }
 
 func (c *Controller) GetReviews(ctx *fiber.Ctx) error {
@@ -38,6 +38,24 @@ func (c *Controller) GetReviews(ctx *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
+
+	// Get total count for pagination
+	countParams := &database.GetReviewsCountParams{
+		DishID:   params.DishID,
+		Username: params.Username,
+	}
+	totalReviews, err := c.service.GetReviewsCount(ctx.UserContext(), countParams)
+	if err != nil {
+		return err
+	}
+
+	// Calculate total pages
+	totalPages := (totalReviews + int64(pageFilter.Size) - 1) / int64(pageFilter.Size)
+	if totalPages < 1 {
+		totalPages = 1
+	}
+
+	// Return reviews directly
 	return ctx.JSON(reviews)
 }
 
@@ -51,4 +69,46 @@ func (c *Controller) DeleteReview(ctx *fiber.Ctx) error {
 		return err
 	}
 	return ctx.SendStatus(fiber.StatusNoContent)
+}
+
+func (c *Controller) GetCurrentUserReview(ctx *fiber.Ctx) error {
+	dishId, err := ctx.ParamsInt("dishId")
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid dish ID")
+	}
+
+	userID := ctx.Locals("userID").(string)
+	if userID == "" {
+		return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized")
+	}
+
+	review, err := c.service.GetCurrentUserReview(ctx.UserContext(), int32(dishId), userID)
+	if err != nil {
+		return err
+	}
+
+	return ctx.JSON(review)
+}
+
+func (c *Controller) GetUserProfileReviews(ctx *fiber.Ctx) error {
+	userID := ctx.Params("userId")
+	if userID == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid user ID")
+	}
+
+	pageFilter, err := pagination.GetPageFilter(ctx)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid pagination parameters")
+	}
+
+	reviews, err := c.service.GetUserProfileReviews(ctx.UserContext(), &database.GetUserProfileReviewsParams{
+		UserID: userID,
+		Offset: int32((pageFilter.Page - 1) * pageFilter.Size),
+		Limit:  int32(pageFilter.Size),
+	})
+	if err != nil {
+		return err
+	}
+
+	return ctx.JSON(reviews)
 }

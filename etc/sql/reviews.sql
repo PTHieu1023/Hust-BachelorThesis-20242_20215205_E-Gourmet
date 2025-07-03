@@ -43,3 +43,51 @@ OFFSET $1 LIMIT $2;
 
 -- name: DeleteReview :exec
 DELETE FROM reviews WHERE id = $1;
+
+-- name: GetCurrentUserReview :one
+SELECT
+    r.id,
+    r.comment,
+    r.rating,
+    r.dish_id,
+    d.name as dish_name,
+    r.user_id,
+    u.username,
+    u.display_name,
+    r.created_at,
+    r.updated_at
+FROM reviews r
+LEFT JOIN dishes d on d.id = r.dish_id
+LEFT JOIN users u on r.user_id = u.id
+WHERE r.dish_id = $1 AND r.user_id = $2
+LIMIT 1;
+
+-- name: GetUserProfileReviews :many
+SELECT
+    r.id,
+    r.comment,
+    r.rating,
+    r.dish_id,
+    d.name as dish_name,
+    r.user_id,
+    u.username,
+    u.display_name,
+    r.created_at,
+    r.updated_at,
+    rest.name as restaurant_name,
+    rest.username as restaurant_username
+FROM reviews r
+LEFT JOIN dishes d on d.id = r.dish_id
+LEFT JOIN users u on r.user_id = u.id
+LEFT JOIN restaurants rest on d.restaurant_id = rest.id
+WHERE r.user_id = $1
+ORDER BY r.created_at DESC
+OFFSET $2 LIMIT $3;
+
+-- name: GetReviewsCount :one
+SELECT count(*) FROM reviews r
+LEFT JOIN users u on r.user_id = u.id
+WHERE
+    (sqlc.narg('dish_id')::bigint is null or r.dish_id = sqlc.narg('dish_id')::bigint)
+  and
+    (sqlc.narg('username')::varchar(64) is null or u.username = sqlc.narg('username')::varchar(64));

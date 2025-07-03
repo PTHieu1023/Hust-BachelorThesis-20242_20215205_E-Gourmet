@@ -17,7 +17,7 @@ VALUES ($1::varchar(64),
         $2::varchar(64),
         $3::varchar(127),
         $4::varchar(255))
-RETURNING id, username, email, display_name, avatar_url, lat, lng, budget, created_at, updated_at, enable
+RETURNING id, username, email, display_name, avatar_url, lat, lng, budget, created_at, updated_at, enable, status
 `
 
 type CreateUserParams struct {
@@ -47,6 +47,7 @@ func (q *Queries) CreateUser(ctx context.Context, db DBTX, arg *CreateUserParams
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.Enable,
+		&i.Status,
 	)
 	return &i, err
 }

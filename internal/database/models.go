@@ -24,6 +24,15 @@ type Dish struct {
 	Price        int64              `json:"price"`
 	CuisineID    int16              `json:"cuisineId"`
 	RestaurantID int32              `json:"restaurantId"`
+	CategoryID   *int32             `json:"categoryId"`
+	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt    pgtype.Timestamptz `json:"updatedAt"`
+}
+
+type MenuCategory struct {
+	ID           int32              `json:"id"`
+	Name         string             `json:"name"`
+	RestaurantID int32              `json:"restaurantId"`
 	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt    pgtype.Timestamptz `json:"updatedAt"`
 }
@@ -100,6 +109,7 @@ type User struct {
 	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt   pgtype.Timestamptz `json:"updatedAt"`
 	Enable      bool               `json:"enable"`
+	Status      string             `json:"status"`
 }
 
 type UserCuisine struct {

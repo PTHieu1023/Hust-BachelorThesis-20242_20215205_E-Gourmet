@@ -84,3 +84,99 @@ SELECT r.*, rm.is_owner
 FROM restaurant_manager rm
 JOIN restaurants r ON rm.restaurant_id = r.id
 WHERE rm.user_id = $1;
+
+-- name: GetRestaurantByOwnerId :one
+SELECT
+    r.id,
+    r.name,
+    r.description,
+    r.avatar_url,
+    r.username,
+    r.email,
+    r.phone,
+    r.address,
+    r.lat,
+    r.lng,
+    r.created_at,
+    r.updated_at,
+    r.is_approved
+FROM restaurants r
+JOIN restaurant_manager rm ON r.id = rm.restaurant_id
+WHERE rm.user_id = $1 AND rm.is_owner = true
+LIMIT 1;
+
+-- name: GetRestaurantByUsername :one
+SELECT
+    r.id,
+    r.name,
+    r.description,
+    r.avatar_url,
+    r.username,
+    r.email,
+    r.phone,
+    r.address,
+    r.lat,
+    r.lng,
+    r.created_at,
+    r.updated_at,
+    r.is_approved
+FROM restaurants r
+WHERE r.username = $1;
+
+-- name: GetRestaurantProfile :one
+SELECT
+    r.id,
+    r.name,
+    r.description,
+    r.avatar_url,
+    r.username,
+    r.email,
+    r.phone,
+    r.address,
+    r.lat,
+    r.lng,
+    r.created_at,
+    r.updated_at,
+    r.is_approved,
+    COUNT(DISTINCT d.id) as dish_count,
+    COUNT(DISTINCT rev.id) as review_count,
+    COALESCE(AVG(rev.rating), 0) as average_rating,
+    COUNT(DISTINCT p.id) as post_count
+FROM restaurants r
+LEFT JOIN dishes d ON r.id = d.restaurant_id
+LEFT JOIN reviews rev ON d.id = rev.dish_id
+LEFT JOIN posts p ON r.id = p.restaurant_id
+WHERE r.id = $1
+GROUP BY r.id, r.name, r.description, r.avatar_url, r.username, r.email, r.phone, r.address, r.lat, r.lng, r.created_at, r.updated_at, r.is_approved;
+
+-- name: GetRestaurantHighlights :many
+SELECT
+    d.id,
+    d.name,
+    d.description,
+    d.price,
+    COALESCE(AVG(rev.rating), 0) as rating,
+    COUNT(rev.id) as review_count
+FROM dishes d
+LEFT JOIN reviews rev ON d.id = rev.dish_id
+WHERE d.restaurant_id = $1
+GROUP BY d.id, d.name, d.description, d.price
+ORDER BY rating DESC, review_count DESC
+LIMIT 6;
+
+-- name: GetRestaurantRecentReviews :many
+SELECT
+    rev.id,
+    rev.rating,
+    rev.comment,
+    rev.created_at,
+    u.username,
+    u.display_name,
+    u.avatar_url,
+    d.name as dish_name
+FROM reviews rev
+JOIN users u ON rev.user_id = u.id
+JOIN dishes d ON rev.dish_id = d.id
+WHERE d.restaurant_id = $1
+ORDER BY rev.created_at DESC
+LIMIT 10;

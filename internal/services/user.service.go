@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"e-gourmet/core/internal/database"
-	"e-gourmet/core/internal/middlewares"
 	"e-gourmet/core/internal/server/logger"
+	"e-gourmet/core/internal/utils"
 	"errors"
 	"fmt"
 	"github.com/Nerzal/gocloak/v13"
@@ -34,8 +34,8 @@ func (s *Service) CreateUser(ctx context.Context, params *database.CreateUserPar
 		return nil, err
 	}
 
-	token := ctx.Value(middlewares.CtxAccessToken).(*jwt.Token).Raw
-	realm := ctx.Value(middlewares.CtxKCRealm).(string)
+	token := ctx.Value(utils.AuthAccessToken).(*jwt.Token).Raw
+	realm := ctx.Value(utils.AuthRealm()).(string)
 	kcUser := gocloak.User{
 		ID:            params.ID,
 		Username:      params.Username,
@@ -62,7 +62,7 @@ func (s *Service) CreateUser(ctx context.Context, params *database.CreateUserPar
 
 func (s *Service) GetUserById(ctx context.Context, id string) (*database.GetUserByIdRow, error) {
 	user, err := s.querier.GetUserById(ctx, s.dbtx, id)
-	if errors.As(err, &pgx.ErrNoRows) {
+	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, fiber.NewError(fiber.StatusNotFound, "NOT_FOUND")
 	}
 	return user, err
@@ -73,7 +73,7 @@ func (s *Service) GetUserByUsername(ctx context.Context, username string) (*data
 		return nil, err
 	}
 	user, err := s.querier.GetUserByUsername(ctx, s.dbtx, username)
-	if errors.As(err, &pgx.ErrNoRows) {
+	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, fiber.NewError(fiber.StatusNotFound, "NOT_FOUND")
 	}
 	return user, err
@@ -86,15 +86,15 @@ func (s *Service) UpdateUser(ctx context.Context, params *database.UpdateUserPar
 	}
 
 	user, err := s.querier.UpdateUser(ctx, s.dbtx, params)
-	token := ctx.Value(middlewares.CtxAccessToken).(*gocloak.JWT)
-	realm := ctx.Value(middlewares.CtxKCRealm).(string)
+	token := ctx.Value(utils.AuthAccessToken).(*gocloak.JWT)
+	realm := ctx.Value(utils.AuthRealm()).(string)
 
 	if err != nil {
 		logger.Instance().Info(fmt.Sprintf("Rollback user update due to error: %v", err))
 		_ = s.kc.UpdateUser(ctx, token.AccessToken, realm, *oldKC)
 	}
 
-	if errors.As(err, &sql.ErrNoRows) {
+	if errors.Is(err, sql.ErrNoRows) {
 		return nil, fiber.NewError(fiber.StatusNotFound, "NOT_FOUND user("+*params.ID+")")
 	}
 	return user, err
@@ -147,8 +147,8 @@ func usernameFromEmail(email string) string {
 }
 
 func (s *Service) updateKCUser(ctx context.Context, params *database.UpdateUserParams) (oldKC *gocloak.User, newKC *gocloak.User, err error) {
-	realm := ctx.Value(middlewares.CtxKCRealm).(string)
-	token := ctx.Value(middlewares.CtxAccessToken).(*gocloak.JWT)
+	realm := ctx.Value(utils.AuthRealm()).(string)
+	token := ctx.Value(utils.AuthAccessToken).(*gocloak.JWT)
 
 	oldKC, err = s.kc.GetUserByID(ctx, token.AccessToken, realm, *params.ID)
 	if err != nil {

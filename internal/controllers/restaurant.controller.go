@@ -3,6 +3,7 @@ package controllers
 import (
 	"database/sql"
 	"e-gourmet/core/internal/database"
+	"e-gourmet/core/internal/utils"
 	"e-gourmet/core/pkg/pagination"
 	"errors"
 	"github.com/gofiber/fiber/v2"
@@ -29,26 +30,26 @@ func (c *Controller) CreateRestaurant(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	return ctx.Status(fiber.StatusCreated).JSON(restaurant)
+	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{"data": restaurant})
 }
 
 func (c *Controller) GetRestaurantById(ctx *fiber.Ctx) error {
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, "Invalid restaurant ID.")
+		return fiber.NewError(fiber.StatusBadRequest, errInvalidID)
 	}
 
 	restaurant, err := c.service.GetRestaurantById(ctx.UserContext(), int32(id))
 
 	if errors.Is(err, sql.ErrNoRows) {
-		return fiber.NewError(fiber.StatusNotFound, "Restaurant not found.")
+		return fiber.NewError(fiber.StatusNotFound, errResourceNotFound)
 	}
 
 	if err != nil {
 		return err
 	}
 
-	return ctx.JSON(restaurant)
+	return ctx.JSON(fiber.Map{"data": restaurant})
 }
 
 func (c *Controller) GetRestaurants(ctx *fiber.Ctx) error {
@@ -67,13 +68,13 @@ func (c *Controller) GetRestaurants(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	return ctx.JSON(restaurants)
+	return ctx.JSON(fiber.Map{"data": restaurants})
 }
 
 func (c *Controller) UpdateRestaurant(ctx *fiber.Ctx) error {
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, "Invalid restaurant ID.")
+		return fiber.NewError(fiber.StatusBadRequest, errInvalidID)
 	}
 
 	params := new(database.UpdateRestaurantParams)
@@ -88,21 +89,96 @@ func (c *Controller) UpdateRestaurant(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	return ctx.JSON(updatedRestaurant)
+	return ctx.JSON(fiber.Map{"data": updatedRestaurant})
 }
 
 func (c *Controller) DeleteRestaurantById(ctx *fiber.Ctx) error {
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, "Invalid restaurant ID.")
+		return fiber.NewError(fiber.StatusBadRequest, errInvalidID)
 	}
 
 	if err := c.service.DeleteRestaurantById(ctx.UserContext(), int32(id)); err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return fiber.NewError(fiber.StatusNotFound, "Restaurant not found.")
-		}
 		return err
 	}
 
 	return ctx.SendStatus(fiber.StatusNoContent)
+}
+
+func (c *Controller) GetCurrentUserRestaurant(ctx *fiber.Ctx) error {
+	userId := ctx.UserContext().Value(utils.AuthUserID).(string)
+	restaurant, err := c.service.GetRestaurantByOwnerId(ctx.UserContext(), userId)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return fiber.NewError(fiber.StatusNotFound, "Restaurant not found for the current user.")
+		}
+		return err
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": restaurant})
+}
+
+func (c *Controller) GetRestaurantByUsername(ctx *fiber.Ctx) error {
+	username := ctx.Params("username")
+	if username == "" {
+		return fiber.NewError(fiber.StatusBadRequest, "Username is required.")
+	}
+
+	restaurant, err := c.service.GetRestaurantByUsername(ctx.UserContext(), username)
+	if errors.Is(err, sql.ErrNoRows) {
+		return fiber.NewError(fiber.StatusNotFound, errResourceNotFound)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	return ctx.JSON(fiber.Map{"data": restaurant})
+}
+
+func (c *Controller) GetRestaurantProfile(ctx *fiber.Ctx) error {
+	id, err := ctx.ParamsInt("id")
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, errInvalidID)
+	}
+
+	profile, err := c.service.GetRestaurantProfile(ctx.UserContext(), int32(id))
+	if errors.Is(err, sql.ErrNoRows) {
+		return fiber.NewError(fiber.StatusNotFound, errResourceNotFound)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	return ctx.JSON(fiber.Map{"data": profile})
+}
+
+func (c *Controller) GetRestaurantHighlights(ctx *fiber.Ctx) error {
+	id, err := ctx.ParamsInt("id")
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, errInvalidID)
+	}
+
+	highlights, err := c.service.GetRestaurantHighlights(ctx.UserContext(), int32(id))
+	if err != nil {
+		return err
+	}
+
+	return ctx.JSON(fiber.Map{"data": highlights})
+}
+
+func (c *Controller) GetRestaurantRecentReviews(ctx *fiber.Ctx) error {
+	id, err := ctx.ParamsInt("id")
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, errInvalidID)
+	}
+
+	reviews, err := c.service.GetRestaurantRecentReviews(ctx.UserContext(), int32(id))
+	if err != nil {
+		return err
+	}
+
+	return ctx.JSON(fiber.Map{"data": reviews})
 }

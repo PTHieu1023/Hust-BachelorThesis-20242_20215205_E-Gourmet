@@ -2,9 +2,11 @@ package controllers
 
 import (
 	"e-gourmet/core/internal/database"
+	"e-gourmet/core/internal/utils"
 	"e-gourmet/core/pkg/pagination"
 	"github.com/gofiber/fiber/v2"
 	"strconv"
+	"strings"
 )
 
 func (c *Controller) CreateDish(ctx *fiber.Ctx) error {
@@ -23,17 +25,23 @@ func (c *Controller) CreateDish(ctx *fiber.Ctx) error {
 }
 
 func (c *Controller) GetDishById(ctx *fiber.Ctx) error {
-	idStr := ctx.Params("id", "0")
-	id, err := strconv.Atoi(idStr)
+	dishId, err := ctx.ParamsInt("id")
 	if err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid dish ID",
-		})
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid dish ID.")
 	}
-	dish, err := c.service.GetDishById(ctx.UserContext(), int32(id))
+	interaction := new(database.AddInteractionParams)
+	interaction.DishID = int32(dishId)
+	interaction.UserID = ctx.UserContext().Value(utils.AuthUserID).(string)
+
+	dish, err := c.service.GetDishById(ctx.UserContext(), int32(dishId), interaction)
 	if err != nil {
 		return err
 	}
+
+	if dish == nil {
+		return fiber.NewError(fiber.StatusNotFound, "Dish not found.")
+	}
+
 	return ctx.Status(fiber.StatusOK).JSON(dish)
 }
 
@@ -59,15 +67,15 @@ func (c *Controller) GetDishes(ctx *fiber.Ctx) error {
 		return err
 	}
 	params := new(database.GetDishesParams)
-	cuisineId := int16(ctx.QueryInt("cuisine"))
-	params.CuisineID = &cuisineId
-	params.Offset = int32((pageFilter.Page - 1) * pageFilter.Size)
-	params.Limit = int32(pageFilter.Size)
-	q := ctx.Query("search")
-	params.Search = &q
 	if err = ctx.QueryParser(params); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid query parameters.")
 	}
+	if params.Search != nil {
+		*params.Search = strings.TrimSpace(*params.Search)
+	}
+	// Set pagination parameters
+	params.Offset = int32((pageFilter.Page - 1) * pageFilter.Size)
+	params.Limit = int32(pageFilter.Size)
 
 	dishes, err := c.service.GetDishes(ctx.UserContext(), params)
 

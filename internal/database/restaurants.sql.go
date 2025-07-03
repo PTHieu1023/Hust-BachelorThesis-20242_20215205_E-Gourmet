@@ -202,6 +202,172 @@ func (q *Queries) GetRestaurantByID(ctx context.Context, db DBTX, id int32) (*Ge
 	return &i, err
 }
 
+const getRestaurantByOwnerId = `-- name: GetRestaurantByOwnerId :one
+SELECT
+    r.id,
+    r.name,
+    r.description,
+    r.avatar_url,
+    r.username,
+    r.email,
+    r.phone,
+    r.address,
+    r.lat,
+    r.lng,
+    r.created_at,
+    r.updated_at,
+    r.is_approved
+FROM restaurants r
+JOIN restaurant_manager rm ON r.id = rm.restaurant_id
+WHERE rm.user_id = $1 AND rm.is_owner = true
+LIMIT 1
+`
+
+type GetRestaurantByOwnerIdRow struct {
+	ID          int32              `json:"id"`
+	Name        string             `json:"name"`
+	Description *string            `json:"description"`
+	AvatarUrl   *string            `json:"avatarUrl"`
+	Username    string             `json:"username"`
+	Email       *string            `json:"email"`
+	Phone       *string            `json:"phone"`
+	Address     *string            `json:"address"`
+	Lat         *float64           `json:"lat"`
+	Lng         *float64           `json:"lng"`
+	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt   pgtype.Timestamptz `json:"updatedAt"`
+	IsApproved  *bool              `json:"isApproved"`
+}
+
+func (q *Queries) GetRestaurantByOwnerId(ctx context.Context, db DBTX, userID interface{}) (*GetRestaurantByOwnerIdRow, error) {
+	row := db.QueryRow(ctx, getRestaurantByOwnerId, userID)
+	var i GetRestaurantByOwnerIdRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.AvatarUrl,
+		&i.Username,
+		&i.Email,
+		&i.Phone,
+		&i.Address,
+		&i.Lat,
+		&i.Lng,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.IsApproved,
+	)
+	return &i, err
+}
+
+const getRestaurantByUsername = `-- name: GetRestaurantByUsername :one
+SELECT
+    r.id,
+    r.name,
+    r.description,
+    r.avatar_url,
+    r.username,
+    r.email,
+    r.phone,
+    r.address,
+    r.lat,
+    r.lng,
+    r.created_at,
+    r.updated_at,
+    r.is_approved
+FROM restaurants r
+WHERE r.username = $1
+`
+
+type GetRestaurantByUsernameRow struct {
+	ID          int32              `json:"id"`
+	Name        string             `json:"name"`
+	Description *string            `json:"description"`
+	AvatarUrl   *string            `json:"avatarUrl"`
+	Username    string             `json:"username"`
+	Email       *string            `json:"email"`
+	Phone       *string            `json:"phone"`
+	Address     *string            `json:"address"`
+	Lat         *float64           `json:"lat"`
+	Lng         *float64           `json:"lng"`
+	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt   pgtype.Timestamptz `json:"updatedAt"`
+	IsApproved  *bool              `json:"isApproved"`
+}
+
+func (q *Queries) GetRestaurantByUsername(ctx context.Context, db DBTX, username string) (*GetRestaurantByUsernameRow, error) {
+	row := db.QueryRow(ctx, getRestaurantByUsername, username)
+	var i GetRestaurantByUsernameRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.AvatarUrl,
+		&i.Username,
+		&i.Email,
+		&i.Phone,
+		&i.Address,
+		&i.Lat,
+		&i.Lng,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.IsApproved,
+	)
+	return &i, err
+}
+
+const getRestaurantHighlights = `-- name: GetRestaurantHighlights :many
+SELECT
+    d.id,
+    d.name,
+    d.description,
+    d.price,
+    COALESCE(AVG(rev.rating), 0) as rating,
+    COUNT(rev.id) as review_count
+FROM dishes d
+LEFT JOIN reviews rev ON d.id = rev.dish_id
+WHERE d.restaurant_id = $1
+GROUP BY d.id, d.name, d.description, d.price
+ORDER BY rating DESC, review_count DESC
+LIMIT 6
+`
+
+type GetRestaurantHighlightsRow struct {
+	ID          int32       `json:"id"`
+	Name        string      `json:"name"`
+	Description *string     `json:"description"`
+	Price       int64       `json:"price"`
+	Rating      interface{} `json:"rating"`
+	ReviewCount int64       `json:"reviewCount"`
+}
+
+func (q *Queries) GetRestaurantHighlights(ctx context.Context, db DBTX, restaurantID int32) ([]*GetRestaurantHighlightsRow, error) {
+	rows, err := db.Query(ctx, getRestaurantHighlights, restaurantID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []*GetRestaurantHighlightsRow{}
+	for rows.Next() {
+		var i GetRestaurantHighlightsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Price,
+			&i.Rating,
+			&i.ReviewCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getRestaurantManagers = `-- name: GetRestaurantManagers :many
 SELECT
     u.id,
@@ -243,6 +409,136 @@ func (q *Queries) GetRestaurantManagers(ctx context.Context, db DBTX, restaurant
 			&i.AvatarUrl,
 			&i.RestaurantID,
 			&i.IsOwner,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getRestaurantProfile = `-- name: GetRestaurantProfile :one
+SELECT
+    r.id,
+    r.name,
+    r.description,
+    r.avatar_url,
+    r.username,
+    r.email,
+    r.phone,
+    r.address,
+    r.lat,
+    r.lng,
+    r.created_at,
+    r.updated_at,
+    r.is_approved,
+    COUNT(DISTINCT d.id) as dish_count,
+    COUNT(DISTINCT rev.id) as review_count,
+    COALESCE(AVG(rev.rating), 0) as average_rating,
+    COUNT(DISTINCT p.id) as post_count
+FROM restaurants r
+LEFT JOIN dishes d ON r.id = d.restaurant_id
+LEFT JOIN reviews rev ON d.id = rev.dish_id
+LEFT JOIN posts p ON r.id = p.restaurant_id
+WHERE r.id = $1
+GROUP BY r.id, r.name, r.description, r.avatar_url, r.username, r.email, r.phone, r.address, r.lat, r.lng, r.created_at, r.updated_at, r.is_approved
+`
+
+type GetRestaurantProfileRow struct {
+	ID            int32              `json:"id"`
+	Name          string             `json:"name"`
+	Description   *string            `json:"description"`
+	AvatarUrl     *string            `json:"avatarUrl"`
+	Username      string             `json:"username"`
+	Email         *string            `json:"email"`
+	Phone         *string            `json:"phone"`
+	Address       *string            `json:"address"`
+	Lat           *float64           `json:"lat"`
+	Lng           *float64           `json:"lng"`
+	CreatedAt     pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt     pgtype.Timestamptz `json:"updatedAt"`
+	IsApproved    *bool              `json:"isApproved"`
+	DishCount     int64              `json:"dishCount"`
+	ReviewCount   int64              `json:"reviewCount"`
+	AverageRating interface{}        `json:"averageRating"`
+	PostCount     int64              `json:"postCount"`
+}
+
+func (q *Queries) GetRestaurantProfile(ctx context.Context, db DBTX, id int32) (*GetRestaurantProfileRow, error) {
+	row := db.QueryRow(ctx, getRestaurantProfile, id)
+	var i GetRestaurantProfileRow
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.AvatarUrl,
+		&i.Username,
+		&i.Email,
+		&i.Phone,
+		&i.Address,
+		&i.Lat,
+		&i.Lng,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.IsApproved,
+		&i.DishCount,
+		&i.ReviewCount,
+		&i.AverageRating,
+		&i.PostCount,
+	)
+	return &i, err
+}
+
+const getRestaurantRecentReviews = `-- name: GetRestaurantRecentReviews :many
+SELECT
+    rev.id,
+    rev.rating,
+    rev.comment,
+    rev.created_at,
+    u.username,
+    u.display_name,
+    u.avatar_url,
+    d.name as dish_name
+FROM reviews rev
+JOIN users u ON rev.user_id = u.id
+JOIN dishes d ON rev.dish_id = d.id
+WHERE d.restaurant_id = $1
+ORDER BY rev.created_at DESC
+LIMIT 10
+`
+
+type GetRestaurantRecentReviewsRow struct {
+	ID          int64              `json:"id"`
+	Rating      int16              `json:"rating"`
+	Comment     string             `json:"comment"`
+	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
+	Username    string             `json:"username"`
+	DisplayName string             `json:"displayName"`
+	AvatarUrl   *string            `json:"avatarUrl"`
+	DishName    string             `json:"dishName"`
+}
+
+func (q *Queries) GetRestaurantRecentReviews(ctx context.Context, db DBTX, restaurantID int32) ([]*GetRestaurantRecentReviewsRow, error) {
+	rows, err := db.Query(ctx, getRestaurantRecentReviews, restaurantID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []*GetRestaurantRecentReviewsRow{}
+	for rows.Next() {
+		var i GetRestaurantRecentReviewsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Rating,
+			&i.Comment,
+			&i.CreatedAt,
+			&i.Username,
+			&i.DisplayName,
+			&i.AvatarUrl,
+			&i.DishName,
 		); err != nil {
 			return nil, err
 		}

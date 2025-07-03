@@ -9,10 +9,6 @@ import (
 	"strings"
 )
 
-const (
-	AdminOnlyError = "This action requires administrator privileges"
-)
-
 func (c *Controller) GetCuisines(ctx *fiber.Ctx) error {
 	idStr := ctx.Params("id", "0")
 	displayMode := ctx.Query("tree", "0")
@@ -62,7 +58,7 @@ func (c *Controller) GetCuisines(ctx *fiber.Ctx) error {
 func (c *Controller) AddCuisine(ctx *fiber.Ctx) error {
 	isAdmin := ctx.UserContext().Value(utils.AuthIsAdmin).(bool)
 	if !isAdmin {
-		return fiber.NewError(fiber.StatusForbidden, AdminOnlyError)
+		return fiber.NewError(fiber.StatusForbidden, errAdminOnly)
 	}
 
 	params := new(database.AddCuisineParams)
@@ -87,18 +83,19 @@ func (c *Controller) AddCuisine(ctx *fiber.Ctx) error {
 func (c *Controller) UpdateCuisine(ctx *fiber.Ctx) error {
 	isAdmin := ctx.UserContext().Value(utils.AuthIsAdmin).(bool)
 	if !isAdmin {
-		return fiber.NewError(fiber.StatusForbidden, AdminOnlyError)
+		return fiber.NewError(fiber.StatusForbidden, errAdminOnly)
 	}
 
 	params := new(database.UpdateCuisineParams)
+
+	if err := ctx.BodyParser(&params); err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid request body.")
+	}
 	params.Name = strings.TrimSpace(params.Name)
 	if params.Name == "" {
 		return fiber.NewError(fiber.StatusBadRequest, "Cuisine name cannot be empty.")
 	}
 
-	if err := ctx.BodyParser(&params); err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, "Invalid request body.")
-	}
 	cuisine, err := c.service.UpdateCuisine(ctx.UserContext(), params)
 	if err != nil {
 		return err

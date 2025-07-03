@@ -35,15 +35,18 @@ func (s *Service) CreateDish(ctx context.Context, params *database.CreateDishPar
 	return s.querier.CreateDish(ctx, s.dbtx, params)
 }
 
-func (s *Service) GetDishById(ctx context.Context, id int32) (*database.GetDishByIDRow, error) {
+func (s *Service) GetDishById(ctx context.Context, id int32, interaction *database.AddInteractionParams) (*database.GetDishByIDRow, error) {
 	dish, err := s.querier.GetDishByID(ctx, s.dbtx, id)
-	if errors.As(err, &pgx.ErrNoRows) {
+	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, fiber.NewError(fiber.StatusNotFound, "Dish not found")
 	}
 	if err != nil {
 		return nil, err
 	}
-
+	err = s.querier.AddInteraction(ctx, s.dbtx, interaction)
+	if err != nil {
+		return nil, err
+	}
 	return dish, nil
 }
 
@@ -58,4 +61,19 @@ func (s *Service) GetDishes(ctx context.Context, params *database.GetDishesParam
 	}
 
 	return menu, nil
+}
+
+func (s *Service) GetDishesCount(ctx context.Context, params *database.GetDishesParams) (int64, error) {
+	// For now, we'll use the total count from the dishes table with the same filters
+	// In a production environment, you might want to create a separate count query
+	countParams := *params
+	countParams.Limit = 999999 // Set a very high limit to get all matching records
+	countParams.Offset = 0
+
+	dishes, err := s.querier.GetDishes(ctx, s.dbtx, &countParams)
+	if err != nil {
+		return 0, err
+	}
+
+	return int64(len(dishes)), nil
 }

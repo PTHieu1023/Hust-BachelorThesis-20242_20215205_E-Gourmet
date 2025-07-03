@@ -5,6 +5,7 @@ import (
 	"e-gourmet/core/internal/controllers"
 	"e-gourmet/core/internal/server/logger"
 	"e-gourmet/core/internal/services"
+	"e-gourmet/core/internal/utils"
 	"errors"
 	"fmt"
 	"github.com/Nerzal/gocloak/v13"
@@ -77,7 +78,7 @@ func (s *Server) shutdown(isRunning chan bool) {
 func New() *Server {
 	server := new(Server)
 	server.app = initApp()
-	server.kc = gocloak.NewClient(os.Getenv("EG_KC_URL"))
+	server.kc = gocloak.NewClient(utils.AuthIssuerUrl())
 	server.dbtx = connectDB()
 
 	server.middlewares = InitMiddlewares(server.kc)
@@ -94,9 +95,11 @@ func New() *Server {
 
 	routerV1 := server.app.Group("/api")
 	routerV1.Group("/cuisine").
-		Get("/", server.controllers.GetCuisineRecursionById).
+		Get("/", server.controllers.GetCuisines).
 		Post("/", server.controllers.AddCuisine).
-		Get("/:id", server.controllers.GetCuisineRecursionById)
+		Get("/:id", server.controllers.GetCuisines).
+		Put("/", server.controllers.UpdateCuisine).
+		Delete("/:id", server.controllers.DeleteCuisine)
 
 	routerV1.Group("/dish").
 		Get("/", server.controllers.GetDishes).
@@ -111,10 +114,69 @@ func New() *Server {
 		Group("/:id").
 		Delete("/", server.controllers.DeleteReview)
 
+	// Review endpoints for current user and profile
+	routerV1.Get("/review/current/:dishId", server.controllers.GetCurrentUserReview)
+	routerV1.Get("/user/:userId/reviews", server.controllers.GetUserProfileReviews)
+
 	routerV1.Group("/user").
 		Get("/me", server.controllers.GetCurrentUser).
 		Get("/:username", server.controllers.GetUserByUsername).
 		Put("/", server.controllers.UpdateCurrentUser)
+
+	routerV1.Group("/restaurant").
+		Get("/", server.controllers.GetRestaurants).
+		Get("/me", server.controllers.GetCurrentUserRestaurant).
+		Post("/", server.controllers.CreateRestaurant).
+		Group("/:id").
+		Get("/", server.controllers.GetRestaurantById).
+		Put("/", server.controllers.UpdateRestaurant).
+		Delete("/", server.controllers.DeleteRestaurantById)
+
+	// New restaurant endpoints
+	routerV1.Get("/restaurant/username/:username", server.controllers.GetRestaurantByUsername)
+	routerV1.Get("/restaurant/:id/profile", server.controllers.GetRestaurantProfile)
+	routerV1.Get("/restaurant/:id/highlights", server.controllers.GetRestaurantHighlights)
+	routerV1.Get("/restaurant/:id/reviews", server.controllers.GetRestaurantRecentReviews)
+
+	routerV1.Group("/post").
+		Get("/", server.controllers.GetPosts).
+		Post("/", server.controllers.CreatePost).
+		Group("/:id").
+		Get("/", server.controllers.GetPostById).
+		Put("/", server.controllers.UpdatePost).
+		Delete("/", server.controllers.DeletePost).
+		Post("/like", server.controllers.LikePost).
+		Delete("/like", server.controllers.UnlikePost)
+
+	// Post comments endpoints
+	routerV1.Group("/post/:postId/comments").
+		Get("/", server.controllers.GetCommentsByPost).
+		Post("/", server.controllers.CreateComment)
+
+	routerV1.Delete("/comments/:commentId", server.controllers.DeleteComment)
+
+	// Restaurant posts
+	routerV1.Group("/restaurant/:restaurantId/posts").
+		Get("/", server.controllers.GetPostsByRestaurant)
+
+	// Admin routes
+	//adminRouter := routerV1.Group("/admin")
+	//adminRouter.Get("/check", server.controllers.IsAdmin)
+	//adminRouter.Get("/restaurants", server.controllers.GetAllRestaurants)
+	//adminRouter.Post("/restaurants/:restaurantId/approve", server.controllers.ApproveRestaurant)
+	//adminRouter.Post("/restaurants/:restaurantId/reject", server.controllers.RejectRestaurant)
+	//adminRouter.Get("/users", server.controllers.GetAllUsers)
+	//adminRouter.Post("/users/:userId/disable", server.controllers.DisableUser)
+	//adminRouter.Post("/users/:userId/enable", server.controllers.EnableUser)
+
+	routerV1.Get("/recommendations", server.controllers.GetRecommendations)
+
+	// Upload routes
+	routerV1.Group("/uploads").
+		Post("/", server.controllers.UploadFile)
+
+	server.app.Static("/uploads", "./etc/uploads")
+
 	return server
 }
 

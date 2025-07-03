@@ -80,6 +80,61 @@ func (q *Queries) DeleteReview(ctx context.Context, db DBTX, id int64) error {
 	return err
 }
 
+const getCurrentUserReview = `-- name: GetCurrentUserReview :one
+SELECT
+    r.id,
+    r.comment,
+    r.rating,
+    r.dish_id,
+    d.name as dish_name,
+    r.user_id,
+    u.username,
+    u.display_name,
+    r.created_at,
+    r.updated_at
+FROM reviews r
+LEFT JOIN dishes d on d.id = r.dish_id
+LEFT JOIN users u on r.user_id = u.id
+WHERE r.dish_id = $1 AND r.user_id = $2
+LIMIT 1
+`
+
+type GetCurrentUserReviewParams struct {
+	DishID int32       `json:"dishId"`
+	UserID interface{} `json:"userId"`
+}
+
+type GetCurrentUserReviewRow struct {
+	ID          int64              `json:"id"`
+	Comment     string             `json:"comment"`
+	Rating      int16              `json:"rating"`
+	DishID      int32              `json:"dishId"`
+	DishName    *string            `json:"dishName"`
+	UserID      interface{}        `json:"userId"`
+	Username    *string            `json:"username"`
+	DisplayName *string            `json:"displayName"`
+	CreatedAt   pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt   pgtype.Timestamptz `json:"updatedAt"`
+}
+
+func (q *Queries) GetCurrentUserReview(ctx context.Context, db DBTX, arg *GetCurrentUserReviewParams) (*GetCurrentUserReviewRow, error) {
+	row := db.QueryRow(ctx, getCurrentUserReview, arg.DishID, arg.UserID)
+	var i GetCurrentUserReviewRow
+	err := row.Scan(
+		&i.ID,
+		&i.Comment,
+		&i.Rating,
+		&i.DishID,
+		&i.DishName,
+		&i.UserID,
+		&i.Username,
+		&i.DisplayName,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return &i, err
+}
+
 const getReviews = `-- name: GetReviews :many
 SELECT
     r.id,
@@ -147,6 +202,104 @@ func (q *Queries) GetReviews(ctx context.Context, db DBTX, arg *GetReviewsParams
 			&i.DisplayName,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getReviewsCount = `-- name: GetReviewsCount :one
+SELECT count(*) FROM reviews r
+LEFT JOIN users u on r.user_id = u.id
+WHERE
+    ($1::bigint is null or r.dish_id = $1::bigint)
+  and
+    ($2::varchar(64) is null or u.username = $2::varchar(64))
+`
+
+type GetReviewsCountParams struct {
+	DishID   *int64  `json:"dishId"`
+	Username *string `json:"username"`
+}
+
+func (q *Queries) GetReviewsCount(ctx context.Context, db DBTX, arg *GetReviewsCountParams) (int64, error) {
+	row := db.QueryRow(ctx, getReviewsCount, arg.DishID, arg.Username)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const getUserProfileReviews = `-- name: GetUserProfileReviews :many
+SELECT
+    r.id,
+    r.comment,
+    r.rating,
+    r.dish_id,
+    d.name as dish_name,
+    r.user_id,
+    u.username,
+    u.display_name,
+    r.created_at,
+    r.updated_at,
+    rest.name as restaurant_name,
+    rest.username as restaurant_username
+FROM reviews r
+LEFT JOIN dishes d on d.id = r.dish_id
+LEFT JOIN users u on r.user_id = u.id
+LEFT JOIN restaurants rest on d.restaurant_id = rest.id
+WHERE r.user_id = $1
+ORDER BY r.created_at DESC
+OFFSET $2 LIMIT $3
+`
+
+type GetUserProfileReviewsParams struct {
+	UserID interface{} `json:"userId"`
+	Offset int32       `json:"offset"`
+	Limit  int32       `json:"limit"`
+}
+
+type GetUserProfileReviewsRow struct {
+	ID                 int64              `json:"id"`
+	Comment            string             `json:"comment"`
+	Rating             int16              `json:"rating"`
+	DishID             int32              `json:"dishId"`
+	DishName           *string            `json:"dishName"`
+	UserID             interface{}        `json:"userId"`
+	Username           *string            `json:"username"`
+	DisplayName        *string            `json:"displayName"`
+	CreatedAt          pgtype.Timestamptz `json:"createdAt"`
+	UpdatedAt          pgtype.Timestamptz `json:"updatedAt"`
+	RestaurantName     *string            `json:"restaurantName"`
+	RestaurantUsername *string            `json:"restaurantUsername"`
+}
+
+func (q *Queries) GetUserProfileReviews(ctx context.Context, db DBTX, arg *GetUserProfileReviewsParams) ([]*GetUserProfileReviewsRow, error) {
+	rows, err := db.Query(ctx, getUserProfileReviews, arg.UserID, arg.Offset, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []*GetUserProfileReviewsRow{}
+	for rows.Next() {
+		var i GetUserProfileReviewsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Comment,
+			&i.Rating,
+			&i.DishID,
+			&i.DishName,
+			&i.UserID,
+			&i.Username,
+			&i.DisplayName,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.RestaurantName,
+			&i.RestaurantUsername,
 		); err != nil {
 			return nil, err
 		}

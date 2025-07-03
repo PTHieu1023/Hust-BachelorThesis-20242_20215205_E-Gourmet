@@ -43,7 +43,8 @@ CREATE TABLE users (
                        budget int8 NULL,
                        created_at timestamptz DEFAULT now() NULL,
                        updated_at timestamptz DEFAULT now() NULL,
-                        enable bool DEFAULT true NOT NULL,
+                       enable bool DEFAULT true NOT NULL,
+                       status varchar(20) DEFAULT 'active' NOT NULL,
                        CONSTRAINT users_email_key UNIQUE (email),
                        CONSTRAINT users_pkey PRIMARY KEY (id),
                        CONSTRAINT users_username_key UNIQUE (username)
@@ -81,12 +82,14 @@ CREATE TABLE dishes (
                         price int8 DEFAULT 0 NOT NULL,
                         cuisine_id int2 DEFAULT 0 NOT NULL,
                         restaurant_id int4 NOT NULL,
+                        category_id int4 NULL,
                         created_at timestamptz DEFAULT now() NULL,
                         updated_at timestamptz DEFAULT now() NULL,
                         CONSTRAINT dish_check_min_price CHECK ((price >= 0)),
                         CONSTRAINT dishes_pkey PRIMARY KEY (id),
                         CONSTRAINT dish_cuisine_id_fk FOREIGN KEY (cuisine_id) REFERENCES cuisines(id) ON DELETE CASCADE,
-                        CONSTRAINT dish_restaurant_id_fk FOREIGN KEY (restaurant_id) REFERENCES restaurants(id) ON DELETE CASCADE
+                        CONSTRAINT dish_restaurant_id_fk FOREIGN KEY (restaurant_id) REFERENCES restaurants(id) ON DELETE CASCADE,
+                        CONSTRAINT dish_category_id_fk FOREIGN KEY (category_id) REFERENCES menu_categories(id) ON DELETE SET NULL
 );
 
 
@@ -234,4 +237,15 @@ CREATE TABLE post_like (
                            CONSTRAINT post_like_pkey PRIMARY KEY (post_id, user_id),
                            CONSTRAINT post_like_post_id_fk FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
                            CONSTRAINT post_like_user_id_fk FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- public.menu_categories definition
+CREATE TABLE menu_categories (
+                             id serial4 NOT NULL,
+                             "name" varchar(255) NOT NULL,
+                             restaurant_id int4 NOT NULL,
+                             created_at timestamptz DEFAULT now() NULL,
+                             updated_at timestamptz DEFAULT now() NULL,
+                             CONSTRAINT menu_categories_pkey PRIMARY KEY (id),
+                             CONSTRAINT menu_categories_restaurant_id_fk FOREIGN KEY (restaurant_id) REFERENCES restaurants(id) ON DELETE CASCADE
 );
