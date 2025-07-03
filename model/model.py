@@ -1,61 +1,107 @@
 from sqlmodel import SQLModel, Field
 from typing import Optional
+from datetime import datetime
 
 
 class Dish(SQLModel, table=True):
-    __tablename__ = 'Dish'
+    __tablename__ = 'dishes'
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
-    cuisineId: int = Field(foreign_key="Cuisine.id")
-    price: float
+    description: Optional[str] = None
+    price: int  # Price in cents
+    cuisine_id: int = Field(foreign_key="cuisines.id")
+    restaurant_id: int = Field(foreign_key="restaurants.id")
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     def __repr__(self):
         return f"<Dish(name={self.name}, price={self.price})>"
 
+
 class Cuisine(SQLModel, table=True):
-    __tablename__ = 'Cuisine'
+    __tablename__ = 'cuisines'
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
+    parent_id: Optional[int] = Field(default=None, foreign_key="cuisines.id")
+    image_url: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     def __repr__(self):
         return f"<Cuisine(name={self.name})>"
 
+
 class User(SQLModel, table=True):
-    __tablename__ = 'User'
-    id: Optional[int] = Field(default=None, primary_key=True)
+    __tablename__ = 'users'
+    id: str = Field(primary_key=True)  # String ID as per schema
     username: str
     email: str
+    display_name: str
+    avatar_url: Optional[str] = None
+    lat: Optional[float] = None
+    lng: Optional[float] = None
+    budget: Optional[int] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    enable: bool = True
+
     def __repr__(self):
-        return f"<User(username={self.username}, email={self.email}, age={self.age}, budget={self.budget})>"
+        return f"<User(username={self.username}, email={self.email})>"
+
+
+class Restaurant(SQLModel, table=True):
+    __tablename__ = 'restaurants'
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    description: Optional[str] = None
+    avatar_url: Optional[str] = None
+    username: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    lat: Optional[float] = None
+    lng: Optional[float] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    is_approved: Optional[bool] = False
+
+    def __repr__(self):
+        return f"<Restaurant(name={self.name}, username={self.username})>"
+
 
 class UserInteraction(SQLModel, table=True):
-    __tablename__ = 'UserInteraction'
+    __tablename__ = 'user_interactions'
     id: Optional[int] = Field(default=None, primary_key=True)
-    userId: int = Field(foreign_key="User.id")
-    dishId: int = Field(foreign_key="Dish.id")
-    interactionType: str  # e.g., 'view', 'like', 'order'
-    timestamp: Optional[str] = None  # ISO format date string
+    user_id: str = Field(foreign_key="users.id")
+    dish_id: int = Field(foreign_key="dishes.id")
+    interaction_score: Optional[int] = 1
+    created_at: Optional[datetime] = None
 
     def __repr__(self):
-        return f"<UserInteraction(userId={self.userId}, dishId={self.dishId}, interactionType={self.interactionType}, timestamp={self.timestamp})>"
+        return f"<UserInteraction(user_id={self.user_id}, dish_id={self.dish_id}, score={self.interaction_score})>"
+
 
 class UserRecommendation(SQLModel, table=True):
-    __tablename__ = 'UserRecommendation'
+    __tablename__ = 'user_recommendation'
     id: Optional[int] = Field(default=None, primary_key=True)
-    userId: int = Field(foreign_key="User.id")
-    dishId: int = Field(foreign_key="Dish.id")
+    user_id: str = Field(foreign_key="users.id")
+    dish_id: int = Field(foreign_key="dishes.id")
     score: float
+    created_at: Optional[datetime] = None
 
     def __repr__(self):
-        return f"<UserRecommendation(userId={self.userId}, dishId={self.dishId}, score={self.score})>"
+        return f"<UserRecommendation(user_id={self.user_id}, dish_id={self.dish_id}, score={self.score})>"
+
 
 class Review(SQLModel, table=True):
-    __tablename__ = 'Review'
+    __tablename__ = 'reviews'
     id: Optional[int] = Field(default=None, primary_key=True)
-    dishId: int = Field(foreign_key="Dish.id")
-    userId: int = Field(foreign_key="User.id")
+    dish_id: int = Field(foreign_key="dishes.id")
+    user_id: str = Field(foreign_key="users.id")
     rating: int
-    comment: Optional[str] = None
+    comment: str
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     def __repr__(self):
-        return f"<Review(dishId={self.dishId}, userId={self.userId}, rating={self.rating}, comment={self.comment})>"
+        return f"<Review(dish_id={self.dish_id}, user_id={self.user_id}, rating={self.rating})>"
