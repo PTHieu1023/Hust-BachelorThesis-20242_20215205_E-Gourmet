@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getAuthSession } from "@/configs/auth.config";
+import {getAuthSession} from "@/configs/auth.config";
 
 const httpClient = axios.create({
     withCredentials: true,
