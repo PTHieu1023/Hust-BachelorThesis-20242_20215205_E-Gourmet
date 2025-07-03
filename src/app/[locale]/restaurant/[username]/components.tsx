@@ -1,58 +1,34 @@
-import {
-    getRestaurantByUsername,
-    getRestaurantMenuHighlights,
-    getRestaurantProfile,
-    getRestaurantRecentReviews
-} from "@/services/restaurant.service";
+import {getRestaurants} from "@/services/restaurant.service";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import Image from "next/image";
 import {Button} from "@/components/ui/button";
 import {Clock, Globe, Heart, MapPin, Phone, Star} from "lucide-react";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {RatingStar} from "@/components/ui/rating-star";
+import {getDish} from "@/services/dish.service";
+import {getReviews} from "@/services/review.service";
 
-interface RestaurantInfoProps {
+interface CommonProps {
     t: (key: string) => string;
-    username: string;
+    restaurantId: number | string;
 }
 
-interface MenuHighlightsProps {
-    t: (key: string) => string;
-    username: string;
-}
+export const RestaurantInfo = async ({t, restaurantId}: CommonProps) => {
+    const restaurant = (await getRestaurants({restaurantId: restaurantId}))?.[0];
 
-interface RecentReviewsProps {
-    t: (key: string) => string;
-    username: string;
-}
-
-export const RestaurantInfo = async ({t, username}: RestaurantInfoProps) => {
-    // Get restaurant by username and then get the profile using the ID
-    const restaurant = await getRestaurantByUsername(username);
-    const restaurantProfile = await getRestaurantProfile(restaurant.id);
-    
-    // Provide default values for missing properties
-    const displayData = {
-        ...restaurantProfile,
-        coverImage: restaurant.avatarUrl ?? 'https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=1980',
-        hours: '9:00 AM - 10:00 PM',
-        website: 'www.restaurant.com',
-        followers: 1250,
-        posts: restaurantProfile.postCount ?? 0
-    };
     return (
         <Card className="border-gray-100 mb-6">
             <CardContent className="p-0">
                 <div className="relative h-64 md:h-80 rounded-xl overflow-hidden mb-6">
                     <Image 
-                        src={displayData.coverImage} 
-                        alt={displayData.name} 
+                        src={restaurant.coverImage ??  "/logo.svg"}
+                        alt={restaurant.name}
                         width={1980} 
                         height={720}
                         className="w-full h-full object-cover"
                     />
                     <div className="absolute bottom-6 left-6 text-white">
-                        <h1 className="text-3xl md:text-4xl font-bold mb-2">{displayData.name}</h1>
+                        <h1 className="text-3xl md:text-4xl font-bold mb-2">{restaurant.name}</h1>
                         <Button className="bg-orange-500 hover:bg-orange-600">
                             <Heart className="w-4 h-4 mr-2"/>
                             {t('details.follow')}
@@ -63,35 +39,35 @@ export const RestaurantInfo = async ({t, username}: RestaurantInfoProps) => {
                 <div className="p-6">
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
-                            <RatingStar rating={displayData.averageRating} />
+                            <RatingStar rating={restaurant.averageRating} />
                             <span className="text-sm text-gray-600">
-                                {displayData.averageRating} ({displayData.reviewCount} {t('common.reviews')})
+                                {restaurant.averageRating} ({restaurant.reviewCount} {t('common.reviews')})
                             </span>
                         </div>
                         <div className="flex items-center gap-4 text-sm text-gray-600">
-                            <span>{displayData.followers} {t('common.followers')}</span>
-                            <span>{displayData.posts} {t('common.posts')}</span>
+                            <span>{restaurant.followerCount} {t('common.followers')}</span>
+                            <span>{restaurant.postCount} {t('common.posts')}</span>
                         </div>
                     </div>
                     
-                    <p className="text-gray-700 mb-4">{displayData.description}</p>
+                    <p className="text-gray-700 mb-4">{restaurant.description}</p>
                     
                     <div className="grid md:grid-cols-2 gap-4 text-sm">
                         <div className="flex items-center gap-2">
                             <MapPin className="w-4 h-4 text-gray-500"/>
-                            <span>{displayData.address}</span>
+                            <span>{restaurant.address}</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <Phone className="w-4 h-4 text-gray-500"/>
-                            <span>{displayData.phone}</span>
+                            <span>{restaurant.phone}</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <Clock className="w-4 h-4 text-gray-500"/>
-                            <span>{displayData.hours}</span>
+                            <span>{restaurant.openHour}</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <Globe className="w-4 h-4 text-gray-500"/>
-                            <span>{displayData.website}</span>
+                            <span>{restaurant.website}</span>
                         </div>
                     </div>
                 </div>
@@ -100,9 +76,8 @@ export const RestaurantInfo = async ({t, username}: RestaurantInfoProps) => {
     );
 };
 
-export const MenuHighlights = async ({t, username}: MenuHighlightsProps) => {
-    const restaurant = await getRestaurantByUsername(username);
-    const highlights = await getRestaurantMenuHighlights(restaurant.id);
+export const MenuHighlights = async ({t, restaurantId}: CommonProps) => {
+    const highlights = await getDish({restaurantId: restaurantId});
 
     return (
         <Card className="border-gray-100">
@@ -138,9 +113,8 @@ export const MenuHighlights = async ({t, username}: MenuHighlightsProps) => {
     );
 };
 
-export const RecentReviews = async ({t, username}: RecentReviewsProps) => {
-    const restaurant = await getRestaurantByUsername(username);
-    const reviews = await getRestaurantRecentReviews(restaurant.id);
+export const RecentReviews = async ({t, restaurantId}: CommonProps) => {
+    const reviews = await getReviews({restaurantId: restaurantId, size: 99999});
 
     return (
         <Card className="border-gray-100">
@@ -153,13 +127,13 @@ export const RecentReviews = async ({t, username}: RecentReviewsProps) => {
                         <div key={review.id} className="border-b border-gray-100 last:border-0 pb-6 last:pb-0">
                             <div className="flex items-start gap-4">
                                 <Avatar className="w-10 h-10">
-                                    <AvatarImage src={review.avatarUrl ?? undefined} />
-                                    <AvatarFallback>{review.displayName[0]}</AvatarFallback>
+                                    <AvatarImage src={review.userAvatarUrl ?? "/logo.svg"} />
+                                    <AvatarFallback>{review.userDisplayName}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1">
                                     <div className="flex items-center justify-between mb-2">
                                         <div>
-                                            <h4 className="font-medium">{review.displayName}</h4>
+                                            <h4 className="font-medium">{review.dishName}</h4>
                                             <div className="flex items-center gap-1">
                                                 <RatingStar rating={review.rating} />
                                             </div>

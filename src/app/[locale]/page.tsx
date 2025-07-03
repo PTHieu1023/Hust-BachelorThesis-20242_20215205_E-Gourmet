@@ -83,7 +83,7 @@ const RecommendationItems = ({recommendations}: { recommendations: Recommendatio
     }
 
     return recommendations.map((item) => (
-        <Link href={`/restaurant/${item.restaurantUsername}/${item.urlName}`}
+        <Link href={`/restaurant/${item.restaurantUsername}/${item.id}`}
               key={item.id}
               className="flex items-center space-x-3 group cursor-pointer"
         >

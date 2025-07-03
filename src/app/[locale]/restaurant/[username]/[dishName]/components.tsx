@@ -7,7 +7,7 @@ import {Card, CardContent} from "@/components/ui/card";
 import {Button} from "@/components/ui/button";
 import {Edit} from "lucide-react";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
-import ReviewModal from "@/components/ReviewModal";
+import ReviewModal from "@/components/modal/ReviewModal";
 import {DishDetails} from "@/services/dish.service";
 import {RatingStar} from "@/components/ui/rating-star";
 import {Review} from "@/services/review.service";
@@ -18,8 +18,8 @@ export const ImageView = ({images}: { images: string[] }) => {
         <div className="space-y-4">
             <div className="relative aspect-square rounded-xl overflow-hidden bg-gray-100">
                 <Image
-                    src={images[currentImage]}
-                    alt={images[currentImage]}
+                    src={images[currentImage] ?? "/logo.svg"}
+                    alt={images[currentImage] ?? "Dish Image"}
                     className="w-full h-full object-cover"
                     width={1920}
                     height={1920}
@@ -75,20 +75,20 @@ export const ReviewSection = ({dish, reviews}: { dish: DishDetails, reviews: Rev
                         <div key={review.id} className="border-b border-gray-100 pb-6 last:border-b-0">
                             <div className="flex items-start space-x-4">
                                 <Avatar className="w-12 h-12">
-                                    <AvatarImage src={review.author?.avatar} alt={review.author?.username}/>
-                                    <AvatarFallback>{review.author?.username}</AvatarFallback>
+                                    <AvatarImage src={review.userAvatarUrl} alt={review.username}/>
+                                    <AvatarFallback>{review.username}</AvatarFallback>
                                 </Avatar>
 
                                 <div className="flex-1">
                                     <div className="flex items-center justify-between mb-2">
-                                        <h4 className="font-medium text-gray-900">@{review.author?.username}</h4>
+                                        <h4 className="font-medium text-gray-900">@{review.username}</h4>
                                         <div className="flex items-center space-x-1">
                                             <RatingStar rating={review.rating}/>
                                         </div>
                                     </div>
-                                    <p className="text-gray-700 mb-2">{review.review}</p>
+                                    <p className="text-gray-700 mb-2">{review.comment}</p>
                                     <span className="flex items-center justify-between text-sm text-gray-500">
-                                        {review.createdAt.toLocaleDateString()}
+                                        {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : 'Unknown date'}
                                     </span>
                                 </div>
                             </div>

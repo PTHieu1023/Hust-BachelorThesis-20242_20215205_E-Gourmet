@@ -25,14 +25,15 @@ export interface CreatePostParams {
 export interface PostListParams {
     page?: number;
     limit?: number;
+    restaurantId?: number | string;
 }
 
-export const fetchPosts = async (params?: PostListParams): Promise<Post[]> => {
-    const response = await httpClient.get(getUrl("/api/post"), { params });
+export async function fetchPosts(params?: PostListParams): Promise<Post[]> {
+    const response = await httpClient.get(getUrl("/api/post"), {params});
     return response.data as Post[];
 }
 
-export const createPost = async (params: CreatePostParams): Promise<Post> => {
+export async function createPost(params: CreatePostParams): Promise<Post> {
     const response = await httpClient.post(getUrl("/api/post"), params);
     return response.data as Post;
 }

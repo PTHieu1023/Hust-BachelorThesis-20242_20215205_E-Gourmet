@@ -2,14 +2,13 @@
 
 import {Button} from "@/components/ui/button";
 import {useTranslations} from "next-intl";
-import Image from "next/image";
 
 interface Props {
     error: Error & { digest?: string }
     reset: () => void
 }
 
-export default function ErrorPage({error, reset}: Props) {
+const ErrorPage = ({error, reset}: Props) => {
     const t = useTranslations("error");
     return (
         <div className={"text-4xl font-bold gap-4 flex justify-center items-center flex-col"}>
@@ -23,3 +22,5 @@ export default function ErrorPage({error, reset}: Props) {
         </div>
     )
 }
+
+export default ErrorPage;

@@ -140,7 +140,7 @@ function ReviewCard({review}: { review: Review }) {
                             className="rounded-full size-12"
                         />
                         <span>
-                            <Link href={`/restaurant/${review.restaurantUsername}/${review.dishUrlName}`}
+                            <Link href={`/restaurant/${review.restaurantUsername}/${review.dishId}`}
                                   className="font-semibold text-gray-900 hover:text-orange-500"
                             >
                                 {review.dishName}

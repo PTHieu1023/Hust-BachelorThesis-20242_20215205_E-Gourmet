@@ -11,6 +11,7 @@ import {createReview, ReviewFormProps} from "@/services/review.service";
 import {useRouter} from "@/i18n/navigation";
 import {useTranslations} from "next-intl";
 
+
 interface ReviewModalProps {
     isOpen: boolean;
     setIsOpenAction: Dispatch<SetStateAction<boolean>>;
@@ -40,17 +41,15 @@ export default function ReviewModal({isOpen, setIsOpenAction, dish}: Readonly<Re
         }
 
         setIsSubmitting(true);
-        createReview(Number(dish.id), review).then(() => {
-            toast.info(t("success"));
+        const response = await createReview(dish.id, review);
+        
+        if (response.error === null) {
             setReview(initState);
             setIsOpenAction(false);
-            setIsSubmitting(false);
-            router.refresh()
-        }).catch((error: Error) => {
-            toast.error(t("errors.submit-failed"), {
-                description: error.message
-            })
-        })
+            router.refresh();
+        }
+        
+        setIsSubmitting(false);
     }
 
     const handleClose = () => {

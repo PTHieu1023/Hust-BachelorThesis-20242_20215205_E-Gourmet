@@ -19,7 +19,7 @@ const SimpleFoodCard = ({dish}: { dish: ShortDishProps }) => {
         : "/logo.svg";
 
     return (
-        <Link href={`/restaurant/${dish.restaurantUsername}/${dish.urlName}`}>
+        <Link href={`/restaurant/${dish.restaurantUsername}/${dish.id}`}>
             <Card className="border-gray-100 hover:shadow-lg transition-shadow cursor-pointer h-full">
                 <div className="relative">
                     <Image

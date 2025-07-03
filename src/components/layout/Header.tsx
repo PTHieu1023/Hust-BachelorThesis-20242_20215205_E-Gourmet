@@ -1,6 +1,6 @@
 "use client";
 
-import {Compass, ForkKnife, Heart, Home, LogOut, User,  PcCase} from "lucide-react";
+import {Compass, ForkKnife, Heart, Home, LogOut, User, PcCase, Store, Shield} from "lucide-react";
 import {signIn, signOut, useSession} from "next-auth/react";
 import {KCSession} from "@/configs/auth.config";
 import {useLocale, useTranslations} from "next-intl";
@@ -119,7 +119,7 @@ function UserMenu() {
                         <span>{user.name}</span>
                     </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem asChild>
                     <Link href={"/restaurant"} className="flex items-center" >
                         <PcCase className={"mr-2 h-4 w-4"}/>
                         <span>{t("restaurant")}</span>

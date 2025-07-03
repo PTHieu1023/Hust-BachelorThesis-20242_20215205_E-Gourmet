@@ -51,7 +51,7 @@ export const UserStatsCard = async () => {
 
 export function RecommendItemCard({rec}: { rec: Recommendation }) {
     return (
-        <Link href={`/restaurant/${rec.restaurantUsername}/${rec.urlName}`} className="block">
+        <Link href={`/restaurant/${rec.restaurantUsername}/${rec.id}`} className="block">
             <Card className="border-gray-100 hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                     <div className="flex items-start space-x-4">

@@ -4,6 +4,7 @@ import {Home} from "lucide-react";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import CommonBreadcrumb, {BreadcrumbItemProps} from "@/components/layout/CommonBreadcrumb";
 import {MenuHighlights, PostTab, RecentReviews, RestaurantInfo} from "@/app/[locale]/restaurant/[username]/components";
+import Loading from "@/components/loading";
 
 export default async function RestaurantProfilePage({params}: Readonly<{ params: Promise<{ locale: string, username: string }> }>) {
     const {locale, username} = await params;
@@ -26,7 +27,7 @@ export default async function RestaurantProfilePage({params}: Readonly<{ params:
         <div className="container mx-auto px-4 py-6">
             <CommonBreadcrumb items={breadcrumbItems}/>
             <Suspense fallback={<div className="text-center py-4">{t('details.loading', {default: 'Loading...'})}</div>}>
-                <RestaurantInfo t={t} username={username}/>
+                <RestaurantInfo t={t} restaurantId={username}/>
             </Suspense>
             <Tabs defaultValue="menu" className="space-y-6">
                 <TabsList className="grid w-full grid-cols-3 lg:w-[500px]">
@@ -35,18 +36,18 @@ export default async function RestaurantProfilePage({params}: Readonly<{ params:
                     <TabsTrigger value="reviews">{t('tabs.reviews')}</TabsTrigger>
                 </TabsList>
                 <TabsContent value="menu" className="space-y-6">
-                    <Suspense fallback={<div className="text-center py-4">{t('details.loading', {default: 'Loading...'})}</div>}>
-                        <MenuHighlights t={t} username={username}/>
+                    <Suspense fallback={<Loading/>}>
+                        <MenuHighlights t={t} restaurantId={username}/>
                     </Suspense>
                 </TabsContent>
                 <TabsContent value="posts" className="space-y-6">
-                    <Suspense fallback={<div className="text-center py-4">{t('details.loading', {default: 'Loading...'})}</div>}>
+                    <Suspense fallback={<Loading/>}>
                         <PostTab t={t}/>
                     </Suspense>
                 </TabsContent>
                 <TabsContent value="reviews" className="space-y-6">
-                    <Suspense fallback={<div className="text-center py-4">{t('details.loading', {default: 'Loading...'})}</div>}>
-                        <RecentReviews t={t} username={username}/>
+                    <Suspense fallback={<Loading/>}>
+                        <RecentReviews t={t} restaurantId={username}/>
                     </Suspense>
                 </TabsContent>
             </Tabs>
