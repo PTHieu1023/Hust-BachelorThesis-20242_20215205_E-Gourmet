@@ -1,5 +1,5 @@
 from sqlalchemy import text
-from sqlmodel import Session, select, delete
+from sqlmodel import Session
 from datetime import datetime
 import logging
 
