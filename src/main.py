@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from sqlmodel import Session
 from fastapi import FastAPI, Depends
 
-from db.database import create_db_and_tables, get_session
+from src.database import create_db_and_tables, get_session
 import numpy as np
 import logging
 

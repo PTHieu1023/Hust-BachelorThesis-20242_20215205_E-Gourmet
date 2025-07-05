@@ -1,4 +1,3 @@
-from model.model import UserRecommendation
 from sqlalchemy import text
 from sqlmodel import Session, select, delete
 from datetime import datetime
@@ -71,19 +70,28 @@ def get_user_dish_summary(session: Session, user_id: int):
 def save_recommendations(session: Session, user_id: str, recommendations: list):
     try:
         # Delete existing recommendations
-        statement = delete(UserRecommendation).where(UserRecommendation.user_id == user_id)
-        session.exec(statement)
+        delete_query = """
+            DELETE FROM user_recommendation 
+            WHERE user_id = :user_id
+        """
+        session.exec(text(delete_query).params(user_id=user_id))
 
         # Add new recommendations
         now = datetime.now()
         for item in recommendations:
-            recommendation = UserRecommendation(
-                user_id=user_id,
-                dish_id=item["id"],
-                score=float(item["score"]),
-                created_at=now
+            insert_query = """
+                INSERT INTO user_recommendation (user_id, dish_id, score, created_at)
+                VALUES (:user_id, :dish_id, :score, :created_at)
+            """
+            session.exec(
+                text(insert_query),
+                {
+                    "user_id": user_id,
+                    "dish_id": item["id"],
+                    "score": float(item["score"]),
+                    "created_at": now,
+                },
             )
-            session.add(recommendation)
 
         session.commit()
         logger.info(f"Saved {len(recommendations)} recommendations for user {user_id}")
