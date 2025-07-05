@@ -3,11 +3,11 @@ from contextlib import asynccontextmanager
 from sqlmodel import Session
 from fastapi import FastAPI, Depends
 
-from db.database import create_db_and_tables, get_session
+from db.database import get_session
 import numpy as np
 import logging
 
-from services.recommendation import get_user_dish_summary, save_recommendations
+from services import recommendation as rcm_service
 from utils.clustering.data_processor import normalize_data
 from utils.clustering.ssfcm import ssfcm, evaluate_clustering
 
@@ -17,7 +17,6 @@ logger = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    create_db_and_tables()
     yield
 
 
@@ -27,7 +26,7 @@ app = FastAPI(lifespan=lifespan)
 
 @app.get("/api/recommend/{user_id}")
 async def predict(user_id, session: Session = Depends(get_session)):
-    result = get_user_dish_summary(session=session, user_id=user_id)
+    result = rcm_service.get_user_dish_summary(session=session, user_id=user_id)
     # Convert to NumPy array for clustering
     data = np.array([
       [
@@ -64,7 +63,7 @@ async def predict(user_id, session: Session = Depends(get_session)):
     labels = np.argmax(u, axis=1)
     evaluation_metrics = evaluate_clustering(normalized_data, labels)
     
-    save_recommendations(session, user_id, filtered_result)
+    rcm_service.save_recommendations(session, user_id, filtered_result)
     
     response = {
         "user_id": user_id,
