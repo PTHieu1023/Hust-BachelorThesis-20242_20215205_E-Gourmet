@@ -115,7 +115,7 @@ const FollowingItemCard = ({restaurant}: { restaurant: Restaurant }) => {
                     </div>
 
                     <div className="flex items-center space-x-2">
-                        <Link href={`/restaurant/${restaurant.username}`}>
+                        <Link href={`/restaurant/${restaurant.id}`}>
                             <Button variant="outline" className="text-sm text-gray-700 hover:text-orange-500">
                                 View Restaurant
                             </Button>
@@ -140,12 +140,12 @@ function ReviewCard({review}: { review: Review }) {
                             className="rounded-full size-12"
                         />
                         <span>
-                            <Link href={`/restaurant/${review.restaurantUsername}/${review.dishId}`}
+                            <Link href={`/restaurant/${review.restaurantId}/${review.dishId}`}
                                   className="font-semibold text-gray-900 hover:text-orange-500"
                             >
                                 {review.dishName}
                             </Link> <br/>
-                            <Link href={`/restaurant/${review.restaurantUsername}`}
+                            <Link href={`/restaurant/${review.restaurantId}`}
                                   className="text-sm text-gray-600 hover:text-orange-500"
                             >
                                 {review.restaurantName}

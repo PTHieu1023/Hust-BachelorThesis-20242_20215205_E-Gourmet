@@ -3,22 +3,31 @@ import {getTranslations, setRequestLocale} from "next-intl/server";
 import {Home} from "lucide-react";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import CommonBreadcrumb, {BreadcrumbItemProps} from "@/components/layout/CommonBreadcrumb";
-import {MenuHighlights, PostTab, RecentReviews, RestaurantInfo} from "@/app/[locale]/restaurant/[username]/components";
+import {
+    MenuHighlights,
+    PostTab,
+    RecentReviews,
+    RestaurantInfo
+} from "@/app/[locale]/restaurant/[restaurantId]/components";
 import Loading from "@/components/loading";
+import {getRestaurants} from "@/services/restaurant.service";
 
-export default async function RestaurantProfilePage({params}: Readonly<{ params: Promise<{ locale: string, username: string }> }>) {
-    const {locale, username} = await params;
+export default async function RestaurantProfilePage({params}: Readonly<{
+    params: Promise<{ locale: string, restaurantId: number }>
+}>) {
+    const {locale, restaurantId} = await params;
     setRequestLocale(locale)
     const t = await getTranslations("restaurant");
-    const breadcrumbItems:BreadcrumbItemProps[] = [
+    const restaurant = (await getRestaurants({restaurantId: restaurantId}))?.[0];
+    const breadcrumbItems: BreadcrumbItemProps[] = [
         {
             label: <Home className={"size-3"}/>,
             href: `/`,
             isCurrent: false
         },
         {
-            label: username,
-            href: `/restaurant/${username}`,
+            label: restaurant.name,
+            href: `/restaurant/${restaurantId}`,
             isCurrent: true
         }
     ]
@@ -26,9 +35,7 @@ export default async function RestaurantProfilePage({params}: Readonly<{ params:
     return (
         <div className="container mx-auto px-4 py-6">
             <CommonBreadcrumb items={breadcrumbItems}/>
-            <Suspense fallback={<div className="text-center py-4">{t('details.loading', {default: 'Loading...'})}</div>}>
-                <RestaurantInfo t={t} restaurantId={username}/>
-            </Suspense>
+            <RestaurantInfo t={t} restaurant={restaurant}/>
             <Tabs defaultValue="menu" className="space-y-6">
                 <TabsList className="grid w-full grid-cols-3 lg:w-[500px]">
                     <TabsTrigger value="menu">{t('tabs.menu')}</TabsTrigger>
@@ -37,17 +44,17 @@ export default async function RestaurantProfilePage({params}: Readonly<{ params:
                 </TabsList>
                 <TabsContent value="menu" className="space-y-6">
                     <Suspense fallback={<Loading/>}>
-                        <MenuHighlights t={t} restaurantId={username}/>
+                        <MenuHighlights t={t} restaurantId={restaurantId}/>
                     </Suspense>
                 </TabsContent>
                 <TabsContent value="posts" className="space-y-6">
                     <Suspense fallback={<Loading/>}>
-                        <PostTab t={t}/>
+                        <PostTab t={t} restaurantId={restaurantId}/>
                     </Suspense>
                 </TabsContent>
                 <TabsContent value="reviews" className="space-y-6">
                     <Suspense fallback={<Loading/>}>
-                        <RecentReviews t={t} restaurantId={username}/>
+                        <RecentReviews t={t} restaurantId={restaurantId}/>
                     </Suspense>
                 </TabsContent>
             </Tabs>

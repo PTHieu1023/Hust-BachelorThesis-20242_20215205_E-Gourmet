@@ -48,18 +48,12 @@ export interface CreateRestaurantParams {
 
 export const createRestaurant = async (params: CreateRestaurantParams): Promise<Restaurant> => {
     const response = await httpClient.post(getUrl("/api/restaurant"), params);
-    if (!response.data?.data) {
-        throw new Error("Failed to create restaurant");
-    }
-    return response.data.data as Restaurant;
+    return response.data as Restaurant;
 }
 
 export const updateRestaurant = async (id: number, params: Partial<CreateRestaurantParams>): Promise<Restaurant> => {
     const response = await httpClient.put(getUrl(`/api/restaurant/${id}`), params);
-    if (!response.data?.data) {
-        throw new Error("Failed to update restaurant");
-    }
-    return response.data.data as Restaurant;
+    return response.data as Restaurant;
 }
 
 export const deleteRestaurant = async (id: number): Promise<void> => {

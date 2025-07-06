@@ -8,6 +8,7 @@ import {getRecommendations, Recommendation} from "@/services/dish.service";
 import {Link} from "@/i18n/navigation";
 import {Button} from "@/components/ui/button";
 import Image from "next/image";
+import {getAuthSession} from "@/configs/auth.config";
 
 export default function Home() {
     return (
@@ -60,7 +61,9 @@ const PostsContent = async () => {
 };
 
 const DiscoveryPanelContent = async () => {
-    const recommendations = await getRecommendations({size: 3});
+    const session = await getAuthSession()
+    const userId = session?.user?.id;
+    const recommendations = await getRecommendations(userId ?? "");
     return (
         <div className="space-y-4">
             <RecommendationItems recommendations={recommendations}/>
@@ -82,21 +85,21 @@ const RecommendationItems = ({recommendations}: { recommendations: Recommendatio
         );
     }
 
-    return recommendations.map((item) => (
-        <Link href={`/restaurant/${item.restaurantUsername}/${item.id}`}
-              key={item.id}
+    return recommendations.splice(0,3).map((item) => (
+        <Link href={`/restaurant/${item.restaurantId}/${item.dishId}`}
+              key={item.dishId}
               className="flex items-center space-x-3 group cursor-pointer"
         >
             <Image
-                src={item.image ?? "/logo.svg"}
-                alt={item.title}
+                src={item.images?.[0] ?? "/logo.svg"}
+                alt={item.dishName}
                 className="w-12 h-12 rounded-lg object-cover group-hover:scale-105 transition-transform"
                 width={1920}
                 height={1920}
             />
             <div className="flex-1 min-w-0">
                 <h4 className="font-medium text-gray-900 truncate group-hover:text-orange-600 transition-colors">
-                    {item.title}
+                    {item.dishName}
                 </h4>
                 <div className="flex items-center space-x-2">
                     <Star className="w-3 h-3 text-yellow-400 fill-yellow-400"/>

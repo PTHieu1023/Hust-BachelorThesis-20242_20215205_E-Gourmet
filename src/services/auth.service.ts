@@ -42,6 +42,6 @@ export interface UserInfo{
 }
 
 export const getCurrentUserInfo = async (): Promise<UserInfo> => {
-    const response = await httpClient.get(getUrl("/api/user/me"));
+    const response = await httpClient.get(getUrl("/api/user"));
     return response.data as UserInfo;
 }

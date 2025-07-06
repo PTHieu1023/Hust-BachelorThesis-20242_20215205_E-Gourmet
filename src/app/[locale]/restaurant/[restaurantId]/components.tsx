@@ -1,4 +1,4 @@
-import {getRestaurants} from "@/services/restaurant.service";
+import {Restaurant} from "@/services/restaurant.service";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import Image from "next/image";
 import {Button} from "@/components/ui/button";
@@ -7,23 +7,18 @@ import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {RatingStar} from "@/components/ui/rating-star";
 import {getDish} from "@/services/dish.service";
 import {getReviews} from "@/services/review.service";
+import {fetchPosts} from "@/services/post.service";
+import PostCard from "@/components/PostCard";
 
-interface CommonProps {
-    t: (key: string) => string;
-    restaurantId: number | string;
-}
-
-export const RestaurantInfo = async ({t, restaurantId}: CommonProps) => {
-    const restaurant = (await getRestaurants({restaurantId: restaurantId}))?.[0];
-
+export const RestaurantInfo = ({t, restaurant}: { t: (key: string) => string, restaurant: Restaurant }) => {
     return (
         <Card className="border-gray-100 mb-6">
             <CardContent className="p-0">
                 <div className="relative h-64 md:h-80 rounded-xl overflow-hidden mb-6">
-                    <Image 
-                        src={restaurant.coverImage ??  "/logo.svg"}
+                    <Image
+                        src={restaurant.coverImage ?? "/logo.svg"}
                         alt={restaurant.name}
-                        width={1980} 
+                        width={1980}
                         height={720}
                         className="w-full h-full object-cover"
                     />
@@ -35,13 +30,13 @@ export const RestaurantInfo = async ({t, restaurantId}: CommonProps) => {
                         </Button>
                     </div>
                 </div>
-                
+
                 <div className="p-6">
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
-                            <RatingStar rating={restaurant.averageRating} />
+                            <RatingStar rating={restaurant.averageRating}/>
                             <span className="text-sm text-gray-600">
-                                {restaurant.averageRating} ({restaurant.reviewCount} {t('common.reviews')})
+                                {restaurant.averageRating.toFixed(1)} ({restaurant.reviewCount} {t('common.reviews')})
                             </span>
                         </div>
                         <div className="flex items-center gap-4 text-sm text-gray-600">
@@ -49,9 +44,9 @@ export const RestaurantInfo = async ({t, restaurantId}: CommonProps) => {
                             <span>{restaurant.postCount} {t('common.posts')}</span>
                         </div>
                     </div>
-                    
+
                     <p className="text-gray-700 mb-4">{restaurant.description}</p>
-                    
+
                     <div className="grid md:grid-cols-2 gap-4 text-sm">
                         <div className="flex items-center gap-2">
                             <MapPin className="w-4 h-4 text-gray-500"/>
@@ -76,7 +71,7 @@ export const RestaurantInfo = async ({t, restaurantId}: CommonProps) => {
     );
 };
 
-export const MenuHighlights = async ({t, restaurantId}: CommonProps) => {
+export const MenuHighlights = async ({t, restaurantId}: { t: (key: string) => string, restaurantId: number }) => {
     const highlights = await getDish({restaurantId: restaurantId});
 
     return (
@@ -89,8 +84,8 @@ export const MenuHighlights = async ({t, restaurantId}: CommonProps) => {
                     {highlights.map((dish) => (
                         <div key={dish.id} className="group cursor-pointer">
                             <div className="aspect-square relative mb-3 rounded-lg overflow-hidden">
-                                <Image 
-                                    src={dish.images?.[0] ?? '/placeholder-dish.jpg'} 
+                                <Image
+                                    src={dish.images?.[0] ?? '/placeholder-dish.jpg'}
                                     alt={dish.name}
                                     width={300}
                                     height={300}
@@ -113,7 +108,7 @@ export const MenuHighlights = async ({t, restaurantId}: CommonProps) => {
     );
 };
 
-export const RecentReviews = async ({t, restaurantId}: CommonProps) => {
+export const RecentReviews = async ({t, restaurantId}: { t: (key: string) => string, restaurantId: number }) => {
     const reviews = await getReviews({restaurantId: restaurantId, size: 99999});
 
     return (
@@ -127,7 +122,7 @@ export const RecentReviews = async ({t, restaurantId}: CommonProps) => {
                         <div key={review.id} className="border-b border-gray-100 last:border-0 pb-6 last:pb-0">
                             <div className="flex items-start gap-4">
                                 <Avatar className="w-10 h-10">
-                                    <AvatarImage src={review.userAvatarUrl ?? "/logo.svg"} />
+                                    <AvatarImage src={review.userAvatarUrl ?? "/logo.svg"}/>
                                     <AvatarFallback>{review.userDisplayName}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1">
@@ -135,7 +130,7 @@ export const RecentReviews = async ({t, restaurantId}: CommonProps) => {
                                         <div>
                                             <h4 className="font-medium">{review.dishName}</h4>
                                             <div className="flex items-center gap-1">
-                                                <RatingStar rating={review.rating} />
+                                                <RatingStar rating={review.rating}/>
                                             </div>
                                         </div>
                                         <span className="text-sm text-gray-500">
@@ -153,16 +148,33 @@ export const RecentReviews = async ({t, restaurantId}: CommonProps) => {
     );
 };
 
-export const PostTab = async ({t}: {t: (key: string) => string}) => {
+export const PostTab = async ({t, restaurantId}: { t: (key: string) => string, restaurantId: number }) => {
+    const posts = await fetchPosts({restaurantId: restaurantId});
+    if (!posts || posts.length === 0) {
+        return (
+            <Card className="border-gray-100">
+                <CardContent className="p-12 text-center">
+                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                        <span className="text-2xl">📱</span>
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">{t('posts.coming-soon-title')}</h3>
+                    <p className="text-gray-600">{t('posts.coming-soon-desc')}</p>
+                </CardContent>
+            </Card>
+        );
+    }
     return (
         <Card className="border-gray-100">
-            <CardContent className="p-12 text-center">
-                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                    <span className="text-2xl">📱</span>
+            <CardHeader>
+                <h3 className={"text-2xl font-bold text-gray-700"}>Restaurant Posts</h3>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-6">
+                    {posts.map((post: any) => (
+                        <PostCard key={post.id} post={post}/>
+                    ))}
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">{t('posts.coming-soon-title')}</h3>
-                <p className="text-gray-600">{t('posts.coming-soon-desc')}</p>
             </CardContent>
         </Card>
-    );
+    )
 };

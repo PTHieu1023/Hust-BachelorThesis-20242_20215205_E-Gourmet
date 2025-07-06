@@ -33,7 +33,7 @@ export interface SearchDishFilterProps {
 }
 
 
-export async function getDish (params: SearchDishFilterProps): Promise<ShortDishProps[]> {
+export async function getDish(params: SearchDishFilterProps): Promise<ShortDishProps[]> {
     const response = await httpClient.get(getUrl("/api/dish"), {params});
     return response.data as ShortDishProps[];
 }
@@ -59,39 +59,23 @@ export interface DishDetails {
     reviewCount: number;
 }
 
-export const getDishDetails = async (dishId: number): Promise<DishDetails | null> => {
-    try {
-        const response = await httpClient.get(getUrl(`/api/dish/${dishId}`));
-        return response.data as DishDetails;
-    } catch (error) {
-        console.error(`Error fetching dish details for ID ${dishId}:`, error);
-        return null;
-    }
+export const getDishDetails = async (dishId: number): Promise<DishDetails> => {
+    const response = await httpClient.get(getUrl(`/api/dish/${dishId}`));
+    return response.data as DishDetails;
 }
 
-export const getDetails = getDishDetails;
-
 export interface Recommendation {
-    id: number;
-    title: string;
-    restaurant: string;
-    dish: string;
-    urlName: string;
-    restaurantUsername: string;
-    image?: string;
+    dishId: number;
+    dishName: string;
+    restaurantId: number;
+    restaurantName: string;
+    images?: string[];
     rating: number;
     reviewCount: number;
     price: string;
-    reason: string;
 }
 
-export interface DishListParams {
-    page?: number;
-    size?: number;
-}
-
-
-export const getRecommendations = async (params?: DishListParams): Promise<Recommendation[]> => {
-    const response = await httpClient.get(getUrl("/api/recommendations"), {params});
-    return response.data ?? [];
+export const getRecommendations = async (userId: string): Promise<Recommendation[]> => {
+    const response = await httpClient.get(`${process.env.RECOMMENDATION_API_URL}/${userId}`);
+    return response.data as Recommendation[];
 }

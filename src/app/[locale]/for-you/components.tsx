@@ -8,6 +8,7 @@ import {getCurrentUserInfo} from "@/services/auth.service";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {getRecommendations, Recommendation} from "@/services/dish.service";
 import {Link} from "@/i18n/navigation";
+import {getAuthSession} from "@/configs/auth.config";
 
 export const UserStatsCard = async () => {
     const t = await getTranslations("for-you.statistics");
@@ -51,24 +52,24 @@ export const UserStatsCard = async () => {
 
 export function RecommendItemCard({rec}: { rec: Recommendation }) {
     return (
-        <Link href={`/restaurant/${rec.restaurantUsername}/${rec.id}`} className="block">
+        <Link href={`/restaurant/${rec.restaurantId}/${rec.dishId}`} className="block">
             <Card className="border-gray-100 hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                     <div className="flex items-start space-x-4">
                         <div className="flex-shrink-0">
                             <Image
-                                src={rec.image ?? "/logo.svg"}
-                                alt={rec.title}
+                                src={rec.images?.[0] ?? "/logo.svg"}
+                                alt={rec.dishName}
                                 className="w-16 h-16 rounded-lg object-cover"
                                 width={64} height={64}
                             />
                         </div>
 
                         <div className="flex-1">
-                            <h3 className="font-semibold text-gray-900 mb-1">{rec.title}</h3>
+                            <h3 className="font-semibold text-gray-900 mb-1">{rec.dishName}</h3>
 
                             <div className="flex items-center space-x-4 mb-3">
-                                <span className="text-sm font-medium">{rec.restaurant}</span>
+                                <span className="text-sm font-medium">{rec.restaurantName}</span>
                                 <Badge variant="outline">{rec.price}</Badge>
                                 <div className="flex items-center space-x-1">
                                     <Star className="w-4 h-4 text-yellow-400 fill-yellow-400"/>
@@ -87,15 +88,17 @@ export function RecommendItemCard({rec}: { rec: Recommendation }) {
 }
 
 export async function RecommendationList() {
+    const session = await getAuthSession();
+    const userId = session?.user?.id;
     try {
-        const recommendations = await getRecommendations();
+        const recommendations = await getRecommendations(userId ?? "");
         if (!recommendations || !Array.isArray(recommendations)) {
             return <div className="p-4 text-center text-gray-500">No recommendations available at the moment.</div>;
         }
         return (
             <div className="space-y-4">
-                {recommendations.map((rec: any) => (
-                    <RecommendItemCard rec={rec} key={rec.id}/>
+                {recommendations.map((rec) => (
+                    <RecommendItemCard rec={rec} key={rec.dishId}/>
                 ))}
             </div>
         );

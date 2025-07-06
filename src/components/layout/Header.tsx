@@ -1,6 +1,6 @@
 "use client";
 
-import {Compass, ForkKnife, Heart, Home, LogOut, User, PcCase, Store, Shield} from "lucide-react";
+import {Compass, ForkKnife, Heart, Home, LogOut, User, PcCase} from "lucide-react";
 import {signIn, signOut, useSession} from "next-auth/react";
 import {KCSession} from "@/configs/auth.config";
 import {useLocale, useTranslations} from "next-intl";

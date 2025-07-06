@@ -16,7 +16,7 @@ import Loading from "@/components/loading";
 import {Suspense} from "react";
 import {getDish, ShortDishProps} from "@/services/dish.service";
 import {fetchPosts} from "@/services/post.service";
-import {RecentReviews} from "@/app/[locale]/restaurant/[username]/components";
+import {RecentReviews} from "@/app/[locale]/restaurant/[restaurantId]/components";
 
 interface PageProps {
     params: Promise<{ locale: string }>;
@@ -123,7 +123,7 @@ function RestaurantInfoCard({t, restaurant}: { t: (key: string) => string, resta
                         </div>
                         <EditRestaurantButton restaurant={restaurant}/>
                         <Button variant={"outline"}>
-                            <Link href={`/restaurant/${restaurant.username}`}>
+                            <Link href={`/restaurant/${restaurant.id}`}>
                                 {t('view-public-profile')}
                             </Link>
                         </Button>

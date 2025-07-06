@@ -41,15 +41,16 @@ export default function ReviewModal({isOpen, setIsOpenAction, dish}: Readonly<Re
         }
 
         setIsSubmitting(true);
-        const response = await createReview(dish.id, review);
-        
-        if (response.error === null) {
-            setReview(initState);
-            setIsOpenAction(false);
-            router.refresh();
-        }
-        
-        setIsSubmitting(false);
+        createReview(dish.id, review).then(response => {
+            toast.success("Review created successfully");
+            setIsOpenAction(false)
+        }).catch(e => toast.error(e))
+            .finally(() => {
+                setIsSubmitting(false)
+                setReview(initState)
+                setIsOpenAction(false);
+                router.refresh()
+            });
     }
 
     const handleClose = () => {

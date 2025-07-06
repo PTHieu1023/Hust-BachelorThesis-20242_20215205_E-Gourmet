@@ -23,7 +23,7 @@ const PostCard = ({post}: { post: Post }) => {
         <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 border-gray-100">
             <CardHeader className="pb-3">
                 <div className="flex items-center space-x-3">
-                    <Link href={`/restaurant/${post.restaurantUsername}`}>
+                    <Link href={`/restaurant/${post.restaurantId}`}>
                         <Avatar
                             className="w-12 h-12 cursor-pointer hover:ring-2 hover:ring-orange-200 transition-all">
                             <AvatarImage src={post.restaurantAvatar} alt={post.restaurantName}/>
@@ -33,7 +33,7 @@ const PostCard = ({post}: { post: Post }) => {
 
                     <div>
                         <div className="flex items-center space-x-2">
-                            <Link href={`/restaurant/${post.restaurantUsername}`}>
+                            <Link href={`/restaurant/${post.restaurantId}`}>
                                 <h3 className="font-semibold text-gray-900 hover:text-orange-600 transition-colors cursor-pointer">
                                     {post.restaurantName}
                                 </h3>
@@ -51,7 +51,7 @@ const PostCard = ({post}: { post: Post }) => {
                     <h4 className="text-lg font-semibold text-gray-900">{post.caption}</h4>
                     {post.media && post.media.length > 0 && (
                         <div className="grid grid-cols-2 gap-2">
-                            {post.media.map((image) => (
+                            {post.media?.map((image) => (
                                 <Image
                                     key={image}
                                     src={image}

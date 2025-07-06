@@ -20,7 +20,7 @@ httpClient.interceptors.request.use(
 );
 
 export function getUrl(path: string): string {
-    return `${process.env.SERVICES_API_URL}${path}`;
+    return `${process.env.CORE_SERVICES_API_URL}${path}`;
 }
 
 export default httpClient;
