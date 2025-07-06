@@ -7,7 +7,33 @@ package database
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const deleteOldUserRecommendations = `-- name: DeleteOldUserRecommendations :exec
+DELETE FROM user_recommendation
+WHERE user_id = $1
+`
+
+func (q *Queries) DeleteOldUserRecommendations(ctx context.Context, db DBTX, userID *string) error {
+	_, err := db.Exec(ctx, deleteOldUserRecommendations, userID)
+	return err
+}
+
+const getLatestUserRecommendation = `-- name: GetLatestUserRecommendation :one
+SELECT
+    COALESCE(MAX(created_at), '1970-01-01'::timestamp) as latest_created_at
+FROM user_recommendation
+WHERE user_id = $1
+`
+
+func (q *Queries) GetLatestUserRecommendation(ctx context.Context, db DBTX, userID *string) (interface{}, error) {
+	row := db.QueryRow(ctx, getLatestUserRecommendation, userID)
+	var latest_created_at interface{}
+	err := row.Scan(&latest_created_at)
+	return latest_created_at, err
+}
 
 const getTopRatedDishes = `-- name: GetTopRatedDishes :many
 SELECT
@@ -68,6 +94,73 @@ func (q *Queries) GetTopRatedDishes(ctx context.Context, db DBTX, limit int32) (
 			&i.CuisineName,
 			&i.AverageRating,
 			&i.ReviewCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUserRecommendations = `-- name: GetUserRecommendations :many
+SELECT
+    ur.id,
+    ur.user_id,
+    ur.dish_id,
+    ur.score,
+    ur.created_at,
+    d.name as dish_name,
+    d.description as dish_description,
+    d.price,
+    r.name as restaurant_name,
+    r.username as restaurant_username,
+    c.name as cuisine_name
+FROM user_recommendation ur
+JOIN dishes d ON ur.dish_id = d.id
+JOIN restaurants r ON d.restaurant_id = r.id
+LEFT JOIN cuisines c ON d.cuisine_id = c.id
+WHERE ur.user_id = $1
+ORDER BY ur.created_at DESC, ur.score DESC
+`
+
+type GetUserRecommendationsRow struct {
+	ID                 int32              `json:"id"`
+	UserID             *string            `json:"userId"`
+	DishID             int32              `json:"dishId"`
+	Score              float64            `json:"score"`
+	CreatedAt          pgtype.Timestamptz `json:"createdAt"`
+	DishName           string             `json:"dishName"`
+	DishDescription    *string            `json:"dishDescription"`
+	Price              int64              `json:"price"`
+	RestaurantName     string             `json:"restaurantName"`
+	RestaurantUsername string             `json:"restaurantUsername"`
+	CuisineName        *string            `json:"cuisineName"`
+}
+
+func (q *Queries) GetUserRecommendations(ctx context.Context, db DBTX, userID *string) ([]*GetUserRecommendationsRow, error) {
+	rows, err := db.Query(ctx, getUserRecommendations, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []*GetUserRecommendationsRow{}
+	for rows.Next() {
+		var i GetUserRecommendationsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.DishID,
+			&i.Score,
+			&i.CreatedAt,
+			&i.DishName,
+			&i.DishDescription,
+			&i.Price,
+			&i.RestaurantName,
+			&i.RestaurantUsername,
+			&i.CuisineName,
 		); err != nil {
 			return nil, err
 		}

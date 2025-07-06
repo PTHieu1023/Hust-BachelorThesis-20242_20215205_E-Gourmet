@@ -6,6 +6,21 @@ VALUES (sqlc.narg(id)::varchar(64),
         sqlc.narg(display_name)::varchar(255))
 RETURNING *;
 
+-- name: CreateUserFromAuth :one
+INSERT INTO users (id, username, email, display_name, avatar_url)
+VALUES (sqlc.narg(id)::varchar(64),
+        sqlc.narg(username)::varchar(64),
+        sqlc.narg(email)::varchar(127),
+        sqlc.narg(display_name)::varchar(255),
+        sqlc.narg(avatar_url)::varchar(255))
+ON CONFLICT (id) DO UPDATE SET
+    username = EXCLUDED.username,
+    email = EXCLUDED.email,
+    display_name = EXCLUDED.display_name,
+    avatar_url = COALESCE(EXCLUDED.avatar_url, users.avatar_url),
+    updated_at = now()
+RETURNING *;
+
 -- name: GetUserByUsername :one
 SELECT u.id,
        u.username,

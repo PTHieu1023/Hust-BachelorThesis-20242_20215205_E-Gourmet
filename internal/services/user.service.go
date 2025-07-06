@@ -17,7 +17,7 @@ import (
 	"strings"
 )
 
-func (s *Service) CreateUser(ctx context.Context, params *database.CreateUserParams) (*database.User, error) {
+func (s *EGServiceImpl) CreateUser(ctx context.Context, params *database.CreateUserParams) (*database.User, error) {
 	if params == nil {
 		return nil, fiber.NewError(fiber.StatusBadRequest, "ERR_PARAMS_NIL")
 	}
@@ -60,15 +60,32 @@ func (s *Service) CreateUser(ctx context.Context, params *database.CreateUserPar
 	return user, err
 }
 
-func (s *Service) GetUserById(ctx context.Context, id string) (*database.GetUserByIdRow, error) {
-	user, err := s.querier.GetUserById(ctx, s.dbtx, id)
-	if errors.Is(err, pgx.ErrNoRows) {
-		return nil, fiber.NewError(fiber.StatusNotFound, "NOT_FOUND")
+func (s *EGServiceImpl) CreateUserFromAuth(ctx context.Context, params *database.CreateUserFromAuthParams) (*database.User, error) {
+	if params == nil {
+		return nil, fiber.NewError(fiber.StatusBadRequest, "ERR_PARAMS_NIL")
 	}
+	if params.ID == nil || params.Username == nil || params.Email == nil || params.DisplayName == nil {
+		return nil, fiber.NewError(fiber.StatusBadRequest, "MISSING_REQUIRED_FIELDS (id, username, email, displayName)")
+	}
+
+	user, err := s.querier.CreateUserFromAuth(ctx, s.dbtx, params)
+	var sqlErr *pgconn.PgError
+	if err != nil && errors.As(err, &sqlErr) {
+		switch sqlErr.Code {
+		case "23505":
+			return nil, fiber.NewError(fiber.StatusConflict, "SQL_CONSTRAIN_CONFLICT"+sqlErr.Detail)
+		}
+		return nil, fiber.NewError(fiber.StatusInternalServerError, "SQL_EXCEPTION "+sqlErr.Message)
+	}
+
 	return user, err
 }
 
-func (s *Service) GetUserByUsername(ctx context.Context, username string) (*database.GetUserByUsernameRow, error) {
+func (s *EGServiceImpl) GetUserById(ctx context.Context, id string) (*database.GetUserByIdRow, error) {
+	return s.querier.GetUserById(ctx, s.dbtx, id)
+}
+
+func (s *EGServiceImpl) GetUserByUsername(ctx context.Context, username string) (*database.GetUserByUsernameRow, error) {
 	if err := validateUsername(username); err != nil {
 		return nil, err
 	}
@@ -79,7 +96,7 @@ func (s *Service) GetUserByUsername(ctx context.Context, username string) (*data
 	return user, err
 }
 
-func (s *Service) UpdateUser(ctx context.Context, params *database.UpdateUserParams) (*database.UpdateUserRow, error) {
+func (s *EGServiceImpl) UpdateUser(ctx context.Context, params *database.UpdateUserParams) (*database.UpdateUserRow, error) {
 	oldKC, _, err := s.updateKCUser(ctx, params)
 	if err != nil {
 		return nil, err
@@ -146,7 +163,7 @@ func usernameFromEmail(email string) string {
 	return username
 }
 
-func (s *Service) updateKCUser(ctx context.Context, params *database.UpdateUserParams) (oldKC *gocloak.User, newKC *gocloak.User, err error) {
+func (s *EGServiceImpl) updateKCUser(ctx context.Context, params *database.UpdateUserParams) (oldKC *gocloak.User, newKC *gocloak.User, err error) {
 	realm := ctx.Value(utils.AuthRealm()).(string)
 	token := ctx.Value(utils.AuthAccessToken).(*gocloak.JWT)
 

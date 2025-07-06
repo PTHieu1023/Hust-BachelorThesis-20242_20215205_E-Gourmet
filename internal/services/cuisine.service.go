@@ -5,11 +5,11 @@ import (
 	"e-gourmet/core/internal/database"
 )
 
-func (s *Service) GetCuisineRecursionById(ctx context.Context, id int16) ([]*database.GetCuisineRecursionByIdRow, error) {
+func (s *EGServiceImpl) GetCuisineRecursionById(ctx context.Context, id int16) ([]*database.GetCuisineRecursionByIdRow, error) {
 	return s.querier.GetCuisineRecursionById(ctx, s.dbtx, int32(id))
 }
 
-func (s *Service) AddCuisine(ctx context.Context, params *database.AddCuisineParams) (*Cuisine, error) {
+func (s *EGServiceImpl) AddCuisine(ctx context.Context, params *database.AddCuisineParams) (*Cuisine, error) {
 	if params.ParentID == nil {
 		params.ParentID = new(int16)
 		*params.ParentID = 0
@@ -22,7 +22,7 @@ func (s *Service) AddCuisine(ctx context.Context, params *database.AddCuisinePar
 	return NewCuisine(int16(cuisine.ID), cuisine.Name, cuisine.ParentID, cuisine.ImageUrl), nil
 }
 
-func (s *Service) UpdateCuisine(ctx context.Context, params *database.UpdateCuisineParams) (*Cuisine, error) {
+func (s *EGServiceImpl) UpdateCuisine(ctx context.Context, params *database.UpdateCuisineParams) (*Cuisine, error) {
 	cuisine, err := s.querier.UpdateCuisine(ctx, s.dbtx, params)
 	if err != nil {
 		return nil, err
@@ -30,6 +30,6 @@ func (s *Service) UpdateCuisine(ctx context.Context, params *database.UpdateCuis
 	return NewCuisine(int16(cuisine.ID), cuisine.Name, cuisine.ParentID, cuisine.ImageUrl), nil
 }
 
-func (s *Service) DeleteCuisine(ctx context.Context, id int16) error {
+func (s *EGServiceImpl) DeleteCuisine(ctx context.Context, id int16) error {
 	return s.querier.DeleteCuisine(ctx, s.dbtx, int32(id))
 }

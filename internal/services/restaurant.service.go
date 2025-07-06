@@ -8,11 +8,11 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (s *Service) GetRestaurants(ctx context.Context, params *database.GetRestaurantsParams) ([]*database.GetRestaurantsRow, error) {
+func (s *EGServiceImpl) GetRestaurants(ctx context.Context, params *database.GetRestaurantsParams) ([]*database.GetRestaurantsRow, error) {
 	return s.querier.GetRestaurants(ctx, s.dbtx, params)
 }
 
-func (s *Service) CreateRestaurant(ctx context.Context, params *database.CreateRestaurantParams) (*database.Restaurant, error) {
+func (s *EGServiceImpl) CreateRestaurant(ctx context.Context, params *database.CreateRestaurantParams) (*database.Restaurant, error) {
 	tx, err := s.dbtx.Begin(ctx)
 	if err != nil {
 		return nil, err
@@ -52,7 +52,7 @@ func (s *Service) CreateRestaurant(ctx context.Context, params *database.CreateR
 	return restaurant, nil
 }
 
-func (s *Service) UpdateRestaurant(ctx context.Context, params *database.UpdateRestaurantParams) (*database.Restaurant, error) {
+func (s *EGServiceImpl) UpdateRestaurant(ctx context.Context, params *database.UpdateRestaurantParams) (*database.Restaurant, error) {
 	if params == nil {
 		return nil, fiber.NewError(fiber.StatusBadRequest, "params must not be nil")
 	}
@@ -63,7 +63,7 @@ func (s *Service) UpdateRestaurant(ctx context.Context, params *database.UpdateR
 	return s.querier.UpdateRestaurant(ctx, s.dbtx, params)
 }
 
-func (s *Service) DeleteRestaurantById(ctx context.Context, id int32) error {
+func (s *EGServiceImpl) DeleteRestaurantById(ctx context.Context, id int32) error {
 	if id <= 0 {
 		return fiber.NewError(fiber.StatusBadRequest, "id must be greater than 0")
 	}
@@ -71,7 +71,7 @@ func (s *Service) DeleteRestaurantById(ctx context.Context, id int32) error {
 	return s.querier.DeleteRestaurant(ctx, s.dbtx, id)
 }
 
-func (s *Service) GetRestaurantByOwnerId(ctx context.Context, ownerId string) (*database.GetRestaurantByOwnerIdRow, error) {
+func (s *EGServiceImpl) GetRestaurantByOwnerId(ctx context.Context, ownerId string) (*database.GetRestaurantByOwnerIdRow, error) {
 	if ownerId == "" {
 		return nil, fiber.NewError(fiber.StatusBadRequest, "Owner ID cannot be empty")
 	}
@@ -84,18 +84,18 @@ func (s *Service) GetRestaurantByOwnerId(ctx context.Context, ownerId string) (*
 	return result, nil
 }
 
-func (s *Service) GetRestaurantByUsername(ctx context.Context, username string) (*database.GetRestaurantByUsernameRow, error) {
+func (s *EGServiceImpl) GetRestaurantByUsername(ctx context.Context, username string) (*database.GetRestaurantByUsernameRow, error) {
 	return s.querier.GetRestaurantByUsername(ctx, s.dbtx, username)
 }
 
-func (s *Service) GetRestaurantProfile(ctx context.Context, id int32) (*database.GetRestaurantProfileRow, error) {
+func (s *EGServiceImpl) GetRestaurantProfile(ctx context.Context, id int32) (*database.GetRestaurantProfileRow, error) {
 	return s.querier.GetRestaurantProfile(ctx, s.dbtx, id)
 }
 
-func (s *Service) GetRestaurantHighlights(ctx context.Context, id int32) ([]*database.GetRestaurantHighlightsRow, error) {
+func (s *EGServiceImpl) GetRestaurantHighlights(ctx context.Context, id int32) ([]*database.GetRestaurantHighlightsRow, error) {
 	return s.querier.GetRestaurantHighlights(ctx, s.dbtx, id)
 }
 
-func (s *Service) GetRestaurantRecentReviews(ctx context.Context, id int32) ([]*database.GetRestaurantRecentReviewsRow, error) {
+func (s *EGServiceImpl) GetRestaurantRecentReviews(ctx context.Context, id int32) ([]*database.GetRestaurantRecentReviewsRow, error) {
 	return s.querier.GetRestaurantRecentReviews(ctx, s.dbtx, id)
 }

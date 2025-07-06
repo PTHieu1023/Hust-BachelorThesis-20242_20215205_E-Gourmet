@@ -6,43 +6,23 @@ import (
 	"e-gourmet/core/internal/utils"
 	"errors"
 	"github.com/gofiber/fiber/v2"
-	"github.com/golang-jwt/jwt/v5"
 )
 
-func (c *Controller) GetCurrentUser(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) GetCurrentUser(ctx *fiber.Ctx) error {
 	id := ctx.UserContext().Value(utils.AuthUserID).(string)
 	if id == "" {
 		return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized: No user ID found in context")
 	}
 
 	user, err := c.service.GetUserById(ctx.UserContext(), id)
-	if err == nil {
-		return ctx.Status(fiber.StatusOK).JSON(user)
-	}
-
-	if !errors.As(err, &fiber.ErrNotFound) {
-		return err
-	}
-
-	params := new(database.CreateUserParams)
-	claims := ctx.UserContext().Value(utils.AuthClaims).(*jwt.MapClaims)
-	username := (*claims)["preferred_username"].(string)
-	email := (*claims)["email"].(string)
-	name := (*claims)["name"].(string)
-
-	params.ID = &id
-	params.Username = &username
-	params.Email = &email
-	params.DisplayName = &name
-	newUser, err := c.service.CreateUser(ctx.UserContext(), params)
-
 	if err != nil {
 		return err
 	}
-	return ctx.Status(fiber.StatusCreated).JSON(newUser)
+
+	return ctx.Status(fiber.StatusOK).JSON(user)
 }
 
-func (c *Controller) GetUserByUsername(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) GetUserByUsername(ctx *fiber.Ctx) error {
 	username := ctx.Params("username")
 	if username == "" {
 		return fiber.NewError(fiber.StatusBadRequest, "Username is required")
@@ -59,7 +39,7 @@ func (c *Controller) GetUserByUsername(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(user)
 }
 
-func (c *Controller) UpdateCurrentUser(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) UpdateCurrentUser(ctx *fiber.Ctx) error {
 	params := new(database.UpdateUserParams)
 
 	if err := ctx.BodyParser(&params); err != nil {

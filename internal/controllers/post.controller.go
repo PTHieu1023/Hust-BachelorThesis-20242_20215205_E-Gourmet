@@ -9,7 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (c *Controller) GetPosts(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) GetPosts(ctx *fiber.Ctx) error {
 	params := new(database.GetPostsParams)
 	if err := ctx.QueryParser(params); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid request body")
@@ -29,7 +29,7 @@ func (c *Controller) GetPosts(ctx *fiber.Ctx) error {
 	return ctx.JSON(posts)
 }
 
-func (c *Controller) GetPostById(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) GetPostById(ctx *fiber.Ctx) error {
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, errInvalidID)
@@ -44,10 +44,10 @@ func (c *Controller) GetPostById(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	return ctx.JSON(fiber.Map{"data": post})
+	return ctx.JSON(post)
 }
 
-func (c *Controller) CreatePost(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) CreatePost(ctx *fiber.Ctx) error {
 	params := new(database.CreatePostParams)
 	if err := ctx.BodyParser(params); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, errInvalidID)
@@ -64,10 +64,10 @@ func (c *Controller) CreatePost(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{"data": post})
+	return ctx.Status(fiber.StatusCreated).JSON(post)
 }
 
-func (c *Controller) UpdatePost(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) UpdatePost(ctx *fiber.Ctx) error {
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, errInvalidID)
@@ -85,10 +85,10 @@ func (c *Controller) UpdatePost(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	return ctx.JSON(fiber.Map{"data": post})
+	return ctx.JSON(post)
 }
 
-func (c *Controller) DeletePost(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) DeletePost(ctx *fiber.Ctx) error {
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, errInvalidID)
@@ -102,7 +102,7 @@ func (c *Controller) DeletePost(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusNoContent).Send(nil)
 }
 
-func (c *Controller) LikePost(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) LikePost(ctx *fiber.Ctx) error {
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, errInvalidID)
@@ -124,7 +124,7 @@ func (c *Controller) LikePost(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Post liked"})
 }
 
-func (c *Controller) UnlikePost(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) UnlikePost(ctx *fiber.Ctx) error {
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid post ID.")
@@ -146,7 +146,7 @@ func (c *Controller) UnlikePost(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"message": "Post unliked"})
 }
 
-func (c *Controller) CreateComment(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) CreateComment(ctx *fiber.Ctx) error {
 	postId, err := ctx.ParamsInt("postId")
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, errInvalidID)
@@ -170,24 +170,10 @@ func (c *Controller) CreateComment(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{"data": comment})
+	return ctx.Status(fiber.StatusCreated).JSON(comment)
 }
 
-func (c *Controller) GetCommentsByPost(ctx *fiber.Ctx) error {
-	postId, err := ctx.ParamsInt("postId")
-	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, errInvalidID)
-	}
-
-	comments, err := c.service.GetCommentsByPost(ctx.UserContext(), int64(postId))
-	if err != nil {
-		return err
-	}
-
-	return ctx.JSON(fiber.Map{"data": comments})
-}
-
-func (c *Controller) DeleteComment(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) DeleteComment(ctx *fiber.Ctx) error {
 	commentId, err := ctx.ParamsInt("commentId")
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid comment ID.")
@@ -207,4 +193,14 @@ func (c *Controller) DeleteComment(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.Status(fiber.StatusNoContent).Send(nil)
+}
+
+func (c *EGControllerImpl) GetComments(ctx *fiber.Ctx) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (c *EGControllerImpl) UpdateComment(ctx *fiber.Ctx) error {
+	//TODO implement me
+	panic("implement me")
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type IService interface {
+type EGService interface {
 	GetCuisineRecursionById(ctx context.Context, id int16) ([]*database.GetCuisineRecursionByIdRow, error)
 	AddCuisine(ctx context.Context, params *database.AddCuisineParams) (*Cuisine, error)
 	UpdateCuisine(ctx context.Context, params *database.UpdateCuisineParams) (*Cuisine, error)
@@ -24,6 +24,7 @@ type IService interface {
 	DeleteReview(ctx context.Context, dishId int64) error
 
 	CreateUser(ctx context.Context, params *database.CreateUserParams) (*database.User, error)
+	CreateUserFromAuth(ctx context.Context, params *database.CreateUserFromAuthParams) (*database.User, error)
 	GetUserByUsername(ctx context.Context, username string) (*database.GetUserByUsernameRow, error)
 	GetUserById(ctx context.Context, id string) (*database.GetUserByIdRow, error)
 	UpdateUser(ctx context.Context, params *database.UpdateUserParams) (*database.UpdateUserRow, error)
@@ -60,16 +61,19 @@ type IService interface {
 	IsPostLiked(ctx context.Context, params *database.CheckPostLikeParams) (bool, error)
 
 	GetTopRatedDishes(ctx context.Context, limit int32) ([]*database.GetTopRatedDishesRow, error)
+	GetUserRecommendations(ctx context.Context, userId string) ([]*database.GetUserRecommendationsRow, error)
+	GetLatestUserRecommendation(ctx context.Context, userId string) (interface{}, error)
+	DeleteOldUserRecommendations(ctx context.Context, userId string) error
 }
 
-type Service struct {
+type EGServiceImpl struct {
 	kc      *gocloak.GoCloak
 	dbtx    *pgxpool.Pool
 	querier database.Querier
 }
 
-func New(dbtx *pgxpool.Pool, kc *gocloak.GoCloak) IService {
-	return &Service{
+func New(dbtx *pgxpool.Pool, kc *gocloak.GoCloak) EGService {
+	return &EGServiceImpl{
 		kc:      kc,
 		dbtx:    dbtx,
 		querier: database.New(),

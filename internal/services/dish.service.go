@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func (s *Service) CreateDish(ctx context.Context, params *database.CreateDishParams) (*database.CreateDishRow, error) {
+func (s *EGServiceImpl) CreateDish(ctx context.Context, params *database.CreateDishParams) (*database.CreateDishRow, error) {
 	if params.RestaurantID == nil {
 		return nil, fiber.NewError(fiber.StatusBadRequest, "restaurantId is required")
 	}
@@ -35,7 +35,7 @@ func (s *Service) CreateDish(ctx context.Context, params *database.CreateDishPar
 	return s.querier.CreateDish(ctx, s.dbtx, params)
 }
 
-func (s *Service) GetDishById(ctx context.Context, id int32, interaction *database.AddInteractionParams) (*database.GetDishByIDRow, error) {
+func (s *EGServiceImpl) GetDishById(ctx context.Context, id int32, interaction *database.AddInteractionParams) (*database.GetDishByIDRow, error) {
 	dish, err := s.querier.GetDishByID(ctx, s.dbtx, id)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, fiber.NewError(fiber.StatusNotFound, "Dish not found")
@@ -50,11 +50,11 @@ func (s *Service) GetDishById(ctx context.Context, id int32, interaction *databa
 	return dish, nil
 }
 
-func (s *Service) DeleteDishById(ctx context.Context, id int32) error {
+func (s *EGServiceImpl) DeleteDishById(ctx context.Context, id int32) error {
 	return s.querier.DeleteDish(ctx, s.dbtx, id)
 }
 
-func (s *Service) GetDishes(ctx context.Context, params *database.GetDishesParams) ([]*database.GetDishesRow, error) {
+func (s *EGServiceImpl) GetDishes(ctx context.Context, params *database.GetDishesParams) ([]*database.GetDishesRow, error) {
 	menu, err := s.querier.GetDishes(ctx, s.dbtx, params)
 	if err != nil {
 		return nil, err
@@ -63,7 +63,7 @@ func (s *Service) GetDishes(ctx context.Context, params *database.GetDishesParam
 	return menu, nil
 }
 
-func (s *Service) GetDishesCount(ctx context.Context, params *database.GetDishesParams) (int64, error) {
+func (s *EGServiceImpl) GetDishesCount(ctx context.Context, params *database.GetDishesParams) (int64, error) {
 	// For now, we'll use the total count from the dishes table with the same filters
 	// In a production environment, you might want to create a separate count query
 	countParams := *params

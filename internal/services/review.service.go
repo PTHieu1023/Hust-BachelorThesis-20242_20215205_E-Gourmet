@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func (s *Service) CreateReview(ctx context.Context, params *database.CreateReviewParams) (*database.CreateReviewRow, error) {
+func (s *EGServiceImpl) CreateReview(ctx context.Context, params *database.CreateReviewParams) (*database.CreateReviewRow, error) {
 	if params == nil {
 		return nil, fiber.NewError(fiber.StatusBadRequest, "params cannot be nil")
 	}
@@ -24,14 +24,14 @@ func (s *Service) CreateReview(ctx context.Context, params *database.CreateRevie
 	return s.querier.CreateReview(ctx, s.dbtx, params)
 }
 
-func (s *Service) GetReviews(ctx context.Context, params *database.GetReviewsParams) ([]*database.GetReviewsRow, error) {
+func (s *EGServiceImpl) GetReviews(ctx context.Context, params *database.GetReviewsParams) ([]*database.GetReviewsRow, error) {
 	if params == nil {
 		return nil, fiber.NewError(fiber.StatusBadRequest, "params cannot be nil")
 	}
 	return s.querier.GetReviews(ctx, s.dbtx, params)
 }
 
-func (s *Service) DeleteReview(ctx context.Context, dishId int64) error {
+func (s *EGServiceImpl) DeleteReview(ctx context.Context, dishId int64) error {
 	if dishId <= 0 {
 		return fiber.NewError(fiber.StatusBadRequest, "invalid dish ID")
 	}

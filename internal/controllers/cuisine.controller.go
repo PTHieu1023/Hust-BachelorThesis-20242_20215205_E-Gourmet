@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func (c *Controller) GetCuisines(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) GetCuisines(ctx *fiber.Ctx) error {
 	idStr := ctx.Params("id", "0")
 	displayMode := ctx.Query("tree", "0")
 	id, err := strconv.Atoi(idStr)
@@ -55,7 +55,7 @@ func (c *Controller) GetCuisines(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(tree[int16(id)])
 }
 
-func (c *Controller) AddCuisine(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) AddCuisine(ctx *fiber.Ctx) error {
 	isAdmin := ctx.UserContext().Value(utils.AuthIsAdmin).(bool)
 	if !isAdmin {
 		return fiber.NewError(fiber.StatusForbidden, errAdminOnly)
@@ -80,7 +80,7 @@ func (c *Controller) AddCuisine(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusCreated).JSON(cuisine)
 }
 
-func (c *Controller) UpdateCuisine(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) UpdateCuisine(ctx *fiber.Ctx) error {
 	isAdmin := ctx.UserContext().Value(utils.AuthIsAdmin).(bool)
 	if !isAdmin {
 		return fiber.NewError(fiber.StatusForbidden, errAdminOnly)
@@ -103,7 +103,7 @@ func (c *Controller) UpdateCuisine(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(cuisine)
 }
 
-func (c *Controller) DeleteCuisine(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) DeleteCuisine(ctx *fiber.Ctx) error {
 	idStr := ctx.Params("id")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {

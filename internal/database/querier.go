@@ -20,9 +20,11 @@ type Querier interface {
 	CreateRestaurant(ctx context.Context, db DBTX, arg *CreateRestaurantParams) (*Restaurant, error)
 	CreateReview(ctx context.Context, db DBTX, arg *CreateReviewParams) (*CreateReviewRow, error)
 	CreateUser(ctx context.Context, db DBTX, arg *CreateUserParams) (*User, error)
+	CreateUserFromAuth(ctx context.Context, db DBTX, arg *CreateUserFromAuthParams) (*User, error)
 	DeleteComment(ctx context.Context, db DBTX, arg *DeleteCommentParams) error
 	DeleteCuisine(ctx context.Context, db DBTX, id int32) error
 	DeleteDish(ctx context.Context, db DBTX, id int32) error
+	DeleteOldUserRecommendations(ctx context.Context, db DBTX, userID *string) error
 	DeletePost(ctx context.Context, db DBTX, id int32) error
 	DeleteRestaurant(ctx context.Context, db DBTX, id int32) error
 	DeleteReview(ctx context.Context, db DBTX, id int32) error
@@ -32,6 +34,7 @@ type Querier interface {
 	GetCuisineRecursionById(ctx context.Context, db DBTX, id int32) ([]*GetCuisineRecursionByIdRow, error)
 	GetDishByID(ctx context.Context, db DBTX, id int32) (*GetDishByIDRow, error)
 	GetDishes(ctx context.Context, db DBTX, arg *GetDishesParams) ([]*GetDishesRow, error)
+	GetLatestUserRecommendation(ctx context.Context, db DBTX, userID *string) (interface{}, error)
 	GetManagingRestaurantByUser(ctx context.Context, db DBTX, userID string) ([]*GetManagingRestaurantByUserRow, error)
 	GetPostByID(ctx context.Context, db DBTX, id int32) (*GetPostByIDRow, error)
 	GetPosts(ctx context.Context, db DBTX, arg *GetPostsParams) ([]*GetPostsRow, error)
@@ -48,6 +51,7 @@ type Querier interface {
 	GetTopRatedDishes(ctx context.Context, db DBTX, limit int32) ([]*GetTopRatedDishesRow, error)
 	GetUserById(ctx context.Context, db DBTX, id string) (*GetUserByIdRow, error)
 	GetUserByUsername(ctx context.Context, db DBTX, username string) (*GetUserByUsernameRow, error)
+	GetUserRecommendations(ctx context.Context, db DBTX, userID *string) ([]*GetUserRecommendationsRow, error)
 	LikePost(ctx context.Context, db DBTX, arg *LikePostParams) error
 	RemoveRestaurantManager(ctx context.Context, db DBTX, arg *RemoveRestaurantManagerParams) error
 	SetUserStatus(ctx context.Context, db DBTX, arg *SetUserStatusParams) error

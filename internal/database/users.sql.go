@@ -51,6 +51,55 @@ func (q *Queries) CreateUser(ctx context.Context, db DBTX, arg *CreateUserParams
 	return &i, err
 }
 
+const createUserFromAuth = `-- name: CreateUserFromAuth :one
+INSERT INTO users (id, username, email, display_name, avatar_url)
+VALUES ($1::varchar(64),
+        $2::varchar(64),
+        $3::varchar(127),
+        $4::varchar(255),
+        $5::varchar(255))
+ON CONFLICT (id) DO UPDATE SET
+    username = EXCLUDED.username,
+    email = EXCLUDED.email,
+    display_name = EXCLUDED.display_name,
+    avatar_url = COALESCE(EXCLUDED.avatar_url, users.avatar_url),
+    updated_at = now()
+RETURNING id, username, email, display_name, avatar_url, lat, lng, budget, created_at, updated_at, enable
+`
+
+type CreateUserFromAuthParams struct {
+	ID          *string `json:"id"`
+	Username    *string `json:"username"`
+	Email       *string `json:"email"`
+	DisplayName *string `json:"displayName"`
+	AvatarUrl   *string `json:"avatarUrl"`
+}
+
+func (q *Queries) CreateUserFromAuth(ctx context.Context, db DBTX, arg *CreateUserFromAuthParams) (*User, error) {
+	row := db.QueryRow(ctx, createUserFromAuth,
+		arg.ID,
+		arg.Username,
+		arg.Email,
+		arg.DisplayName,
+		arg.AvatarUrl,
+	)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Email,
+		&i.DisplayName,
+		&i.AvatarUrl,
+		&i.Lat,
+		&i.Lng,
+		&i.Budget,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Enable,
+	)
+	return &i, err
+}
+
 const getUserById = `-- name: GetUserById :one
 SELECT
     u.id,

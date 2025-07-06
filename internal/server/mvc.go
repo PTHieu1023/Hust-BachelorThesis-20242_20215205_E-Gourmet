@@ -24,8 +24,8 @@ type Server struct {
 	dbtx        *pgxpool.Pool
 	kc          *gocloak.GoCloak
 	middlewares *Middlewares
-	services    services.IService
-	controllers controllers.IController
+	services    services.EGService
+	controllers controllers.EGController
 	app         *fiber.App
 }
 
@@ -81,6 +81,10 @@ func New() *Server {
 	server.kc = gocloak.NewClient(utils.AuthIssuerUrl())
 	server.dbtx = connectDB()
 
+	// Create services first
+	server.services = services.New(server.dbtx, server.kc)
+
+	// Then create middlewares with service dependency
 	server.middlewares = InitMiddlewares(server.kc)
 
 	server.app.Use(server.middlewares.Timeout)
@@ -90,7 +94,6 @@ func New() *Server {
 	server.app.Use(server.middlewares.Compress)
 	server.app.Use(server.middlewares.Auth)
 
-	server.services = services.New(server.dbtx, server.kc)
 	server.controllers = controllers.New(server.services)
 
 	routerV1 := server.app.Group("/api")
@@ -112,16 +115,15 @@ func New() *Server {
 		Get("/", server.controllers.GetReviews).
 		Post("/", server.controllers.CreateReview).
 		Group("/:id").
+		Post("/", server.controllers.UpdateReview).
 		Delete("/", server.controllers.DeleteReview)
 
 	routerV1.Group("/user").
-		Get("/me", server.controllers.GetCurrentUser).
-		Get("/:username", server.controllers.GetUserByUsername).
+		Get("/", server.controllers.GetCurrentUser).
 		Put("/", server.controllers.UpdateCurrentUser)
 
 	routerV1.Group("/restaurant").
 		Get("/", server.controllers.GetRestaurants).
-		Get("/me", server.controllers.GetCurrentUserRestaurant).
 		Post("/", server.controllers.CreateRestaurant).
 		Group("/:id").
 		Put("/", server.controllers.UpdateRestaurant).
@@ -131,7 +133,6 @@ func New() *Server {
 		Get("/", server.controllers.GetPosts).
 		Post("/", server.controllers.CreatePost).
 		Group("/:id").
-		Get("/", server.controllers.GetPostById).
 		Put("/", server.controllers.UpdatePost).
 		Delete("/", server.controllers.DeletePost).
 		Post("/like", server.controllers.LikePost).
@@ -139,7 +140,7 @@ func New() *Server {
 
 	// Post comments endpoints
 	routerV1.Group("/post/:postId/comments").
-		Get("/", server.controllers.GetCommentsByPost).
+		Get("/", server.controllers.GetComments).
 		Post("/", server.controllers.CreateComment)
 
 	routerV1.Delete("/comments/:commentId", server.controllers.DeleteComment)

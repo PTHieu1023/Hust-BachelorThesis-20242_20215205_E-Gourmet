@@ -1,15 +1,12 @@
 package controllers
 
 import (
-	"database/sql"
 	"e-gourmet/core/internal/database"
-	"e-gourmet/core/internal/utils"
 	"e-gourmet/core/pkg/pagination"
-	"errors"
 	"github.com/gofiber/fiber/v2"
 )
 
-func (c *Controller) CreateRestaurant(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) CreateRestaurant(ctx *fiber.Ctx) error {
 	params := new(database.CreateRestaurantParams)
 
 	if err := ctx.BodyParser(params); err != nil {
@@ -30,10 +27,10 @@ func (c *Controller) CreateRestaurant(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{"data": restaurant})
+	return ctx.Status(fiber.StatusCreated).JSON(restaurant)
 }
 
-func (c *Controller) GetRestaurants(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) GetRestaurants(ctx *fiber.Ctx) error {
 	params := new(database.GetRestaurantsParams)
 	if err := ctx.QueryParser(params); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid request body")
@@ -53,7 +50,7 @@ func (c *Controller) GetRestaurants(ctx *fiber.Ctx) error {
 	return ctx.JSON(restaurants)
 }
 
-func (c *Controller) UpdateRestaurant(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) UpdateRestaurant(ctx *fiber.Ctx) error {
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, errInvalidID)
@@ -71,10 +68,10 @@ func (c *Controller) UpdateRestaurant(ctx *fiber.Ctx) error {
 		return err
 	}
 
-	return ctx.JSON(fiber.Map{"data": updatedRestaurant})
+	return ctx.JSON(updatedRestaurant)
 }
 
-func (c *Controller) DeleteRestaurantById(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) DeleteRestaurantById(ctx *fiber.Ctx) error {
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, errInvalidID)
@@ -87,80 +84,17 @@ func (c *Controller) DeleteRestaurantById(ctx *fiber.Ctx) error {
 	return ctx.SendStatus(fiber.StatusNoContent)
 }
 
-func (c *Controller) GetCurrentUserRestaurant(ctx *fiber.Ctx) error {
-	userId := ctx.UserContext().Value(utils.AuthUserID).(string)
-	restaurant, err := c.service.GetRestaurantByOwnerId(ctx.UserContext(), userId)
-
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return fiber.NewError(fiber.StatusNotFound, "Restaurant not found for the current user.")
-		}
-		return err
-	}
-
-	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{"data": restaurant})
+func (c *EGControllerImpl) GetRestaurantById(ctx *fiber.Ctx) error {
+	//TODO implement me
+	panic("implement me")
 }
 
-func (c *Controller) GetRestaurantByUsername(ctx *fiber.Ctx) error {
-	username := ctx.Params("username")
-	if username == "" {
-		return fiber.NewError(fiber.StatusBadRequest, "Username is required.")
-	}
-
-	restaurant, err := c.service.GetRestaurantByUsername(ctx.UserContext(), username)
-	if errors.Is(err, sql.ErrNoRows) {
-		return fiber.NewError(fiber.StatusNotFound, errResourceNotFound)
-	}
-
-	if err != nil {
-		return err
-	}
-
-	return ctx.JSON(fiber.Map{"data": restaurant})
+func (c *EGControllerImpl) FollowRestaurant(ctx *fiber.Ctx) error {
+	//TODO implement me
+	panic("implement me")
 }
 
-func (c *Controller) GetRestaurantProfile(ctx *fiber.Ctx) error {
-	id, err := ctx.ParamsInt("id")
-	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, errInvalidID)
-	}
-
-	profile, err := c.service.GetRestaurantProfile(ctx.UserContext(), int32(id))
-	if errors.Is(err, sql.ErrNoRows) {
-		return fiber.NewError(fiber.StatusNotFound, errResourceNotFound)
-	}
-
-	if err != nil {
-		return err
-	}
-
-	return ctx.JSON(fiber.Map{"data": profile})
-}
-
-func (c *Controller) GetRestaurantHighlights(ctx *fiber.Ctx) error {
-	id, err := ctx.ParamsInt("id")
-	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, errInvalidID)
-	}
-
-	highlights, err := c.service.GetRestaurantHighlights(ctx.UserContext(), int32(id))
-	if err != nil {
-		return err
-	}
-
-	return ctx.JSON(fiber.Map{"data": highlights})
-}
-
-func (c *Controller) GetRestaurantRecentReviews(ctx *fiber.Ctx) error {
-	id, err := ctx.ParamsInt("id")
-	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, errInvalidID)
-	}
-
-	reviews, err := c.service.GetRestaurantRecentReviews(ctx.UserContext(), int32(id))
-	if err != nil {
-		return err
-	}
-
-	return ctx.JSON(fiber.Map{"data": reviews})
+func (c *EGControllerImpl) UnfollowRestaurant(ctx *fiber.Ctx) error {
+	//TODO implement me
+	panic("implement me")
 }

@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func (c *Controller) CreateDish(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) CreateDish(ctx *fiber.Ctx) error {
 	params := new(database.CreateDishParams)
 
 	if err := ctx.BodyParser(&params); err != nil {
@@ -24,7 +24,7 @@ func (c *Controller) CreateDish(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusCreated).JSON(dish)
 }
 
-func (c *Controller) GetDishById(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) GetDishById(ctx *fiber.Ctx) error {
 	dishId, err := ctx.ParamsInt("id")
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid dish ID.")
@@ -45,7 +45,7 @@ func (c *Controller) GetDishById(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(dish)
 }
 
-func (c *Controller) DeleteDishById(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) DeleteDishById(ctx *fiber.Ctx) error {
 	idStr := ctx.Params("id", "0")
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
@@ -61,7 +61,7 @@ func (c *Controller) DeleteDishById(ctx *fiber.Ctx) error {
 	return ctx.SendStatus(fiber.StatusNoContent)
 }
 
-func (c *Controller) GetDishes(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) GetDishes(ctx *fiber.Ctx) error {
 	pageFilter, err := pagination.GetPageFilter(ctx)
 	if err != nil {
 		return err
@@ -84,4 +84,9 @@ func (c *Controller) GetDishes(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.Status(fiber.StatusOK).JSON(dishes)
+}
+
+func (c *EGControllerImpl) UpdateDish(ctx *fiber.Ctx) error {
+	//TODO implement me
+	panic("implement me")
 }

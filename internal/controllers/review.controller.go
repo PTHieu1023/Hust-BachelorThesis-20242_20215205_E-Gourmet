@@ -6,7 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func (c *Controller) CreateReview(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) CreateReview(ctx *fiber.Ctx) error {
 	params := new(database.CreateReviewParams)
 	if err := ctx.BodyParser(params); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid request body")
@@ -17,10 +17,10 @@ func (c *Controller) CreateReview(ctx *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{"data": review})
+	return ctx.Status(fiber.StatusCreated).JSON(review)
 }
 
-func (c *Controller) GetReviews(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) GetReviews(ctx *fiber.Ctx) error {
 	params := new(database.GetReviewsParams)
 
 	if err := ctx.QueryParser(params); err != nil {
@@ -42,7 +42,7 @@ func (c *Controller) GetReviews(ctx *fiber.Ctx) error {
 	return ctx.JSON(reviews)
 }
 
-func (c *Controller) DeleteReview(ctx *fiber.Ctx) error {
+func (c *EGControllerImpl) DeleteReview(ctx *fiber.Ctx) error {
 	dishId, err := ctx.ParamsInt("id", 0)
 	if err != nil || dishId <= 0 {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid review ID")
@@ -52,4 +52,9 @@ func (c *Controller) DeleteReview(ctx *fiber.Ctx) error {
 		return err
 	}
 	return ctx.SendStatus(fiber.StatusNoContent)
+}
+
+func (c *EGControllerImpl) UpdateReview(ctx *fiber.Ctx) error {
+	//TODO implement me
+	panic("implement me")
 }
