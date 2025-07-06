@@ -7,14 +7,21 @@ ENV PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_ROOT_USER_ACTION=ignore
 
+ENV DATABASE_URL="postgresql://user:password@localhost/dbname"
+
 # Set working directory
-WORKDIR /app
+WORKDIR /eg_rcm
 
 # Install required system dependencies
 RUN apk add --no-cache \
+    g++ \
     gcc \
+    gfortran \
+    lapack-dev \
     libffi-dev \
-    musl-dev
+    linux-headers \
+    musl-dev \
+    openblas-dev
 
 # Copy only requirements first to leverage Docker cache
 COPY requirements.txt .
