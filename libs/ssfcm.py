@@ -4,13 +4,13 @@ from scipy.spatial.distance import cdist
 from sklearn.metrics import silhouette_score, davies_bouldin_score
 
 """
-Symbol for Supervised Fuzzy C-Means (SSFCM) clustering algorithm.
+Symbol for Supervised Fuzzy C-Means (SSFCM) machine_learning algorithm.
 x: Input data
 c: Number of clusters
 m: Fuzziness parameter
 max_iter: Maximum number of iterations
 eps: Convergence threshold
-u_bar: Supervised membership matrix
+u_init: Supervised membership matrix
 u: Membership matrix
 v: Centroids matrix
 p: Number of features
@@ -40,24 +40,24 @@ def calc_membership(x: ndarray, v: ndarray, u_bar: ndarray, m: float) -> ndarray
     return optimal_u
 
 
-def ssfcm(x: ndarray, c: int, m: float = 2, max_iter: int = 10000, eps: float = 1e-5, u_bar: np.ndarray = None) -> tuple[np.ndarray, np.ndarray]:
+def clustering(x: ndarray, c: int, m: float = 2, max_iter: int = 10000, eps: float = 1e-5, u_init: np.ndarray = None) -> tuple[np.ndarray, np.ndarray, int]:
     n = x.shape[0] # n: number of samples
     p = x.shape[1] # p: number of features
-    if u_bar is None:
-        u_bar = np.zeros((n, c))
+    if u_init is None:
+        u_init = np.zeros((n, c))
     generator = np.random.default_rng(seed=42)
     v = generator.uniform(low=np.min(x, axis=0), high=np.max(x, axis=0), size=(c, p))
     u = generator.dirichlet(np.ones(c), size=n)
-    for _ in range(max_iter):
+    for i in range(max_iter):
         pre_u = u
-        u = calc_membership(x, v, u_bar, m)
-        v = calc_centroid(x, u, u_bar, v, m)
+        u = calc_membership(x, v, u_init, m)
+        v = calc_centroid(x, u, u_init, v, m)
         delta = np.linalg.norm(pre_u - u)
         if delta < eps:
-            return u, v
-    return u, v
+            return u, v, i+1
+    return u, v, max_iter
 
-def evaluate_clustering(data, labels):
+def evaluate_clustering(data, labels) -> dict:
     try:
         if len(np.unique(labels)) < 2:
             return {

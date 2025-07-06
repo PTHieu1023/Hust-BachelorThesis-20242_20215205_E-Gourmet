@@ -8,3 +8,5 @@ sqlmodel~=0.0.21
 python-dotenv~=1.1.0
 SQLAlchemy~=2.0.41
 psycopg2-binary~=2.9.10
+requests~=2.32.4
+python-jose~=3.5.0
