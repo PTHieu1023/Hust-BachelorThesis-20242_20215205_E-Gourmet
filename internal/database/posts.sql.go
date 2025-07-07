@@ -272,7 +272,7 @@ const getPosts = `-- name: GetPosts :many
 SELECT
     p.id,
     p.caption,
-    p.media,
+    p.media::text[] as media,
     p.created_at,
     p.updated_at,
     p.restaurant_id,
@@ -298,7 +298,7 @@ type GetPostsParams struct {
 type GetPostsRow struct {
 	ID                 int32              `json:"id"`
 	Caption            *string            `json:"caption"`
-	Media              []byte             `json:"media"`
+	Media              []string           `json:"media"`
 	CreatedAt          pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt          pgtype.Timestamptz `json:"updatedAt"`
 	RestaurantID       *int32             `json:"restaurantId"`

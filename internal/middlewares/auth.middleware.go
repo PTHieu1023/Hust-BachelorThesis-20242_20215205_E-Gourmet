@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"context"
+	"e-gourmet/core/internal/services"
 	"e-gourmet/core/internal/utils"
 	"github.com/Nerzal/gocloak/v13"
 	"github.com/gofiber/fiber/v2"
@@ -12,7 +13,7 @@ import (
 
 type ContextKey string
 
-func UseAuth(kc *gocloak.GoCloak) fiber.Handler {
+func UseAuth(kc *gocloak.GoCloak, service services.EGService) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		authHeader := c.Get("Authorization")
 		if !strings.HasPrefix(authHeader, "Bearer ") {
@@ -49,7 +50,9 @@ func UseAuth(kc *gocloak.GoCloak) fiber.Handler {
 		ctx = context.WithValue(ctx, utils.AuthAccessToken, token)
 		ctx = context.WithValue(ctx, utils.AuthClaims, claims)
 		ctx = context.WithValue(ctx, utils.AuthIsAdmin, isAdmin(claims))
-
+		if service.SyncUserWithKeycloak(ctx, claims) != nil {
+			return fiber.NewError(fiber.StatusUnauthorized, "Failed to sync user with Keycloak")
+		}
 		c.SetUserContext(ctx)
 
 		return c.Next()

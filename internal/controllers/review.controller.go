@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"e-gourmet/core/internal/database"
+	"e-gourmet/core/internal/utils"
 	"e-gourmet/core/pkg/pagination"
 	"github.com/gofiber/fiber/v2"
 )
@@ -12,7 +13,7 @@ func (c *EGControllerImpl) CreateReview(ctx *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid request body")
 	}
 	params.UserID = new(string)
-	*params.UserID = ctx.Locals("userID").(string)
+	*params.UserID = ctx.UserContext().Value(utils.AuthUserID).(string)
 	review, err := c.service.CreateReview(ctx.UserContext(), params)
 	if err != nil {
 		return err

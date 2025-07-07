@@ -46,11 +46,10 @@ func (c *EGControllerImpl) UpdateCurrentUser(ctx *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid request body")
 	}
 
-	if params.ID != nil {
-		return fiber.NewError(fiber.StatusBadRequest, "Cannot contain id in request body")
+	userId := ctx.UserContext().Value(utils.AuthUserID).(string)
+	if params.ID != nil && *params.ID != userId {
+		return fiber.NewError(fiber.StatusConflict, "User ID in request does not match authenticated user ID")
 	}
-
-	userId := ctx.Locals("userID").(string)
 	if userId == "" {
 		return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized: No user ID found in context")
 	}

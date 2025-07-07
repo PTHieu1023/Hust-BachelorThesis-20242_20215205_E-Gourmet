@@ -4,6 +4,7 @@ import (
 	"context"
 	"e-gourmet/core/internal/database"
 	"github.com/Nerzal/gocloak/v13"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -24,7 +25,7 @@ type EGService interface {
 	DeleteReview(ctx context.Context, dishId int64) error
 
 	CreateUser(ctx context.Context, params *database.CreateUserParams) (*database.User, error)
-	CreateUserFromAuth(ctx context.Context, params *database.CreateUserFromAuthParams) (*database.User, error)
+	SyncUserWithKeycloak(ctx context.Context, claims *jwt.MapClaims) error
 	GetUserByUsername(ctx context.Context, username string) (*database.GetUserByUsernameRow, error)
 	GetUserById(ctx context.Context, id string) (*database.GetUserByIdRow, error)
 	UpdateUser(ctx context.Context, params *database.UpdateUserParams) (*database.UpdateUserRow, error)
@@ -59,11 +60,6 @@ type EGService interface {
 	LikePost(ctx context.Context, params *database.LikePostParams) error
 	UnlikePost(ctx context.Context, params *database.UnlikePostParams) error
 	IsPostLiked(ctx context.Context, params *database.CheckPostLikeParams) (bool, error)
-
-	GetTopRatedDishes(ctx context.Context, limit int32) ([]*database.GetTopRatedDishesRow, error)
-	GetUserRecommendations(ctx context.Context, userId string) ([]*database.GetUserRecommendationsRow, error)
-	GetLatestUserRecommendation(ctx context.Context, userId string) (interface{}, error)
-	DeleteOldUserRecommendations(ctx context.Context, userId string) error
 }
 
 type EGServiceImpl struct {

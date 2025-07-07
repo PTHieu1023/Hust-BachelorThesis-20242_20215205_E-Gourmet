@@ -12,6 +12,7 @@ type Querier interface {
 	AddCuisine(ctx context.Context, db DBTX, arg *AddCuisineParams) (*Cuisine, error)
 	AddInteraction(ctx context.Context, db DBTX, arg *AddInteractionParams) error
 	AddRestaurantManager(ctx context.Context, db DBTX, arg *AddRestaurantManagerParams) error
+	AddUserCuisine(ctx context.Context, db DBTX, arg *AddUserCuisineParams) error
 	ApproveRestaurant(ctx context.Context, db DBTX, arg *ApproveRestaurantParams) (*ApproveRestaurantRow, error)
 	CheckPostLike(ctx context.Context, db DBTX, arg *CheckPostLikeParams) (bool, error)
 	CreateComment(ctx context.Context, db DBTX, arg *CreateCommentParams) (*PostsComment, error)
@@ -24,17 +25,16 @@ type Querier interface {
 	DeleteComment(ctx context.Context, db DBTX, arg *DeleteCommentParams) error
 	DeleteCuisine(ctx context.Context, db DBTX, id int32) error
 	DeleteDish(ctx context.Context, db DBTX, id int32) error
-	DeleteOldUserRecommendations(ctx context.Context, db DBTX, userID *string) error
 	DeletePost(ctx context.Context, db DBTX, id int32) error
 	DeleteRestaurant(ctx context.Context, db DBTX, id int32) error
 	DeleteReview(ctx context.Context, db DBTX, id int32) error
+	DeleteUserCuisine(ctx context.Context, db DBTX, userID *string) error
 	GetAllUsers(ctx context.Context, db DBTX, arg *GetAllUsersParams) ([]*GetAllUsersRow, error)
 	GetCommentByID(ctx context.Context, db DBTX, id int32) (*GetCommentByIDRow, error)
 	GetCommentsByPost(ctx context.Context, db DBTX, postID int64) ([]*GetCommentsByPostRow, error)
 	GetCuisineRecursionById(ctx context.Context, db DBTX, id int32) ([]*GetCuisineRecursionByIdRow, error)
 	GetDishByID(ctx context.Context, db DBTX, id int32) (*GetDishByIDRow, error)
 	GetDishes(ctx context.Context, db DBTX, arg *GetDishesParams) ([]*GetDishesRow, error)
-	GetLatestUserRecommendation(ctx context.Context, db DBTX, userID *string) (interface{}, error)
 	GetManagingRestaurantByUser(ctx context.Context, db DBTX, userID string) ([]*GetManagingRestaurantByUserRow, error)
 	GetPostByID(ctx context.Context, db DBTX, id int32) (*GetPostByIDRow, error)
 	GetPosts(ctx context.Context, db DBTX, arg *GetPostsParams) ([]*GetPostsRow, error)
@@ -48,10 +48,8 @@ type Querier interface {
 	GetRestaurants(ctx context.Context, db DBTX, arg *GetRestaurantsParams) ([]*GetRestaurantsRow, error)
 	GetRestaurantsAdmin(ctx context.Context, db DBTX, arg *GetRestaurantsAdminParams) ([]*GetRestaurantsAdminRow, error)
 	GetReviews(ctx context.Context, db DBTX, arg *GetReviewsParams) ([]*GetReviewsRow, error)
-	GetTopRatedDishes(ctx context.Context, db DBTX, limit int32) ([]*GetTopRatedDishesRow, error)
 	GetUserById(ctx context.Context, db DBTX, id string) (*GetUserByIdRow, error)
 	GetUserByUsername(ctx context.Context, db DBTX, username string) (*GetUserByUsernameRow, error)
-	GetUserRecommendations(ctx context.Context, db DBTX, userID *string) ([]*GetUserRecommendationsRow, error)
 	LikePost(ctx context.Context, db DBTX, arg *LikePostParams) error
 	RemoveRestaurantManager(ctx context.Context, db DBTX, arg *RemoveRestaurantManagerParams) error
 	SetUserStatus(ctx context.Context, db DBTX, arg *SetUserStatusParams) error

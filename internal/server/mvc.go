@@ -85,7 +85,8 @@ func New() *Server {
 	server.services = services.New(server.dbtx, server.kc)
 
 	// Then create middlewares with service dependency
-	server.middlewares = InitMiddlewares(server.kc)
+	server.middlewares = InitMiddlewares(server.kc, server.services)
+	server.app.Static("/uploads", "./etc/uploads")
 
 	server.app.Use(server.middlewares.Timeout)
 	server.app.Use(server.middlewares.Logger)
@@ -145,13 +146,9 @@ func New() *Server {
 
 	routerV1.Delete("/comments/:commentId", server.controllers.DeleteComment)
 
-	routerV1.Get("/recommendations", server.controllers.GetRecommendations)
-
 	// Upload routes
 	routerV1.Group("/uploads").
 		Post("/", server.controllers.UploadFile)
-
-	server.app.Static("/uploads", "./etc/uploads")
 
 	return server
 }
@@ -178,11 +175,19 @@ func errorHandler() fiber.ErrorHandler {
 		}
 		c.Status(code)
 
+		// Safely get latency
+		var latency string
+		if start, ok := c.Locals("startTime").(time.Time); ok {
+			latency = time.Since(start).String()
+		} else {
+			latency = ""
+		}
+
 		fields := []zap.Field{
 			zap.String("method", c.Method()),
 			zap.String("ip", c.IP()),
 			zap.Int("status", c.Response().StatusCode()),
-			zap.String("latency", time.Since(c.Locals("startTime").(time.Time)).String()),
+			zap.String("latency", latency),
 			zap.String("url", c.OriginalURL()),
 			zap.String("error", err.Error()),
 		}

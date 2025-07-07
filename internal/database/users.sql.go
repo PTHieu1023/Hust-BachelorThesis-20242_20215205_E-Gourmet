@@ -11,6 +11,23 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const addUserCuisine = `-- name: AddUserCuisine :exec
+INSERT INTO user_cuisine (user_id, cuisine_id)
+VALUES
+    ($1::varchar(64),
+       $2::int8)
+`
+
+type AddUserCuisineParams struct {
+	UserID    *string `json:"userId"`
+	CuisineID *int64  `json:"cuisineId"`
+}
+
+func (q *Queries) AddUserCuisine(ctx context.Context, db DBTX, arg *AddUserCuisineParams) error {
+	_, err := db.Exec(ctx, addUserCuisine, arg.UserID, arg.CuisineID)
+	return err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (id, username, email, display_name)
 VALUES ($1::varchar(64),
@@ -98,6 +115,16 @@ func (q *Queries) CreateUserFromAuth(ctx context.Context, db DBTX, arg *CreateUs
 		&i.Enable,
 	)
 	return &i, err
+}
+
+const deleteUserCuisine = `-- name: DeleteUserCuisine :exec
+DELETE FROM user_cuisine
+WHERE user_id = $1::varchar(64)
+`
+
+func (q *Queries) DeleteUserCuisine(ctx context.Context, db DBTX, userID *string) error {
+	_, err := db.Exec(ctx, deleteUserCuisine, userID)
+	return err
 }
 
 const getUserById = `-- name: GetUserById :one

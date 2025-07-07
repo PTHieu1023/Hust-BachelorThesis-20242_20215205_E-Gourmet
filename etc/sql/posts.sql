@@ -37,7 +37,7 @@ DELETE FROM posts WHERE id = $1;
 SELECT
     p.id,
     p.caption,
-    p.media,
+    p.media::text[] as media,
     p.created_at,
     p.updated_at,
     p.restaurant_id,

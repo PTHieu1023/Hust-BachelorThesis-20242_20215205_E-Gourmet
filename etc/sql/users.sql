@@ -119,3 +119,13 @@ GROUP BY u.id,
          u.budget,
          u.created_at,
          u.updated_at;
+
+-- name: DeleteUserCuisine :exec
+DELETE FROM user_cuisine
+WHERE user_id = sqlc.narg(user_id)::varchar(64);
+
+-- name: AddUserCuisine :exec
+INSERT INTO user_cuisine (user_id, cuisine_id)
+VALUES
+    (sqlc.narg(user_id)::varchar(64),
+       sqlc.narg(cuisine_id)::int8);

@@ -655,13 +655,15 @@ SET name        = coalesce($1, name),
     avatar_url  = coalesce($3, avatar_url),
     username    = coalesce($4, username),
     email       = coalesce($5, email),
-    phone       = coalesce(sqlc('phone'), phone),
-    address     = coalesce($6, address),
-    lat         = coalesce($7, lat),
-    lng         = coalesce($8, lng),
-    is_approved = coalesce($9, is_approved),
+    phone       = coalesce($6, phone),
+    address     = coalesce($7, address),
+    lat         = coalesce($8, lat),
+    lng         = coalesce($9, lng),
+    open_hour   = coalesce($10, open_hour),
+    website     = coalesce($11, website),
+    is_approved = coalesce($12, is_approved),
     updated_at  = now()
-WHERE id = $10 RETURNING id, name, description, avatar_url, username, email, phone, address, lat, lng, document, created_at, updated_at, is_approved, open_hour, website, cover_url
+WHERE id = $13 RETURNING id, name, description, avatar_url, username, email, phone, address, lat, lng, document, created_at, updated_at, is_approved, open_hour, website, cover_url
 `
 
 type UpdateRestaurantParams struct {
@@ -670,9 +672,12 @@ type UpdateRestaurantParams struct {
 	AvatarUrl    *string  `json:"avatarUrl"`
 	Username     *string  `json:"username"`
 	Email        *string  `json:"email"`
+	Phone        *string  `json:"phone"`
 	Address      *string  `json:"address"`
 	Lat          *float64 `json:"lat"`
 	Lng          *float64 `json:"lng"`
+	OpenHour     *string  `json:"openHour"`
+	Website      *string  `json:"website"`
 	IsApproved   *bool    `json:"isApproved"`
 	RestaurantID int32    `json:"restaurantId"`
 }
@@ -684,9 +689,12 @@ func (q *Queries) UpdateRestaurant(ctx context.Context, db DBTX, arg *UpdateRest
 		arg.AvatarUrl,
 		arg.Username,
 		arg.Email,
+		arg.Phone,
 		arg.Address,
 		arg.Lat,
 		arg.Lng,
+		arg.OpenHour,
+		arg.Website,
 		arg.IsApproved,
 		arg.RestaurantID,
 	)

@@ -31,6 +31,7 @@ func (c *EGControllerImpl) GetDishById(ctx *fiber.Ctx) error {
 	}
 	interaction := new(database.AddInteractionParams)
 	interaction.DishID = int32(dishId)
+	interaction.UserID = new(string)
 	*interaction.UserID = ctx.UserContext().Value(utils.AuthUserID).(string)
 
 	dish, err := c.service.GetDishById(ctx.UserContext(), int32(dishId), interaction)

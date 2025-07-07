@@ -2,22 +2,22 @@ package controllers
 
 import (
 	"e-gourmet/core/internal/database"
+	"e-gourmet/core/internal/utils"
 	"e-gourmet/core/pkg/pagination"
 	"github.com/gofiber/fiber/v2"
 )
 
 func (c *EGControllerImpl) CreateRestaurant(ctx *fiber.Ctx) error {
 	params := new(database.CreateRestaurantParams)
-
 	if err := ctx.BodyParser(params); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid request body.")
 	}
 
-	if params.Username == "" || params.Name == "" {
+	if params.Name == "" {
 		return fiber.NewError(fiber.StatusBadRequest, "Username and Name are required fields.")
 	}
 
-	ownerId := ctx.Locals("userID").(string)
+	ownerId := ctx.UserContext().Value(utils.AuthUserID).(string)
 	if ownerId == "" {
 		return fiber.NewError(fiber.StatusUnauthorized, "Unauthorized: No user ID found in context")
 	}

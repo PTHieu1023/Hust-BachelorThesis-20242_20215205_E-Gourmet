@@ -53,13 +53,6 @@ func (s *EGServiceImpl) CreateRestaurant(ctx context.Context, params *database.C
 }
 
 func (s *EGServiceImpl) UpdateRestaurant(ctx context.Context, params *database.UpdateRestaurantParams) (*database.Restaurant, error) {
-	if params == nil {
-		return nil, fiber.NewError(fiber.StatusBadRequest, "params must not be nil")
-	}
-	if params.RestaurantID <= 0 {
-		return nil, fiber.NewError(fiber.StatusBadRequest, "id must be greater than 0")
-	}
-
 	return s.querier.UpdateRestaurant(ctx, s.dbtx, params)
 }
 

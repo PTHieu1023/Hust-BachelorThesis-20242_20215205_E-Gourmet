@@ -46,8 +46,6 @@ type EGController interface {
 	FollowRestaurant(ctx *fiber.Ctx) error
 	UnfollowRestaurant(ctx *fiber.Ctx) error
 
-	GetRecommendations(ctx *fiber.Ctx) error
-
 	UploadFile(ctx *fiber.Ctx) error
 }
 

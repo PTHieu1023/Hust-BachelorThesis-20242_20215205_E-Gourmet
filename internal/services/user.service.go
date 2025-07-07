@@ -35,7 +35,7 @@ func (s *EGServiceImpl) CreateUser(ctx context.Context, params *database.CreateU
 	}
 
 	token := ctx.Value(utils.AuthAccessToken).(*jwt.Token).Raw
-	realm := ctx.Value(utils.AuthRealm()).(string)
+	realm := utils.AuthRealm()
 	kcUser := gocloak.User{
 		ID:            params.ID,
 		Username:      params.Username,
@@ -48,27 +48,6 @@ func (s *EGServiceImpl) CreateUser(ctx context.Context, params *database.CreateU
 	}
 
 	user, err := s.querier.CreateUser(ctx, s.dbtx, params)
-	var sqlErr *pgconn.PgError
-	if err != nil && errors.As(err, &sqlErr) {
-		switch sqlErr.Code {
-		case "23505":
-			return nil, fiber.NewError(fiber.StatusConflict, "SQL_CONSTRAIN_CONFLICT"+sqlErr.Detail)
-		}
-		return nil, fiber.NewError(fiber.StatusInternalServerError, "SQL_EXCEPTION "+sqlErr.Message)
-	}
-
-	return user, err
-}
-
-func (s *EGServiceImpl) CreateUserFromAuth(ctx context.Context, params *database.CreateUserFromAuthParams) (*database.User, error) {
-	if params == nil {
-		return nil, fiber.NewError(fiber.StatusBadRequest, "ERR_PARAMS_NIL")
-	}
-	if params.ID == nil || params.Username == nil || params.Email == nil || params.DisplayName == nil {
-		return nil, fiber.NewError(fiber.StatusBadRequest, "MISSING_REQUIRED_FIELDS (id, username, email, displayName)")
-	}
-
-	user, err := s.querier.CreateUserFromAuth(ctx, s.dbtx, params)
 	var sqlErr *pgconn.PgError
 	if err != nil && errors.As(err, &sqlErr) {
 		switch sqlErr.Code {
@@ -97,24 +76,57 @@ func (s *EGServiceImpl) GetUserByUsername(ctx context.Context, username string) 
 }
 
 func (s *EGServiceImpl) UpdateUser(ctx context.Context, params *database.UpdateUserParams) (*database.UpdateUserRow, error) {
-	oldKC, _, err := s.updateKCUser(ctx, params)
+	token := ctx.Value(utils.AuthAccessToken).(*jwt.Token).Raw
+	realm := utils.AuthRealm()
+	oldKC, _, err := s.updateKCUser(ctx, token, realm, params)
 	if err != nil {
 		return nil, err
 	}
 
 	user, err := s.querier.UpdateUser(ctx, s.dbtx, params)
-	token := ctx.Value(utils.AuthAccessToken).(*gocloak.JWT)
-	realm := ctx.Value(utils.AuthRealm()).(string)
 
 	if err != nil {
 		logger.Instance().Info(fmt.Sprintf("Rollback user update due to error: %v", err))
-		_ = s.kc.UpdateUser(ctx, token.AccessToken, realm, *oldKC)
+		_ = s.kc.UpdateUser(ctx, token, realm, *oldKC)
 	}
 
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, fiber.NewError(fiber.StatusNotFound, "NOT_FOUND user("+*params.ID+")")
 	}
 	return user, err
+}
+
+func (s *EGServiceImpl) SyncUserWithKeycloak(ctx context.Context, claims *jwt.MapClaims) error {
+	id := (*claims)["sub"].(string)
+	existed, err := s.querier.GetUserById(ctx, s.dbtx, id)
+	if err == nil && existed != nil {
+		return nil
+	}
+	if !errors.Is(err, sql.ErrNoRows) {
+		return err
+	}
+	username := (*claims)["preferred_username"].(string)
+	email := (*claims)["email"].(string)
+	displayName := (*claims)["name"].(string)
+
+	if err = validateEmail(email); err != nil {
+		return err
+	}
+	if username == email {
+		username = usernameFromEmail(email)
+	}
+	if err = validateUsername(username); err != nil {
+		return err
+	}
+
+	params := &database.CreateUserParams{
+		ID:          &id,
+		Username:    &username,
+		Email:       &email,
+		DisplayName: &displayName,
+	}
+	_, err = s.querier.CreateUser(ctx, s.dbtx, params)
+	return err
 }
 
 func validateEmail(email string) error {
@@ -163,11 +175,8 @@ func usernameFromEmail(email string) string {
 	return username
 }
 
-func (s *EGServiceImpl) updateKCUser(ctx context.Context, params *database.UpdateUserParams) (oldKC *gocloak.User, newKC *gocloak.User, err error) {
-	realm := ctx.Value(utils.AuthRealm()).(string)
-	token := ctx.Value(utils.AuthAccessToken).(*gocloak.JWT)
-
-	oldKC, err = s.kc.GetUserByID(ctx, token.AccessToken, realm, *params.ID)
+func (s *EGServiceImpl) updateKCUser(ctx context.Context, token string, realm string, params *database.UpdateUserParams) (oldKC *gocloak.User, newKC *gocloak.User, err error) {
+	oldKC, err = s.kc.GetUserByID(ctx, token, realm, *params.ID)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -193,6 +202,6 @@ func (s *EGServiceImpl) updateKCUser(ctx context.Context, params *database.Updat
 		newKC.Enabled = params.Enable
 	}
 
-	err = s.kc.UpdateUser(ctx, token.AccessToken, realm, *newKC)
+	err = s.kc.UpdateUser(ctx, token, realm, *newKC)
 	return
 }
