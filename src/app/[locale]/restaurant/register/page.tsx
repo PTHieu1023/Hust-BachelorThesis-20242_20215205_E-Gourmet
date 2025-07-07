@@ -4,62 +4,39 @@ import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
 import {Label} from "@/components/ui/label";
 import {Textarea} from "@/components/ui/textarea";
-import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
-import {FormEvent, useEffect, useState} from "react";
-import {Clock, Phone, Mail, Building2, Upload} from "lucide-react";
+import {FormEvent, useState} from "react";
+import {Clock, Phone, Mail, Building2} from "lucide-react";
 import {toast} from "sonner";
 import {useRouter} from "@/i18n/navigation";
 import {useTranslations} from "next-intl";
-import {Cuisine, getCuisines} from "@/services/cuisine.service";
+import {createRestaurant, CreateRestaurantParams} from "@/services/restaurant.service";
 
 const CreateRestaurant = () => {
     const t = useTranslations("restaurant.register");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const router = useRouter()
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<CreateRestaurantParams>({
         name: "",
-        cuisine: "",
         address: "",
         phone: "",
         email: "",
+        openHour: "",
+        website: "",
         description: "",
-        hours: "",
-        website: ""
+        documents: [],
     });
-    const [cuisines, setCuisines] = useState<Cuisine[]>();
-
-    useEffect(() => {
-        getCuisines().then(fetchCuisines => {
-            setCuisines(fetchCuisines);
-        }).catch((error: Error) => {
-            toast.error(error.message);
-        });
-    }, [])
-
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
-        const requiredFields: (keyof typeof formData)[] = ['name', 'cuisine', 'address', 'phone', 'email', 'hours'];
-        const missingFields = requiredFields.filter(field => !formData[field]);
-
-        if (missingFields.length > 0) {
-            toast.error(t("missingFields", { fields: missingFields.join(", ") }));
-            setIsSubmitting(false);
-            return;
-        }
-
-        try {
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            toast.info("Your restaurant is being registered. You will receive a confirmation email once approved.");
+        createRestaurant(formData).then(() => {
+            toast.success("Restaurant registered successfully.")
             router.push("/restaurant");
-        } catch (error) {
-            toast.error("An error occurred while registering your restaurant. Please try again later.", {
-                description: error instanceof Error ? error.message : String(error),
-            });
-        } finally {
-            setIsSubmitting(false);
-        }
+        }).catch(() => {
+            toast.error("Error submitting");
+        }).finally(() => {
+            setIsSubmitting(false)
+        });
     };
 
     const handleInputChange = (field: string, value: string) => {
@@ -88,7 +65,7 @@ const CreateRestaurant = () => {
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
+                                <div className="space-y-2 col-span-2">
                                     <Label htmlFor="name">{t("restaurantName")} <span className="text-red-500">*</span></Label>
                                     <Input
                                         id="name"
@@ -97,22 +74,6 @@ const CreateRestaurant = () => {
                                         onChange={(e) => handleInputChange("name", e.target.value)}
                                         required
                                     />
-                                </div>
-
-                                <div className="space-y-2">
-                                    <Label htmlFor="cuisine">{t("cuisineType")} <span className="text-red-500">*</span></Label>
-                                    <Select onValueChange={(value) => handleInputChange("cuisine", value)}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder={t("cuisineTypePlaceholder")}/>
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {cuisines?.map((cuisine) => (
-                                                <SelectItem key={cuisine.id} value={cuisine.id.toString()}>
-                                                    {cuisine.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
                                 </div>
                             </div>
 
@@ -163,16 +124,15 @@ const CreateRestaurant = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="hours">{t("hours")} <span className="text-red-500">*</span></Label>
+                                    <Label htmlFor="hours">{t("hours")}</Label>
                                     <div className="relative">
                                         <Clock className="absolute left-3 top-3 text-gray-400 w-4 h-4"/>
                                         <Input
                                             id="hours"
                                             placeholder={t("hoursPlaceholder")}
                                             className="pl-10"
-                                            value={formData.hours}
-                                            onChange={(e) => handleInputChange("hours", e.target.value)}
-                                            required
+                                            value={formData.openHour}
+                                            onChange={(e) => handleInputChange("openHour", e.target.value)}
                                         />
                                     </div>
                                 </div>
@@ -196,19 +156,6 @@ const CreateRestaurant = () => {
                                     value={formData.description}
                                     onChange={(e) => handleInputChange("description", e.target.value)}
                                 />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label>{t("license")}</Label>
-                                <div
-                                    className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-orange-300 transition-colors">
-                                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2"/>
-                                    <p className="text-sm text-gray-600 mb-2">Upload photos of your restaurant</p>
-                                    <p className="text-xs text-gray-500 mb-3">JPG, PNG up to 10MB each</p>
-                                    <Button type="button" variant="outline" size="sm">
-                                        Choose Files
-                                    </Button>
-                                </div>
                             </div>
                             <div className="flex flex-col sm:flex-row gap-4 pt-4">
                                 <Button

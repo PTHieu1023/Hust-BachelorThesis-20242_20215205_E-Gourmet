@@ -79,3 +79,21 @@ export const getRecommendations = async (userId: string): Promise<Recommendation
     const response = await httpClient.get(`${process.env.RECOMMENDATION_API_URL}/${userId}`);
     return response.data as Recommendation[];
 }
+
+export interface CreateDishParams {
+    restaurantId: number;
+    name: string;
+    description: string;
+    price: number;
+    cuisineId: number;
+}
+
+export const createDish = async (params: CreateDishParams): Promise<ShortDishProps> => {
+    const response = await httpClient.post(getUrl("/api/dish"), params);
+    return response.data;
+}
+
+export const deleteDish = async (id: number): Promise<string> => {
+    const response = await httpClient.delete(getUrl(`/api/dish/${id}`));
+    return response.data as string;
+}

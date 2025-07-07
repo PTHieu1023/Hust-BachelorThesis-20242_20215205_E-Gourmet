@@ -9,6 +9,7 @@ import {getDish} from "@/services/dish.service";
 import {getReviews} from "@/services/review.service";
 import {fetchPosts} from "@/services/post.service";
 import PostCard from "@/components/PostCard";
+import {Link} from "@/i18n/navigation";
 
 export const RestaurantInfo = ({t, restaurant}: { t: (key: string) => string, restaurant: Restaurant }) => {
     return (
@@ -82,7 +83,7 @@ export const MenuHighlights = async ({t, restaurantId}: { t: (key: string) => st
             <CardContent>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {highlights.map((dish) => (
-                        <div key={dish.id} className="group cursor-pointer">
+                        <Link href={`/restaurant/${restaurantId}/${dish.id}`} key={dish.id} className="group cursor-pointer">
                             <div className="aspect-square relative mb-3 rounded-lg overflow-hidden">
                                 <Image
                                     src={dish.images?.[0] ?? '/placeholder-dish.jpg'}
@@ -100,7 +101,7 @@ export const MenuHighlights = async ({t, restaurantId}: { t: (key: string) => st
                                     <span className="text-sm text-gray-600">{dish.rating}</span>
                                 </div>
                             </div>
-                        </div>
+                        </Link>
                     ))}
                 </div>
             </CardContent>

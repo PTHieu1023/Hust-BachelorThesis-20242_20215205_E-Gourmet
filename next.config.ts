@@ -8,7 +8,13 @@ const nextConfig: NextConfig = {
             hostname: 'images.unsplash.com',
             port: '',
             pathname: '/**'
-        }]
+        },
+            {
+                protocol: 'http',
+                hostname: '192.168.100.145',
+                port: '8080',
+                pathname: '/**'
+            }]
     },
     output: "standalone"
 };

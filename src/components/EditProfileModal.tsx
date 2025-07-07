@@ -10,7 +10,7 @@ import {Badge} from "@/components/ui/badge";
 import {Camera, X, Plus, Edit} from "lucide-react";
 import {toast} from "sonner";
 import {Cuisine} from "@/services/cuisine.service";
-import {UserInfo} from "@/services/auth.service";
+import {updateUserInfo, UserInfo} from "@/services/auth.service";
 import {useRouter} from "@/i18n/navigation";
 
 interface EditProfileModalProps {
@@ -26,7 +26,10 @@ const EditProfileModal = ({userProfile, cuisines}: EditProfileModalProps) => {
 
     const [newPreference, setNewPreference] = useState<string>("");
 
-    const handleInputChange = (field: string, value: string) => {
+    const handleInputChange = (field: string, value: string | number) => {
+        if( field === "budget" && typeof value === "string") {
+            value = parseInt(value);
+        }
         setFormData(prev => ({...prev, [field]: value}));
     };
 
@@ -58,9 +61,13 @@ const EditProfileModal = ({userProfile, cuisines}: EditProfileModalProps) => {
     };
 
     const handleSave = () => {
-        toast.info("Profile updated successfully!");
-        router.refresh();
-        setIsEditModalOpen(false);
+        updateUserInfo(formData).then(() => {
+            toast.info("Profile updated successfully!");
+            setIsEditModalOpen(false);
+            router.refresh();
+        }).catch(() => {
+            toast.error("Failed to update profile. Please try again.");
+        })
     };
 
     return (
@@ -124,7 +131,7 @@ const EditProfileModal = ({userProfile, cuisines}: EditProfileModalProps) => {
                                 id="budget"
                                 type="number"
                                 value={formData.budget}
-                                onChange={(e) => handleInputChange("budget", e.target.value)}
+                                onChange={(e) => handleInputChange("budget", parseInt(e.target.value))}
                                 placeholder="Enter your budget"
                             />
                         </div>

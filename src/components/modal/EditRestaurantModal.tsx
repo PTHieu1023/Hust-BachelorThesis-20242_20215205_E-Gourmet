@@ -9,6 +9,7 @@ import {Camera, MapPin, Phone, Mail, Clock, Globe} from "lucide-react";
 import {toast} from "sonner";
 import {Restaurant, updateRestaurant} from "@/services/restaurant.service";
 import Image from "next/image";
+import {useRouter} from "@/i18n/navigation";
 
 interface EditRestaurantModalProps {
     isOpen: boolean;
@@ -19,30 +20,28 @@ interface EditRestaurantModalProps {
 const EditRestaurantModal = ({isOpen, onClose, restaurant}: EditRestaurantModalProps) => {
     const [formData, setFormData] = useState({
         id: restaurant.id,
-        name: restaurant.name,
-        description: restaurant.description,
-        address: restaurant.address,
-        phone: restaurant.phone,
-        email: restaurant.email,
-        website: restaurant.website,
-        openHour: restaurant.openHour,
-        coverImage: restaurant.coverImage,
+        name: restaurant.name ?? "",
+        description: restaurant.description ?? "",
+        address: restaurant.address ?? "",
+        phone: restaurant.phone ?? "",
+        email: restaurant.email ?? "",
+        website: restaurant.website ?? "",
+        openHour: restaurant.openHour ?? ""
     });
-
+    const router = useRouter();
     const handleInputChange = (field: string, value: string) => {
         setFormData(prev => ({...prev, [field]: value}));
-    };
-
-    const handleImageUpload = (type: 'image' | 'coverImage') => {
-        // Simulate image upload
-        const mockImageUrl = `https://images.unsplash.com/photo-${Date.now()}?w=800`;
-        setFormData(prev => ({...prev, [type]: mockImageUrl}));
     };
 
     const handleSave = () => {
         updateRestaurant(formData.id, formData).then(() => {
             toast.info("Restaurant Updated", {
                 description: "Your restaurant profile has been successfully updated.",
+            });
+            router.refresh()
+        }).catch((err :Error) => {
+            toast.error("Failed to update restaurant", {
+                description:err.message,
             });
         }).finally(() => {
             onClose();
@@ -57,31 +56,6 @@ const EditRestaurantModal = ({isOpen, onClose, restaurant}: EditRestaurantModalP
                 </DialogHeader>
 
                 <div className="space-y-6">
-                    {/* Images Section */}
-                    <div className="space-y-4">
-                        <div>
-                            <Label className="text-base font-medium">Cover Image</Label>
-                            <div className="mt-2 relative h-32 rounded-lg overflow-hidden bg-gray-100">
-                                <Image
-                                    src={formData.coverImage ?? "/"}
-                                    alt="Cover"
-                                    width={1800}
-                                    height={1200}
-                                    className="w-full h-full object-cover"
-                                />
-                                <Button
-                                    onClick={() => handleImageUpload('coverImage')}
-                                    size="sm"
-                                    className="absolute top-2 right-2"
-                                >
-                                    <Camera className="w-4 h-4 mr-2"/>
-                                    Change
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Basic Information */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="name">Restaurant Name</Label>
@@ -180,7 +154,7 @@ const EditRestaurantModal = ({isOpen, onClose, restaurant}: EditRestaurantModalP
                                 <Input
                                     id="hours"
                                     value={formData.openHour}
-                                    onChange={(e) => handleInputChange("hours", e.target.value)}
+                                    onChange={(e) => handleInputChange("openHour", e.target.value)}
                                     placeholder="Mon-Sun: 11:00 AM - 10:00 PM"
                                     className="pl-10"
                                 />

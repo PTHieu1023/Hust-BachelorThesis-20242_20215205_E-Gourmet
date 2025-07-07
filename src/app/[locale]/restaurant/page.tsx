@@ -157,14 +157,14 @@ async function RestaurantPostsTab({t, restaurant}: { t: (key: string) => string,
     )
 }
 
-async function RestaurantMenuTab({ restaurant}: {restaurant: Restaurant }) {
+async function RestaurantMenuTab({restaurant}: { restaurant: Restaurant }) {
     const dishes = await getDish({restaurantId: restaurant.id});
     return (
         <Card className="border-gray-100">
             <CardHeader>
                 <div className="flex items-center justify-between">
                     <CardTitle>Menu Management</CardTitle>
-                    <AddDishButton restaurant={restaurant}/>
+                    <AddDishButton restaurantId={restaurant.id}/>
                 </div>
             </CardHeader>
             <CardContent>

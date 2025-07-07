@@ -37,13 +37,12 @@ export interface GetRestaurantParams {
 export interface CreateRestaurantParams {
     name: string;
     description?: string;
-    avatarUrl?: string;
-    username: string;
     email?: string;
     phone?: string;
     address?: string;
-    lat?: number;
-    lng?: number;
+    website?: string;
+    openHour?: string;
+    documents?: string[] | Int8Array ;
 }
 
 export const createRestaurant = async (params: CreateRestaurantParams): Promise<Restaurant> => {
@@ -51,13 +50,10 @@ export const createRestaurant = async (params: CreateRestaurantParams): Promise<
     return response.data as Restaurant;
 }
 
+
 export const updateRestaurant = async (id: number, params: Partial<CreateRestaurantParams>): Promise<Restaurant> => {
     const response = await httpClient.put(getUrl(`/api/restaurant/${id}`), params);
     return response.data as Restaurant;
-}
-
-export const deleteRestaurant = async (id: number): Promise<void> => {
-    await httpClient.delete(getUrl(`/api/restaurant/${id}`));
 }
 
 export const getRestaurants = async (params: GetRestaurantParams): Promise<Restaurant[]> => {

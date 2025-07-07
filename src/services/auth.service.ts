@@ -45,3 +45,10 @@ export const getCurrentUserInfo = async (): Promise<UserInfo> => {
     const response = await httpClient.get(getUrl("/api/user"));
     return response.data as UserInfo;
 }
+
+export const updateUserInfo = async (userInfo: UserInfo): Promise<UserInfo> => {
+    userInfo.budget = userInfo.budget ? parseInt(userInfo.budget.toString()) : 0;
+    console.log("Updating user info:", userInfo);
+    const response = await httpClient.put(getUrl("/api/user"), userInfo);
+    return response.data as UserInfo;
+}
