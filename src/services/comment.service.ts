@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server"
 
 import httpClient, { getUrl } from "@/configs/http.config";

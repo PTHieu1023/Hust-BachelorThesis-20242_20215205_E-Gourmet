@@ -41,7 +41,7 @@ export default function ReviewModal({isOpen, setIsOpenAction, dish}: Readonly<Re
         }
 
         setIsSubmitting(true);
-        createReview(dish.id, review).then(response => {
+        createReview(dish.id, review).then(() => {
             toast.success("Review created successfully");
             setIsOpenAction(false)
         }).catch(e => toast.error(e))

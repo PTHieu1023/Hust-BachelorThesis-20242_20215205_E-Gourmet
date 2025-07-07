@@ -3,7 +3,7 @@ import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {Star, Home} from "lucide-react";
 import {Link} from "@/i18n/navigation";
 import CommonBreadcrumb, {BreadcrumbItemProps} from "@/components/layout/CommonBreadcrumb";
-import {getTranslations, setRequestLocale} from "next-intl/server";
+import {setRequestLocale} from "next-intl/server";
 import {getDishDetails} from "@/services/dish.service";
 import {ImageView, ReviewSection} from "@/app/[locale]/restaurant/[restaurantId]/[dishId]/components";
 import {getReviews} from "@/services/review.service";
@@ -20,9 +20,6 @@ interface PageProps {
 export default async function DetailDishPage({params}: Readonly<PageProps>) {
     const {locale, restaurantId, dishId} = await params;
     setRequestLocale(locale);
-    const t = await getTranslations("dish");
-
-
     const dish = await getDishDetails(dishId);
     const reviews = await getReviews({dishId: dishId});
 

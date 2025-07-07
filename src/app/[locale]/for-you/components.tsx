@@ -102,10 +102,11 @@ export async function RecommendationList() {
                 ))}
             </div>
         );
-    } catch (error) {
+    } catch (error: any) {
         return (
             <div className="p-4 text-center text-red-500">
                 Failed to load recommendations. Please try again later.
+                <p>{error.message}</p>
             </div>
         )
     }

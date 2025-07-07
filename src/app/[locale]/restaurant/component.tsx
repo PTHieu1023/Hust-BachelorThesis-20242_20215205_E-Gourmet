@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import {Camera, Edit, Eye, MoreHorizontal, Plus, Trash2, X} from "lucide-react";

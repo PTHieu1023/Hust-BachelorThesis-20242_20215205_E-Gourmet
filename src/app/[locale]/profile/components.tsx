@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {getCurrentUserInfo} from "@/services/auth.service";
 import {getCuisines} from "@/services/cuisine.service";
 import {Card, CardContent, CardHeader} from "@/components/ui/card";

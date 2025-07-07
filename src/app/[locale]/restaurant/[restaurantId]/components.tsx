@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {Restaurant} from "@/services/restaurant.service";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
 import Image from "next/image";
