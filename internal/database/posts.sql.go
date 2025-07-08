@@ -19,8 +19,8 @@ SELECT EXISTS(
 `
 
 type CheckPostLikeParams struct {
-	PostID int64  `json:"postId"`
-	UserID string `json:"userId"`
+	PostID int64       `json:"postId"`
+	UserID interface{} `json:"userId"`
 }
 
 func (q *Queries) CheckPostLike(ctx context.Context, db DBTX, arg *CheckPostLikeParams) (bool, error) {
@@ -37,11 +37,11 @@ RETURNING id, post_id, user_id, reply_to_id, content, media
 `
 
 type CreateCommentParams struct {
-	PostID    int64   `json:"postId"`
-	UserID    string  `json:"userId"`
-	ReplyToID *int64  `json:"replyToId"`
-	Content   *string `json:"content"`
-	Media     []byte  `json:"media"`
+	PostID    int64       `json:"postId"`
+	UserID    interface{} `json:"userId"`
+	ReplyToID *int64      `json:"replyToId"`
+	Content   *string     `json:"content"`
+	Media     []byte      `json:"media"`
 }
 
 func (q *Queries) CreateComment(ctx context.Context, db DBTX, arg *CreateCommentParams) (*PostsComment, error) {
@@ -71,9 +71,9 @@ RETURNING id, caption, created_at, updated_at, edit_snapshot, media, restaurant_
 `
 
 type CreatePostParams struct {
-	Caption      *string `json:"caption"`
-	Media        []byte  `json:"media"`
-	RestaurantID *int32  `json:"restaurantId"`
+	Caption      *string     `json:"caption"`
+	Media        interface{} `json:"media"`
+	RestaurantID *int32      `json:"restaurantId"`
 }
 
 func (q *Queries) CreatePost(ctx context.Context, db DBTX, arg *CreatePostParams) (*Post, error) {
@@ -96,8 +96,8 @@ DELETE FROM posts_comment WHERE id = $1 AND user_id = $2
 `
 
 type DeleteCommentParams struct {
-	ID     int32  `json:"id"`
-	UserID string `json:"userId"`
+	ID     int64       `json:"id"`
+	UserID interface{} `json:"userId"`
 }
 
 func (q *Queries) DeleteComment(ctx context.Context, db DBTX, arg *DeleteCommentParams) error {
@@ -109,7 +109,7 @@ const deletePost = `-- name: DeletePost :exec
 DELETE FROM posts WHERE id = $1
 `
 
-func (q *Queries) DeletePost(ctx context.Context, db DBTX, id int32) error {
+func (q *Queries) DeletePost(ctx context.Context, db DBTX, id int64) error {
 	_, err := db.Exec(ctx, deletePost, id)
 	return err
 }
@@ -131,18 +131,18 @@ WHERE pc.id = $1
 `
 
 type GetCommentByIDRow struct {
-	ID          int32   `json:"id"`
-	PostID      int64   `json:"postId"`
-	UserID      string  `json:"userId"`
-	ReplyToID   *int64  `json:"replyToId"`
-	Content     *string `json:"content"`
-	Media       []byte  `json:"media"`
-	Username    string  `json:"username"`
-	DisplayName string  `json:"displayName"`
-	AvatarUrl   *string `json:"avatarUrl"`
+	ID          int64       `json:"id"`
+	PostID      int64       `json:"postId"`
+	UserID      interface{} `json:"userId"`
+	ReplyToID   *int64      `json:"replyToId"`
+	Content     *string     `json:"content"`
+	Media       []byte      `json:"media"`
+	Username    string      `json:"username"`
+	DisplayName string      `json:"displayName"`
+	AvatarUrl   *string     `json:"avatarUrl"`
 }
 
-func (q *Queries) GetCommentByID(ctx context.Context, db DBTX, id int32) (*GetCommentByIDRow, error) {
+func (q *Queries) GetCommentByID(ctx context.Context, db DBTX, id int64) (*GetCommentByIDRow, error) {
 	row := db.QueryRow(ctx, getCommentByID, id)
 	var i GetCommentByIDRow
 	err := row.Scan(
@@ -177,15 +177,15 @@ ORDER BY pc.id ASC
 `
 
 type GetCommentsByPostRow struct {
-	ID          int32   `json:"id"`
-	PostID      int64   `json:"postId"`
-	UserID      string  `json:"userId"`
-	ReplyToID   *int64  `json:"replyToId"`
-	Content     *string `json:"content"`
-	Media       []byte  `json:"media"`
-	Username    string  `json:"username"`
-	DisplayName string  `json:"displayName"`
-	AvatarUrl   *string `json:"avatarUrl"`
+	ID          int64       `json:"id"`
+	PostID      int64       `json:"postId"`
+	UserID      interface{} `json:"userId"`
+	ReplyToID   *int64      `json:"replyToId"`
+	Content     *string     `json:"content"`
+	Media       []byte      `json:"media"`
+	Username    string      `json:"username"`
+	DisplayName string      `json:"displayName"`
+	AvatarUrl   *string     `json:"avatarUrl"`
 }
 
 func (q *Queries) GetCommentsByPost(ctx context.Context, db DBTX, postID int64) ([]*GetCommentsByPostRow, error) {
@@ -238,9 +238,9 @@ GROUP BY p.id, p.caption, p.media, p.created_at, p.updated_at, p.restaurant_id, 
 `
 
 type GetPostByIDRow struct {
-	ID                 int32              `json:"id"`
+	ID                 int64              `json:"id"`
 	Caption            *string            `json:"caption"`
-	Media              []byte             `json:"media"`
+	Media              interface{}        `json:"media"`
 	CreatedAt          pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt          pgtype.Timestamptz `json:"updatedAt"`
 	RestaurantID       *int32             `json:"restaurantId"`
@@ -250,7 +250,7 @@ type GetPostByIDRow struct {
 	LikeCount          int64              `json:"likeCount"`
 }
 
-func (q *Queries) GetPostByID(ctx context.Context, db DBTX, id int32) (*GetPostByIDRow, error) {
+func (q *Queries) GetPostByID(ctx context.Context, db DBTX, id int64) (*GetPostByIDRow, error) {
 	row := db.QueryRow(ctx, getPostByID, id)
 	var i GetPostByIDRow
 	err := row.Scan(
@@ -296,7 +296,7 @@ type GetPostsParams struct {
 }
 
 type GetPostsRow struct {
-	ID                 int32              `json:"id"`
+	ID                 int64              `json:"id"`
 	Caption            *string            `json:"caption"`
 	Media              []string           `json:"media"`
 	CreatedAt          pgtype.Timestamptz `json:"createdAt"`
@@ -367,9 +367,9 @@ type GetPostsByRestaurantParams struct {
 }
 
 type GetPostsByRestaurantRow struct {
-	ID                 int32              `json:"id"`
+	ID                 int64              `json:"id"`
 	Caption            *string            `json:"caption"`
-	Media              []byte             `json:"media"`
+	Media              interface{}        `json:"media"`
 	CreatedAt          pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt          pgtype.Timestamptz `json:"updatedAt"`
 	RestaurantID       *int32             `json:"restaurantId"`
@@ -417,8 +417,8 @@ ON CONFLICT (post_id, user_id) DO NOTHING
 `
 
 type LikePostParams struct {
-	PostID int64  `json:"postId"`
-	UserID string `json:"userId"`
+	PostID int64       `json:"postId"`
+	UserID interface{} `json:"userId"`
 }
 
 func (q *Queries) LikePost(ctx context.Context, db DBTX, arg *LikePostParams) error {
@@ -432,8 +432,8 @@ WHERE post_id = $1 AND user_id = $2
 `
 
 type UnlikePostParams struct {
-	PostID int64  `json:"postId"`
-	UserID string `json:"userId"`
+	PostID int64       `json:"postId"`
+	UserID interface{} `json:"userId"`
 }
 
 func (q *Queries) UnlikePost(ctx context.Context, db DBTX, arg *UnlikePostParams) error {
@@ -452,9 +452,9 @@ RETURNING id, caption, created_at, updated_at, edit_snapshot, media, restaurant_
 `
 
 type UpdatePostParams struct {
-	Caption *string `json:"caption"`
-	Media   []byte  `json:"media"`
-	PostID  int32   `json:"postId"`
+	Caption *string     `json:"caption"`
+	Media   interface{} `json:"media"`
+	PostID  int64       `json:"postId"`
 }
 
 func (q *Queries) UpdatePost(ctx context.Context, db DBTX, arg *UpdatePostParams) (*Post, error) {

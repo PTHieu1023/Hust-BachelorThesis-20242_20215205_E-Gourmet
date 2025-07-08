@@ -461,7 +461,7 @@ ORDER BY rev.created_at DESC LIMIT 10
 `
 
 type GetRestaurantRecentReviewsRow struct {
-	ID          int32              `json:"id"`
+	ID          int64              `json:"id"`
 	Rating      int16              `json:"rating"`
 	Comment     string             `json:"comment"`
 	CreatedAt   pgtype.Timestamptz `json:"createdAt"`

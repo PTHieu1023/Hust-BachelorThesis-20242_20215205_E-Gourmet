@@ -9,7 +9,7 @@ import (
 )
 
 type Cuisine struct {
-	ID        int32              `json:"id"`
+	ID        int16              `json:"id"`
 	Name      string             `json:"name"`
 	ParentID  *int16             `json:"parentId"`
 	ImageUrl  *string            `json:"imageUrl"`
@@ -26,32 +26,33 @@ type Dish struct {
 	RestaurantID int32              `json:"restaurantId"`
 	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt    pgtype.Timestamptz `json:"updatedAt"`
-	Images       []byte             `json:"images"`
+	Images       *string            `json:"images"`
+	UrlName      *string            `json:"urlName"`
 }
 
 type Post struct {
-	ID           int32              `json:"id"`
+	ID           int64              `json:"id"`
 	Caption      *string            `json:"caption"`
 	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
 	UpdatedAt    pgtype.Timestamptz `json:"updatedAt"`
 	EditSnapshot []byte             `json:"editSnapshot"`
-	Media        []byte             `json:"media"`
+	Media        interface{}        `json:"media"`
 	RestaurantID *int32             `json:"restaurantId"`
 }
 
 type PostLike struct {
 	PostID    int64              `json:"postId"`
-	UserID    string             `json:"userId"`
+	UserID    interface{}        `json:"userId"`
 	CreatedAt pgtype.Timestamptz `json:"createdAt"`
 }
 
 type PostsComment struct {
-	ID        int32   `json:"id"`
-	PostID    int64   `json:"postId"`
-	UserID    string  `json:"userId"`
-	ReplyToID *int64  `json:"replyToId"`
-	Content   *string `json:"content"`
-	Media     []byte  `json:"media"`
+	ID        int64       `json:"id"`
+	PostID    int64       `json:"postId"`
+	UserID    interface{} `json:"userId"`
+	ReplyToID *int64      `json:"replyToId"`
+	Content   *string     `json:"content"`
+	Media     []byte      `json:"media"`
 }
 
 type Restaurant struct {
@@ -83,13 +84,26 @@ type RestaurantManager struct {
 }
 
 type Review struct {
-	ID        int32              `json:"id"`
+	ID        int64              `json:"id"`
 	Rating    int16              `json:"rating"`
 	Comment   string             `json:"comment"`
 	CreatedAt pgtype.Timestamptz `json:"createdAt"`
 	UserID    string             `json:"userId"`
 	DishID    int32              `json:"dishId"`
 	UpdatedAt pgtype.Timestamptz `json:"updatedAt"`
+}
+
+type SsfcmLog struct {
+	ID              int32              `json:"id"`
+	CreatedAt       pgtype.Timestamptz `json:"createdAt"`
+	UserID          string             `json:"userId"`
+	Evaluation      []byte             `json:"evaluation"`
+	ProcessDuration *int64             `json:"processDuration"`
+	NumberCluster   *int32             `json:"numberCluster"`
+	Memberships     interface{}        `json:"memberships"`
+	Status          int16              `json:"status"`
+	Centroids       interface{}        `json:"centroids"`
+	Iteration       *int32             `json:"iteration"`
 }
 
 type User struct {
@@ -122,11 +136,11 @@ type UserInteraction struct {
 }
 
 type UserRecommendation struct {
-	ID        int32              `json:"id"`
-	UserID    *string            `json:"userId"`
-	DishID    int32              `json:"dishId"`
-	Score     float64            `json:"score"`
-	CreatedAt pgtype.Timestamptz `json:"createdAt"`
+	ID     int64   `json:"id"`
+	UserID *string `json:"userId"`
+	DishID int32   `json:"dishId"`
+	Score  float64 `json:"score"`
+	LogID  *int64  `json:"logId"`
 }
 
 type UserRestaurantFollow struct {

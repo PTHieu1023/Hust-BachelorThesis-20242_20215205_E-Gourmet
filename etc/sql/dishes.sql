@@ -1,9 +1,9 @@
 -- name: CreateDish :one
 WITH inserted_dish AS (
     INSERT
-        INTO dishes (restaurant_id, name, description, price, cuisine_id)
+        INTO dishes (restaurant_id, name, description, price, cuisine_id, images)
             VALUES (sqlc.narg(restaurant_id):: int, sqlc.narg(name):: varchar(255), sqlc.narg(description)::text,
-                    sqlc.narg(price)::bigint, sqlc.narg(cuisine_id):: smallint)
+                    sqlc.narg(price)::bigint, sqlc.narg(cuisine_id):: smallint, sqlc.narg(images)::text)
             RETURNING *)
 SELECT d.id,
        d.name,
@@ -33,6 +33,7 @@ SELECT d.id,
        r.address,
        r.lat,
        r.lng,
+       d.images,
        d.cuisine_id,
        c.name as cuisine,
        d.created_at,
@@ -56,6 +57,7 @@ SELECT d.id,
        r.name                      as restaurant_name,
        r.username                  as restaurant_username,
        r.address,
+       d.images,
        r.lat,
        r.lng,
        d.cuisine_id,

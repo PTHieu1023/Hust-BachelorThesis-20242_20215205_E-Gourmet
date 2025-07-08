@@ -39,7 +39,7 @@ type CreateReviewParams struct {
 }
 
 type CreateReviewRow struct {
-	ID              int32   `json:"id"`
+	ID              int64   `json:"id"`
 	Comment         string  `json:"comment"`
 	Rating          int16   `json:"rating"`
 	DishID          int32   `json:"dishId"`
@@ -74,7 +74,7 @@ FROM reviews
 WHERE id = $1
 `
 
-func (q *Queries) DeleteReview(ctx context.Context, db DBTX, id int32) error {
+func (q *Queries) DeleteReview(ctx context.Context, db DBTX, id int64) error {
 	_, err := db.Exec(ctx, deleteReview, id)
 	return err
 }
@@ -85,7 +85,7 @@ SELECT r.id,
        r.rating,
        r.dish_id,
        d.name         as dish_name,
-       d.images -> 0  as dish_image,
+       d.images  as dish_image,
        r.user_id,
        u.username,
        u.avatar_url   as user_image,
@@ -114,12 +114,12 @@ type GetReviewsParams struct {
 }
 
 type GetReviewsRow struct {
-	ID                 int32              `json:"id"`
+	ID                 int64              `json:"id"`
 	Comment            string             `json:"comment"`
 	Rating             int16              `json:"rating"`
 	DishID             int32              `json:"dishId"`
 	DishName           *string            `json:"dishName"`
-	DishImage          interface{}        `json:"dishImage"`
+	DishImage          *string            `json:"dishImage"`
 	UserID             string             `json:"userId"`
 	Username           *string            `json:"username"`
 	UserImage          *string            `json:"userImage"`

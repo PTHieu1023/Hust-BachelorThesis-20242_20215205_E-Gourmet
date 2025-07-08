@@ -78,7 +78,7 @@ func (c *EGControllerImpl) UpdatePost(ctx *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, errInvalidID)
 	}
 
-	params.PostID = int32(id)
+	params.PostID = int64(id)
 
 	post, err := c.service.UpdatePost(ctx.UserContext(), params)
 	if err != nil {
@@ -185,7 +185,7 @@ func (c *EGControllerImpl) DeleteComment(ctx *fiber.Ctx) error {
 	}
 
 	err = c.service.DeleteComment(ctx.UserContext(), &database.DeleteCommentParams{
-		ID:     int32(commentId),
+		ID:     int64(commentId),
 		UserID: userID,
 	})
 	if err != nil {

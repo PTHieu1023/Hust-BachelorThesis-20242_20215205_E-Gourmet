@@ -17,7 +17,7 @@ FROM alpine:latest AS run-stage
 WORKDIR /
 
 COPY --from=build-stage /app/e-gourmet /e-gourmet
-COPY ./etc/config /etc/config
+COPY ./etc/ /etc/
 
 EXPOSE 8080
 

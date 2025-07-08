@@ -42,7 +42,7 @@ func (c *EGControllerImpl) UploadFile(ctx *fiber.Ctx) error {
 	// Return file information
 	return ctx.Status(fiber.StatusOK).JSON(fiber.Map{
 		"filename": fileName,
-		"url":      fmt.Sprintf("/uploads/%s", fileName),
+		"url":      fmt.Sprintf("http://localhost:8080/uploads/%s", fileName),
 		"size":     file.Size,
 		"mimetype": file.Header.Get("Content-Type"),
 	})

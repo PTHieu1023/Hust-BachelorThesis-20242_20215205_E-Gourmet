@@ -6,7 +6,7 @@ import (
 )
 
 func (s *EGServiceImpl) GetCuisineRecursionById(ctx context.Context, id int16) ([]*database.GetCuisineRecursionByIdRow, error) {
-	return s.querier.GetCuisineRecursionById(ctx, s.dbtx, int32(id))
+	return s.querier.GetCuisineRecursionById(ctx, s.dbtx, id)
 }
 
 func (s *EGServiceImpl) AddCuisine(ctx context.Context, params *database.AddCuisineParams) (*Cuisine, error) {
@@ -31,5 +31,5 @@ func (s *EGServiceImpl) UpdateCuisine(ctx context.Context, params *database.Upda
 }
 
 func (s *EGServiceImpl) DeleteCuisine(ctx context.Context, id int16) error {
-	return s.querier.DeleteCuisine(ctx, s.dbtx, int32(id))
+	return s.querier.DeleteCuisine(ctx, s.dbtx, id)
 }

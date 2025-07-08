@@ -10,7 +10,7 @@ func (s *EGServiceImpl) GetPosts(ctx context.Context, params *database.GetPostsP
 }
 
 func (s *EGServiceImpl) GetPostById(ctx context.Context, id int64) (*database.GetPostByIDRow, error) {
-	return s.querier.GetPostByID(ctx, s.dbtx, int32(id))
+	return s.querier.GetPostByID(ctx, s.dbtx, id)
 }
 
 func (s *EGServiceImpl) GetPostsByRestaurant(ctx context.Context, params *database.GetPostsByRestaurantParams) ([]*database.GetPostsByRestaurantRow, error) {
@@ -26,7 +26,7 @@ func (s *EGServiceImpl) UpdatePost(ctx context.Context, params *database.UpdateP
 }
 
 func (s *EGServiceImpl) DeletePost(ctx context.Context, id int64) error {
-	return s.querier.DeletePost(ctx, s.dbtx, int32(id))
+	return s.querier.DeletePost(ctx, s.dbtx, id)
 }
 
 func (s *EGServiceImpl) CreateComment(ctx context.Context, params *database.CreateCommentParams) (*database.PostsComment, error) {

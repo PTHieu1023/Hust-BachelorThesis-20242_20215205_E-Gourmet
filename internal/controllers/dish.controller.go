@@ -11,7 +11,6 @@ import (
 
 func (c *EGControllerImpl) CreateDish(ctx *fiber.Ctx) error {
 	params := new(database.CreateDishParams)
-
 	if err := ctx.BodyParser(&params); err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid request body.")
 	}

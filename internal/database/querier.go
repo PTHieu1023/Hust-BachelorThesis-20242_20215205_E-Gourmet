@@ -23,20 +23,20 @@ type Querier interface {
 	CreateUser(ctx context.Context, db DBTX, arg *CreateUserParams) (*User, error)
 	CreateUserFromAuth(ctx context.Context, db DBTX, arg *CreateUserFromAuthParams) (*User, error)
 	DeleteComment(ctx context.Context, db DBTX, arg *DeleteCommentParams) error
-	DeleteCuisine(ctx context.Context, db DBTX, id int32) error
+	DeleteCuisine(ctx context.Context, db DBTX, id int16) error
 	DeleteDish(ctx context.Context, db DBTX, id int32) error
-	DeletePost(ctx context.Context, db DBTX, id int32) error
+	DeletePost(ctx context.Context, db DBTX, id int64) error
 	DeleteRestaurant(ctx context.Context, db DBTX, id int32) error
-	DeleteReview(ctx context.Context, db DBTX, id int32) error
+	DeleteReview(ctx context.Context, db DBTX, id int64) error
 	DeleteUserCuisine(ctx context.Context, db DBTX, userID *string) error
 	GetAllUsers(ctx context.Context, db DBTX, arg *GetAllUsersParams) ([]*GetAllUsersRow, error)
-	GetCommentByID(ctx context.Context, db DBTX, id int32) (*GetCommentByIDRow, error)
+	GetCommentByID(ctx context.Context, db DBTX, id int64) (*GetCommentByIDRow, error)
 	GetCommentsByPost(ctx context.Context, db DBTX, postID int64) ([]*GetCommentsByPostRow, error)
-	GetCuisineRecursionById(ctx context.Context, db DBTX, id int32) ([]*GetCuisineRecursionByIdRow, error)
+	GetCuisineRecursionById(ctx context.Context, db DBTX, id int16) ([]*GetCuisineRecursionByIdRow, error)
 	GetDishByID(ctx context.Context, db DBTX, id int32) (*GetDishByIDRow, error)
 	GetDishes(ctx context.Context, db DBTX, arg *GetDishesParams) ([]*GetDishesRow, error)
 	GetManagingRestaurantByUser(ctx context.Context, db DBTX, userID string) ([]*GetManagingRestaurantByUserRow, error)
-	GetPostByID(ctx context.Context, db DBTX, id int32) (*GetPostByIDRow, error)
+	GetPostByID(ctx context.Context, db DBTX, id int64) (*GetPostByIDRow, error)
 	GetPosts(ctx context.Context, db DBTX, arg *GetPostsParams) ([]*GetPostsRow, error)
 	GetPostsByRestaurant(ctx context.Context, db DBTX, arg *GetPostsByRestaurantParams) ([]*GetPostsByRestaurantRow, error)
 	GetRestaurantByOwnerId(ctx context.Context, db DBTX, userID string) (*GetRestaurantByOwnerIdRow, error)

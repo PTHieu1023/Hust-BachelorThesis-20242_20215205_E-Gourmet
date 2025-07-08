@@ -36,5 +36,5 @@ func (s *EGServiceImpl) DeleteReview(ctx context.Context, dishId int64) error {
 		return fiber.NewError(fiber.StatusBadRequest, "invalid dish ID")
 	}
 
-	return s.querier.DeleteReview(ctx, s.dbtx, int32(dishId))
+	return s.querier.DeleteReview(ctx, s.dbtx, dishId)
 }

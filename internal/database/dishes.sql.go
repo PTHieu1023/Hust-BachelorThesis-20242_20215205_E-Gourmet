@@ -14,10 +14,10 @@ import (
 const createDish = `-- name: CreateDish :one
 WITH inserted_dish AS (
     INSERT
-        INTO dishes (restaurant_id, name, description, price, cuisine_id)
+        INTO dishes (restaurant_id, name, description, price, cuisine_id, images)
             VALUES ($1:: int, $2:: varchar(255), $3::text,
-                    $4::bigint, $5:: smallint)
-            RETURNING id, name, description, price, cuisine_id, restaurant_id, created_at, updated_at, images)
+                    $4::bigint, $5:: smallint, $6::text)
+            RETURNING id, name, description, price, cuisine_id, restaurant_id, created_at, updated_at, images, "urlName")
 SELECT d.id,
        d.name,
        d.description,
@@ -42,6 +42,7 @@ type CreateDishParams struct {
 	Description  *string `json:"description"`
 	Price        *int64  `json:"price"`
 	CuisineID    *int16  `json:"cuisineId"`
+	Images       *string `json:"images"`
 }
 
 type CreateDishRow struct {
@@ -67,6 +68,7 @@ func (q *Queries) CreateDish(ctx context.Context, db DBTX, arg *CreateDishParams
 		arg.Description,
 		arg.Price,
 		arg.CuisineID,
+		arg.Images,
 	)
 	var i CreateDishRow
 	err := row.Scan(
@@ -108,6 +110,7 @@ SELECT d.id,
        r.address,
        r.lat,
        r.lng,
+       d.images,
        d.cuisine_id,
        c.name as cuisine,
        d.created_at,
@@ -128,6 +131,7 @@ type GetDishByIDRow struct {
 	Address      *string            `json:"address"`
 	Lat          *float64           `json:"lat"`
 	Lng          *float64           `json:"lng"`
+	Images       *string            `json:"images"`
 	CuisineID    int16              `json:"cuisineId"`
 	Cuisine      *string            `json:"cuisine"`
 	CreatedAt    pgtype.Timestamptz `json:"createdAt"`
@@ -147,6 +151,7 @@ func (q *Queries) GetDishByID(ctx context.Context, db DBTX, id int32) (*GetDishB
 		&i.Address,
 		&i.Lat,
 		&i.Lng,
+		&i.Images,
 		&i.CuisineID,
 		&i.Cuisine,
 		&i.CreatedAt,
@@ -164,6 +169,7 @@ SELECT d.id,
        r.name                      as restaurant_name,
        r.username                  as restaurant_username,
        r.address,
+       d.images,
        r.lat,
        r.lng,
        d.cuisine_id,
@@ -204,6 +210,7 @@ type GetDishesRow struct {
 	RestaurantName     *string            `json:"restaurantName"`
 	RestaurantUsername *string            `json:"restaurantUsername"`
 	Address            *string            `json:"address"`
+	Images             *string            `json:"images"`
 	Lat                *float64           `json:"lat"`
 	Lng                *float64           `json:"lng"`
 	CuisineID          int16              `json:"cuisineId"`
@@ -237,6 +244,7 @@ func (q *Queries) GetDishes(ctx context.Context, db DBTX, arg *GetDishesParams) 
 			&i.RestaurantName,
 			&i.RestaurantUsername,
 			&i.Address,
+			&i.Images,
 			&i.Lat,
 			&i.Lng,
 			&i.CuisineID,
