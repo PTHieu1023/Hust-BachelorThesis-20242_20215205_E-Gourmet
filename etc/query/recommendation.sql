@@ -65,7 +65,7 @@ LEFT JOIN restaurants r ON d.restaurant_id = r.id
 LEFT JOIN reviews rv ON rv.dish_id = d.id
 WHERE fcm.user_id = :user_id
   and fcm.created_at > now() - interval '1 minute'
-group by fcm.id, fcm.status, d.id, d.name, d.price, r.id, r.name, d.images::jsonb;
+group by fcm.id, fcm.status, d.id, d.name, d.price, r.id, r.name, d.images;
 
 -- Query: create_ssfcm_session
 INSERT INTO ssfcm_logs (user_id, status, created_at)
