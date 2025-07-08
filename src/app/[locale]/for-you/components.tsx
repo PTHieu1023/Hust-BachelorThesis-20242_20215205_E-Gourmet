@@ -58,7 +58,7 @@ export function RecommendItemCard({rec}: { rec: Recommendation }) {
                     <div className="flex items-start space-x-4">
                         <div className="flex-shrink-0">
                             <Image
-                                src={rec.images?.[0] ?? "/logo.svg"}
+                                src={rec.images ?? "/logo.svg"}
                                 alt={rec.dishName}
                                 className="w-16 h-16 rounded-lg object-cover"
                                 width={64} height={64}

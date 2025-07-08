@@ -43,7 +43,7 @@ export default async function DetailDishPage({params}: Readonly<PageProps>) {
             <CommonBreadcrumb items={breadCrumbs}/>
             <BackButton/>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                <ImageView images={dish.images || []}/>
+                <ImageView images={[dish.images?? "/logo.svg"]}/>
                 <div className="space-y-2">
                     <Link href={`/restaurant/${dish?.restaurantId}`} className="flex items-center space-x-4">
                         <Avatar className="w-8 h-8">

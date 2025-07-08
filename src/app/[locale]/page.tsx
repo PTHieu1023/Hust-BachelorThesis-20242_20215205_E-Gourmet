@@ -77,7 +77,7 @@ const DiscoveryPanelContent = async () => {
 };
 
 const RecommendationItems = ({recommendations}: { recommendations: Recommendation[] }) => {
-    if (!recommendations.length) {
+    if (!recommendations?.length) {
         return (
             <div className="text-center py-4 text-gray-500">
                 No recommendations available at the moment.
@@ -91,7 +91,7 @@ const RecommendationItems = ({recommendations}: { recommendations: Recommendatio
               className="flex items-center space-x-3 group cursor-pointer"
         >
             <Image
-                src={item.images?.[0] ?? "/logo.svg"}
+                src={item.images ?? "/logo.svg"}
                 alt={item.dishName}
                 className="w-12 h-12 rounded-lg object-cover group-hover:scale-105 transition-transform"
                 width={1920}

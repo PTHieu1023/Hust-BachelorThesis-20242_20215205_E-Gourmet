@@ -11,7 +11,7 @@ export interface ShortDishProps {
     restaurantId: number,
     restaurant: string,
     restaurantUsername?: string,
-    images?: string[],
+    images?: string,
     address?: string,
     lat?: number,
     lng?: number,
@@ -35,6 +35,7 @@ export interface SearchDishFilterProps {
 
 export async function getDish(params: SearchDishFilterProps): Promise<ShortDishProps[]> {
     const response = await httpClient.get(getUrl("/api/dish"), {params});
+    console.log(response.data);
     return response.data as ShortDishProps[];
 }
 
@@ -52,7 +53,7 @@ export interface DishDetails {
     lng?: number;
     cuisineId: number;
     cuisine: string;
-    images?: string[];
+    images?: string;
     createdAt: Date;
     updatedAt: Date;
     rating: number;
@@ -69,7 +70,7 @@ export interface Recommendation {
     dishName: string;
     restaurantId: number;
     restaurantName: string;
-    images?: string[];
+    images?: string;
     rating: number;
     reviewCount: number;
     price: string;
@@ -77,6 +78,7 @@ export interface Recommendation {
 
 export const getRecommendations = async (userId: string): Promise<Recommendation[]> => {
     const response = await httpClient.get(`${process.env.RECOMMENDATION_API_URL}/${userId}`);
+    console.log(response.data);
     return response.data as Recommendation[];
 }
 
@@ -86,6 +88,7 @@ export interface CreateDishParams {
     description: string;
     price: number;
     cuisineId: number;
+    images?: string;
 }
 
 export const createDish = async (params: CreateDishParams): Promise<ShortDishProps> => {

@@ -14,8 +14,8 @@ const SimpleFoodCard = ({dish}: { dish: ShortDishProps }) => {
         return null;
     }
 
-    const imageUrl = (dish.images && dish.images.length > 0)
-        ? dish.images[0]
+    const imageUrl = (dish.images)
+        ? dish.images
         : "/logo.svg";
 
     return (

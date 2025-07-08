@@ -56,9 +56,9 @@ const PostCard = ({post}: { post: Post }) => {
                                     key={image}
                                     src={image}
                                     alt={t('media-alt')}
-                                    width={300}
-                                    height={300}
-                                    className="rounded-lg object-cover"
+                                    width={500}
+                                    height={500}
+                                    className="rounded-lg object-fill"
                                 />
                             ))}
                         </div>

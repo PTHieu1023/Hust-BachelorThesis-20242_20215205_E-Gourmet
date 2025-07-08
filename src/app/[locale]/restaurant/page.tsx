@@ -185,7 +185,7 @@ function MenuItem({dish}: { dish: ShortDishProps }) {
              className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
             <div className="flex items-center space-x-4">
                 <Image
-                    src={dish.images?.[0] ?? "/logo.svg"}
+                    src={dish?.images ?? "/logo.svg"}
                     alt={dish.name}
                     width={1920}
                     height={1080}

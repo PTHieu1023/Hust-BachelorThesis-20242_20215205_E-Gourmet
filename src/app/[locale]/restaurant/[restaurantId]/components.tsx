@@ -87,7 +87,7 @@ export const MenuHighlights = async ({t, restaurantId}: { t: (key: string) => st
                         <Link href={`/restaurant/${restaurantId}/${dish.id}`} key={dish.id} className="group cursor-pointer">
                             <div className="aspect-square relative mb-3 rounded-lg overflow-hidden">
                                 <Image
-                                    src={dish.images?.[0] ?? '/placeholder-dish.jpg'}
+                                    src={dish.images ?? '/logo.svg'}
                                     alt={dish.name}
                                     width={300}
                                     height={300}

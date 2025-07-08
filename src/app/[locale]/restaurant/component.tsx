@@ -51,7 +51,9 @@ export function AddDishButton({restaurantId}: { restaurantId: number }) {
         >
             <Plus className="w-4 h-4 mr-2"/>
             Add Dish
-            <AddDishModal isOpen={isAddDishModalOpen} onCloseAction={() => {setIsAddDishModalOpen(false)}} restaurantId={restaurantId}/>
+            <AddDishModal isOpen={isAddDishModalOpen} onCloseAction={() => {
+                setIsAddDishModalOpen(false)
+            }} restaurantId={restaurantId}/>
         </Button>
     );
 }
@@ -108,9 +110,9 @@ export const AddDishModal = ({isOpen, onCloseAction, restaurantId}: AddDishModal
         name: "",
         description: "",
         price: 0,
-        cuisineId: 0
+        cuisineId: 0,
+        images: undefined,
     });
-    const [uploadedImages, setUploadedImages] = useState<string[]>([]);
     const [cuisines, setCuisines] = useState<Cuisine[]>([]);
     const router = useRouter();
 
@@ -121,18 +123,18 @@ export const AddDishModal = ({isOpen, onCloseAction, restaurantId}: AddDishModal
     }, [])
 
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const handleImageUpload = (e:  any) => {
+    const handleImageUpload = (e: any) => {
         const file = e.target.files?.[0];
         if (!file) return;
         uploadFile(file).then((data) => {
             const mockImageUrl = data.url; // Replace with actual URL from upload service
-            setUploadedImages(prev => [...prev, mockImageUrl]);
+            setFormData({...formData, images: mockImageUrl});
         }).catch(() => {
             toast.error("Image upload failed. Please try again.");
         }).finally()
     };
-    const handleRemoveImage = (index: number) => {
-        setUploadedImages(prev => prev.filter((_, i) => i !== index));
+    const handleRemoveImage = () => {
+        setFormData({...formData, images: undefined});
     };
 
 
@@ -149,9 +151,9 @@ export const AddDishModal = ({isOpen, onCloseAction, restaurantId}: AddDishModal
                 name: "",
                 description: "",
                 price: 0,
-                cuisineId: 0
+                cuisineId: 0,
+                images: undefined,
             });
-            setUploadedImages([]);
             onCloseAction();
             router.refresh();
         }).catch(() => {
@@ -167,7 +169,6 @@ export const AddDishModal = ({isOpen, onCloseAction, restaurantId}: AddDishModal
             price: 0,
             cuisineId: 0
         });
-        setUploadedImages([]);
         onCloseAction();
     };
 
@@ -187,15 +188,15 @@ export const AddDishModal = ({isOpen, onCloseAction, restaurantId}: AddDishModal
                                 id="name"
                                 placeholder="Enter dish name"
                                 value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                onChange={(e) => setFormData({...formData, name: e.target.value})}
                                 required
                             />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="cuisine">Cuisine *</Label>
-                            <Select onValueChange={(value) => setFormData({ ...formData, cuisineId: parseInt(value) })}>
+                            <Select onValueChange={(value) => setFormData({...formData, cuisineId: parseInt(value)})}>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Select cusine" />
+                                    <SelectValue placeholder="Select cusine"/>
                                 </SelectTrigger>
                                 <SelectContent>
                                     {cuisines.map((cuisine) => (
@@ -213,7 +214,7 @@ export const AddDishModal = ({isOpen, onCloseAction, restaurantId}: AddDishModal
                             id="price"
                             placeholder="VND"
                             value={formData.price}
-                            onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value)})}
+                            onChange={(e) => setFormData({...formData, price: parseFloat(e.target.value)})}
                             required
                         />
                     </div>
@@ -224,7 +225,7 @@ export const AddDishModal = ({isOpen, onCloseAction, restaurantId}: AddDishModal
                             id="description"
                             placeholder="Describe your dish, ingredients, and what makes it special..."
                             value={formData.description}
-                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                            onChange={(e) => setFormData({...formData, description: e.target.value})}
                             rows={3}
                             required
                         />
@@ -233,59 +234,61 @@ export const AddDishModal = ({isOpen, onCloseAction, restaurantId}: AddDishModal
                     <div className="space-y-2">
                         <Label>Dish Photos</Label>
 
-                        {uploadedImages.length > 0 && (
+                        {formData.images ?(
                             <div className="grid grid-cols-3 gap-3 mb-3">
-                                {uploadedImages.map((image, index) => (
-                                    <div key={index} className="relative group">
-                                        <Image
-                                            src={image}
-                                            alt={`Image ${index + 1}`}
-                                            className="w-full h-24 object-cover rounded-lg"
-                                            width={900}
-                                            height={900}
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => handleRemoveImage(index)}
-                                            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                                        >
-                                            <X className="w-3 h-3"/>
-                                        </button>
-                                    </div>
-                                ))}
+                                <div className="relative group">
+                                    <Image
+                                        src={formData.images}
+                                        alt={`Dish Image`}
+                                        className="w-full h-24 object-cover rounded-lg"
+                                        width={900}
+                                        height={900}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveImage()}
+                                        className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                    >
+                                        <X className="w-3 h-3"/>
+                                    </button>
+                                </div>
                             </div>
-                        )}
-                        <Input type={"file"} hidden={true} onChange={handleImageUpload} ref={fileInputRef}/>
+                        ): (
+                            <div>
+                            <Input type={"file"} hidden={true} onChange={handleImageUpload} ref={fileInputRef}/>
 
-                        <Button
-                            type="button"
-                            variant={"outline"}
-                            onClick={() => fileInputRef.current?.click()}
-                            className="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center hover:border-orange-300 transition-colors"
-                        >
-                            <Camera className="w-8 h-8 text-gray-400 mb-2"/>
-                            <span className="text-sm text-gray-600">Add Photo ({uploadedImages.length}/5)</span>
-                        </Button>
-                    </div>
+                    <Button
+                        type="button"
+                        variant={"outline"}
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center hover:border-orange-300 transition-colors"
+                    >
+                        <Camera className="w-8 h-8 text-gray-400 mb-2"/>
+                        <span className="text-sm text-gray-600">Add Photo</span>
+                    </Button>
+                </div>
+                )}
+            </div>
 
-                    <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            className="flex-1"
-                            onClick={handleClose}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            type="submit"
-                            className="flex-1 bg-orange-500 hover:bg-orange-600"
-                        >
-                            Add Dish to Menu
-                        </Button>
-                    </div>
-                </form>
-            </DialogContent>
-        </Dialog>
-    );
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                <Button
+                    type="button"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={handleClose}
+                >
+                    Cancel
+                </Button>
+                <Button
+                    type="submit"
+                    className="flex-1 bg-orange-500 hover:bg-orange-600"
+                >
+                    Add Dish to Menu
+                </Button>
+            </div>
+        </form>
+</DialogContent>
+</Dialog>
+)
+    ;
 };
